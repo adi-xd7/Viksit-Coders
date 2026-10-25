@@ -125,14 +125,15 @@ To maintain modularity and isolation:
   - [x] Resource budgets: token tracking, max tool calls (`MAX_TOOL_CALLS_PER_AGENT=12`), max retries (`MAX_RETRIES=2`), timeout handling, limit exhaustion graceful fallback
   - [x] Tests (`tests/test_odin_memory.py`, `tests/test_odin_logging.py`, `tests/test_odin_budgets.py` - 20/20 passing, 61/61 total)
 
-- [ ] **Phase 4 — LangGraph Trial State Machine and Send-Back Loop**
-  - [ ] LangGraph state definition (`TrialState`)
-  - [ ] Build trial state machine graph:
-    - [ ] HEIMDALL verification -> THOR & LOKI parallel -> CROSS-EXAMINATION -> ODIN -> SUFFICIENCY CHECK -> (SEND-BACK to HEIMDALL or BRIEFING)
-  - [ ] New evidence detection for Run 2 (hash/ID comparison)
-  - [ ] Termination conditions and bounds (`MAX_RUNS`, `MAX_ROUNDS`, `MAX_TOOL_CALLS`)
-  - [ ] CLI runner (`python -m backend.trial "question" --as-of YYYY-MM-DD`)
-  - [ ] Tests (`tests/test_trial_graph.py`, `tests/test_trial_limits.py`)
+- [x] **Phase 4 — LangGraph Trial State Machine and Send-Back Loop**
+  - [x] LangGraph state definition (`TrialState`) with disjoint parallel updates and typed fields
+  - [x] Build trial state machine graph:
+    - [x] HEIMDALL verification -> THOR & LOKI parallel -> CROSS-EXAMINATION -> ODIN -> SUFFICIENCY CHECK -> (SEND-BACK to HEIMDALL or READY_FOR_BRIEFING)
+  - [x] New evidence detection for Run 2 (hash/ID comparison, admissibility filtering)
+  - [x] Termination conditions and bounds (`MAX_RUNS`, `MAX_ROUNDS`, `MAX_TOOL_CALLS_PER_AGENT`, `MAX_TOKENS_PER_CASE`)
+  - [x] Run snapshot persistence to `logs/cases/<case_id>/run_<n>.json` with secret redaction
+  - [x] CLI runner (`python -m backend.trial "<question>" --as-of YYYY-MM-DD`)
+  - [x] Tests (`tests/test_trial_graph.py`, `tests/test_trial_limits.py` - 15/15 passing, 76/76 total)
 
 - [ ] **Phase 5 — Final Briefing Generation and Citation Validation**
   - [ ] Briefing generator (`backend/briefing.py`) strictly grounded in Odin's rulings
@@ -235,6 +236,43 @@ To maintain modularity and isolation:
   - Preserved Claims on Budget Limit: When an LLM budget limit or provider error interrupts judgment, already validated deterministic rulings are preserved, and unadjudicated claims are returned as `CONTESTED` with an explicit reason (`token_budget_exceeded`, `tool_call_limit_exceeded`, `provider_error`), maintaining 100% claim coverage.
 - **Dependencies for Phase 4**:
   - LangGraph trial state machine orchestration (`TrialState`), connecting Heimdall verification, Thor/Loki parallel advocacy, cross-examination, Odin judgment, sufficiency check, and send-back routing loop.
+
+---
+
+## Phase 4 Execution Notes
+
+- **Status**: Completed
+- **Files Created / Changed**:
+  - `backend/trial_state.py`:
+    - Defined `TrialState` (TypedDict) compatible with LangGraph 1.2+ and Pydantic v2 domain models.
+    - Preserves case parameters, run and round counters, evidence stores (`doc_store`, `trade_store`), stable IDs and hashes, disjoint parallel advocate claims (`thor_claims`, `loki_claims`), cross-examination records (`attacks`, `defenses`, `concessions`), judicial rulings, derived exposure ranges, sufficiency result, send-back request, run history, and resource budget state.
+  - `backend/agents/adapters.py`:
+    - Implemented `HeimdallAdapter` parsing questions into `CaseFile` (with target country-sector pairs), verifying event authenticity (`REAL`, `NOT_REAL`, `UNCERTAIN`), retrieving initial evidence from `dev_pack_E5`, and executing send-back re-search.
+    - Added evidence novelty tracking: Computes SHA256 hashes of retrieved documents/rows, compares against `previous_evidence_ids` and `previous_evidence_hashes`, filters damaged/duplicate/irrelevant material, and flags `new_evidence_count = 0` if re-search finds no novel admissible evidence.
+    - Implemented `ThorAdapter` (HIGH exposure advocate) and `LokiAdapter` (LIMITED exposure advocate) with tool-call quota tracking and failure simulation.
+    - Implemented `CrossExamAdapter` managing reciprocal attacks, defenses, concessions, and degraded modes when an advocate fails (surviving claims stand unchallenged without fabricating arguments).
+  - `backend/trial.py`:
+    - Implemented `TrialGraphBuilder` compiling the full LangGraph state machine:
+      - `START -> heimdall`
+      - `heimdall -> [thor, loki]` (parallel fan-out) or `END` (if `not_real` or unrecoverable error)
+      - `[thor, loki] -> cross_exam` (parallel fan-in merging disjoint claims)
+      - `cross_exam -> odin`
+      - `odin -> sufficiency`
+      - `sufficiency -> heimdall` (loop back on SendBack if `run_count < max_runs`) or `END` (if `ready_for_briefing` or limits reached)
+    - Implemented `persist_run_snapshot` writing complete, secret-redacted JSON snapshots to `logs/cases/<case_id>/run_<n>.json` before starting new runs.
+    - Implemented `run_trial` convenience runner and `main()` CLI terminal entry point supporting `python -m backend.trial "<question>" --as-of YYYY-MM-DD`.
+  - `tests/test_trial_graph.py`: 8 integration tests covering single-run sufficient trials, parallel Thor and Loki execution with disjoint merge preservation, `not_real` event early termination without advocates, `uncertain` event policy, send-back loop routing, degraded modes on advocate failures, and cross-examination.
+  - `tests/test_trial_limits.py`: 7 tests covering run limit exhaustion (`terminated_limits_exhausted`), evidence novelty enforcement (0 new evidence terminates truthfully), token budget exhaustion, tool-call quota exhaustion, non-resetting case budgets across runs, snapshot persistence secret redaction, and CLI entry point execution.
+- **Tests Executed**:
+  - `python -m pytest tests -v`
+  - Result: 76 passed in 2.72s (100% pass rate: 20 Phase 1 + 21 Phase 2 + 20 Phase 3 + 15 Phase 4).
+- **Decisions Made**:
+  - Disjoint Parallel State: Parallel execution of Thor and Loki updates separate fields (`thor_claims` and `loki_claims`) in `TrialState`, guaranteeing neither advocate's output can overwrite the other regardless of execution order.
+  - Truthful Incomplete Termination: When Heimdall's re-search yields 0 qualifying new evidence or when the maximum run limit is reached, the graph terminates with status `incomplete` or `terminated_limits_exhausted`, never labeling a case complete prematurely.
+  - Early Event Termination: If an event is verified as `not_real`, the graph branches directly to `END`, preventing unnecessary advocate hearings or judicial LLM calls.
+- **Dependencies for Phase 5**:
+  - Final intelligence briefing generator (`backend/briefing.py`) implementing Sections A through J grounded strictly in Odin's rulings, with inline citation validation, and Markdown / JSON export.
+
 
 
 
