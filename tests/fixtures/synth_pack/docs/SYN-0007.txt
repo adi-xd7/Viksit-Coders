@@ -1,0 +1,17 @@
+DOC_ID: SYN-0007
+EVENT_ID: EVZ
+TITLE: Analysts split on recovery timing
+SOURCE_NAME: Test Wire
+SOURCE_TYPE: analyst_note
+RELIABILITY: 3
+PUB_DATE: 2030-03-10
+PUB_TIME: 09:30
+COUNTRY: Alpha
+SECTOR: Grain
+LANGUAGE: en
+---
+Analysts split on recovery timing
+
+[P1] Analysts disagree on how fast loadings will recover.
+
+[P2] One firm expects a full recovery by June while another says the rail link cannot carry the

@@ -1,10 +1,17 @@
+@import "tailwindcss";
+@import "@fontsource/hanken-grotesk/400.css";
+@import "@fontsource/hanken-grotesk/500.css";
+@import "@fontsource/hanken-grotesk/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
 /* ==========================================================================
-   RAGNAROK — Medieval Intelligence Archive Design System
-   Visual Direction: Minimalist, refined, medieval-inspired strategic archive
+   RAGNAROK — Unified Design System & Tokens
+   Combines Medieval Royal Intelligence Archive & Pipeline Analysis Tokens
    ========================================================================== */
 
 :root {
-  /* Color Palette — Section 3 */
+  /* Medieval Intelligence Archive Palette */
   --color-obsidian: #191a18;
   --color-obsidian-card: #232522;
   --color-obsidian-subtle: #2d302c;
@@ -25,10 +32,10 @@
   /* Typography Stacks */
   --font-serif-display: 'Cinzel', serif, Georgia;
   --font-serif-editorial: 'Cormorant Garamond', serif, Georgia;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
+  --font-sans: 'Inter', 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', Menlo, Monaco, Consolas, monospace;
 
-  /* Spacing Scale (UI UX Pro Max 8/10 Density) */
+  /* Spacing Scale */
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
@@ -36,9 +43,25 @@
   --space-xl: 32px;
   --space-2xl: 48px;
 
+  /* Pipeline & Trace Tokens */
+  --paper: #f6f7f8;
+  --sheet: #ffffff;
+  --ink: #15181c;
+  --ink-2: #575f69;
+  --ink-3: #8a929b;
+  --rule: #e5e8eb;
+  --rule-2: #d3d8dd;
+  --accent: #2b4c9b;
+  --accent-wash: #eef2fa;
+  --accent-line: #b8c4e0;
+  --bad: #b42318;
+  --bad-wash: #fdf1ef;
+  --hl: #fff3c4;
+  color-scheme: light;
+
   /* Radii & Shadows */
-  --radius-sm: 3px;
-  --radius-md: 5px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
   --radius-lg: 8px;
   --shadow-subtle: 0 1px 3px rgba(25, 26, 24, 0.05);
   --shadow-card: 0 2px 6px rgba(25, 26, 24, 0.08);
@@ -49,15 +72,35 @@
   --transition-normal: 250ms ease;
 }
 
+@theme {
+  --color-paper: var(--paper);
+  --color-sheet: var(--sheet);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-2: var(--rule-2);
+  --color-accent: var(--accent);
+  --color-accent-wash: var(--accent-wash);
+  --color-accent-line: var(--accent-line);
+  --color-bad: var(--bad);
+  --color-bad-wash: var(--bad-wash);
+  --color-hl: var(--hl);
+  --font-sans: "Hanken Grotesk", 'Inter', ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", 'JetBrains Mono', ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html, body {
-  height: 100%;
+  min-height: 100%;
   width: 100%;
+  margin: 0;
+  padding: 0;
   background-color: var(--color-warm-parchment);
   color: var(--color-obsidian);
   font-family: var(--font-sans);
@@ -87,72 +130,17 @@ h2 { font-size: 1.45rem; }
 h3 { font-size: 1.2rem; }
 h4 { font-size: 1.05rem; }
 
-p {
-  color: var(--color-obsidian);
-  margin-bottom: 0.75rem;
+/* Interactive Focus */
+button {
+  cursor: pointer;
 }
-
-p:last-child {
-  margin-bottom: 0;
-}
-
-/* Focus and Accessibility */
-:focus-visible {
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
   outline: 2px solid var(--color-antique-gold);
   outline-offset: 2px;
-}
-
-/* Links & Buttons */
-a {
-  color: var(--color-antique-gold-hover);
-  text-decoration: none;
-  transition: color var(--transition-fast);
-}
-
-a:hover {
-  color: var(--color-obsidian);
-}
-
-button {
-  font-family: var(--font-sans);
-  cursor: pointer;
-  border: none;
-  background: none;
-  transition: all var(--transition-fast);
-}
-
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-/* Form Controls */
-input, textarea, select {
-  font-family: var(--font-sans);
-  font-size: 14px;
-  color: var(--color-obsidian);
-  background-color: var(--color-aged-ivory);
-  border: 1px solid var(--color-weathered-stone);
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
-  width: 100%;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-input:focus, textarea:focus, select:focus {
-  outline: none;
-  border-color: var(--color-antique-gold);
-  box-shadow: 0 0 0 2px var(--color-antique-gold-subtle);
-}
-
-label {
-  display: block;
-  font-size: 12.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-slate-ink);
-  margin-bottom: 4px;
 }
 
 /* Code & Technical Data */
@@ -193,6 +181,139 @@ tr:last-child td {
 
 tbody tr:hover {
   background-color: rgba(168, 135, 74, 0.04);
+}
+
+/* Pipeline, Trace & Evidence View Component Classes */
+.label {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: -0.01em;
+}
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Verdict Glyphs */
+.glyph {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  flex: none;
+}
+.glyph-established {
+  background: var(--ink);
+}
+.glyph-contested {
+  background: linear-gradient(90deg, var(--ink) 50%, transparent 50%);
+}
+.glyph-conceded {
+  border-color: var(--ink-3);
+}
+.glyph-rejected {
+  border-color: var(--bad);
+  background: var(--bad);
+  border-radius: 1px;
+}
+.glyph-unruled {
+  border-style: dashed;
+  border-color: var(--ink-3);
+}
+
+/* Agent Marks */
+.mark {
+  display: inline-block;
+  width: 22px;
+  height: 6px;
+  flex: none;
+}
+.mark-thor {
+  background: var(--ink);
+}
+.mark-loki {
+  border: 1.5px solid var(--ink);
+  background: var(--sheet);
+}
+.mark-odin {
+  background: var(--accent);
+  height: 8px;
+}
+.mark-heimdall {
+  border-bottom: 1.5px dashed var(--ink-2);
+  height: 6px;
+}
+
+/* Citation Link */
+.cite {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-line);
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.cite:hover {
+  text-decoration-color: var(--accent);
+}
+
+/* Exposure Track */
+.track {
+  position: relative;
+  height: 10px;
+}
+
+/* Evidence Timeline Ticks */
+.tl-doc {
+  position: absolute;
+  top: 12px;
+  width: 2px;
+  height: 18px;
+  margin-left: -1px;
+  background: var(--ink);
+}
+.tl-doc.is-corrected {
+  background: transparent;
+  border: 1.5px solid var(--ink-3);
+  width: 5px;
+  margin-left: -2px;
+}
+.tl-doc.is-flagged {
+  background: var(--bad);
+}
+.tl-doc.is-damaged {
+  background: transparent;
+  border-left: 2px dotted var(--ink-2);
+}
+.tl-doc.is-retrieved {
+  top: 8px;
+  height: 22px;
+}
+.hatch {
+  background: repeating-linear-gradient(45deg, var(--ink-3) 0 2px, transparent 2px 4px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .view-in {
+    animation: view-in 0.14s ease-out;
+  }
+  @keyframes view-in {
+    from {
+      opacity: 0.4;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 }
 
 /* Motion Preference */

@@ -1,0 +1,131 @@
+{
+  "case_id": "case-20261025-084715-fa6fe3",
+  "question": "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.",
+  "as_of": "2027-01-25",
+  "created_at": "2026-10-25T08:47:45.091272Z",
+  "countries": [
+    "Midgard",
+    "Tolan"
+  ],
+  "sectors": [
+    "wheat",
+    "maize"
+  ],
+  "related_countries": [
+    "Orvan",
+    "Vanir",
+    "Asgard"
+  ],
+  "commodities": [
+    "wheat",
+    "maize"
+  ],
+  "routes": [
+    "Orvan Grain Port sea route",
+    "Orvan to Midgard",
+    "Orvan to Tolan",
+    "Vanir to Midgard",
+    "Vanir to Tolan",
+    "Ravik Rail Link"
+  ],
+  "candidate_event_ids": [
+    "ORV-0016",
+    "ORV-0013",
+    "ORV-0034",
+    "ORV-0024"
+  ],
+  "event_status": "established",
+  "event_verification_notes": "The Orvan Corridor Agreement expired on 10 September 2026 without renewal. This is stated by a tier-1 ministry notice (ORV-0016) and confirmed by tier-2 reporting (ORV-0034, ORV-0024). The early report of a renewal (ORV-0043, tier 2, 9 Sep, unconfirmed by the ministry, citing 'people involved') was corrected and withdrawn by ORV-0013. Rumour/forecast sources ORV-0015 and ORV-0049 (tier 3, before expiry) are superseded. A separate dock strike began on 14 September (ORV-0032) and is a distinct event that overlaps in time, so the trade declines cannot be attributed wholly to the corridor ending. ORV-0004 (Vantro Trading, a company statement claiming markets have adjusted) is self-interested and not supported by the trade rows. Trade data show the Orvan wheat drop from September 2026 and the maize drop from October to November 2026 (the maize delay is explained by delayed delivery terms).",
+  "event_citations": [
+    {
+      "doc_id": "ORV-0016",
+      "paragraph_ref": "P1",
+      "row_id": null,
+      "pub_date": "2026-09-10",
+      "quote": "The Corridor Agreement expired on 10 September 2026."
+    },
+    {
+      "doc_id": "ORV-0016",
+      "paragraph_ref": "P2",
+      "row_id": null,
+      "pub_date": "2026-09-10",
+      "quote": "No replacement arrangement has been signed."
+    },
+    {
+      "doc_id": "ORV-0013",
+      "paragraph_ref": "P1",
+      "row_id": null,
+      "pub_date": "2026-09-10",
+      "quote": "That report was wrong."
+    },
+    {
+      "doc_id": "ORV-0034",
+      "paragraph_ref": "P1",
+      "row_id": null,
+      "pub_date": "2026-09-11",
+      "quote": "ended on 10 September with no renewal"
+    },
+    {
+      "doc_id": "ORV-0009",
+      "paragraph_ref": null,
+      "row_id": "ORV-0009#R3",
+      "pub_date": "2027-01-19",
+      "quote": "In September 2026, the value was USD 38.2M and the volume was 93,000 tonnes."
+    },
+    {
+      "doc_id": "ORV-0030",
+      "paragraph_ref": null,
+      "row_id": "ORV-0030#R5",
+      "pub_date": "2027-01-21",
+      "quote": "In November 2026, the value was USD 31.9M and the volume was 75,000 tonnes."
+    },
+    {
+      "doc_id": "ORV-0046",
+      "paragraph_ref": null,
+      "row_id": "ORV-0046#R3",
+      "pub_date": "2027-01-20",
+      "quote": "In September 2026, the value was USD 17.0M and the volume was 43,000 tonnes."
+    }
+  ],
+  "evidence_doc_ids": [
+    "ORV-0007",
+    "ORV-0013",
+    "ORV-0016",
+    "ORV-0022",
+    "ORV-0024",
+    "ORV-0030",
+    "ORV-0032",
+    "ORV-0033",
+    "ORV-0034",
+    "ORV-0042",
+    "ORV-0046"
+  ],
+  "trade_table_ids": [
+    "ORV-0009",
+    "ORV-0027",
+    "ORV-0030",
+    "ORV-0044",
+    "ORV-0046"
+  ],
+  "missing_data": [
+    "No trade table for Orvan to Tolan maize; a search returned only the Midgard maize table, so Tolan maize exposure is unknown, not zero.",
+    "No trade table for Vanir to Midgard or Vanir to Tolan maize.",
+    "No data on Ravik Rail Link volumes delivered to Midgard or Tolan.",
+    "The ministry's full port return based on loadings was still pending (ORV-0022).",
+    "Total Midgard and Tolan wheat and maize imports from all origins are not available, so import shares cannot be computed.",
+    "The corridor effect cannot be separated from the port strike effect; the strike end date and any recovery after December 2026 are unknown.",
+    "No January 2027 trade data.",
+    "Tier-3 ORV-0007 substitution estimates are weak and unverified.",
+    "No trade_calc results yet; all figures must come from trade_calc."
+  ],
+  "corrections": [
+    "ORV-0013 correction of ORV-0043: Raven Wire withdrew its 9 Sep report of a renewal; the agreement expired without renewal.",
+    "ORV-0043 retraction of ORV-0043: Original renewal report was unconfirmed by the ministry (P4) and is not reliable.",
+    "ORV-0015 rumour of ORV-0043: Tier-3 Asgard Herald welcomed the reported renewal; it relied on the since-corrected report.",
+    "ORV-0049 superseded of ORV-0016: Tier-3 forecast of renewal (25 Aug) was overtaken by the official expiry notice.",
+    "ORV-0032 unrelated_event of ORV-0016: Dock strike at Orvan Grain Port from 14 Sep is a separate event that confounds attribution.",
+    "ORV-0004 contradiction of ORV-0016: Vantro Trading claims no damage; this conflicts with the trade data and is a self-interested statement.",
+    "ORV-0048 superseded of ORV-0024: Truncated possible duplicate of ORV-0024; no independent weight."
+  ],
+  "run_number": 1
+}

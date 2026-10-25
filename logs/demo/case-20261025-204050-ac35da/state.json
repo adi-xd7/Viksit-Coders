@@ -1,0 +1,63 @@
+{
+  "case_id": "case-20261025-204050-ac35da",
+  "question": "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.",
+  "as_of": "2027-01-25",
+  "stage": "DONE",
+  "history": [
+    "HEIMDALL",
+    "THOR_LOKI",
+    "CROSS_EXAMINATION",
+    "ODIN",
+    "HEIMDALL_RESEARCH",
+    "BRIEFING",
+    "DONE"
+  ],
+  "run_number": 2,
+  "runs_completed": 1,
+  "max_runs": 2,
+  "stop_after": null,
+  "briefing_status": "incomplete",
+  "notes": [
+    "heimdall failed during send-back research (run 2): rate limited after 7 attempt(s): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/d",
+    "Heimdall's run 2 research failed; the briefing uses the run 1 rulings and is incomplete"
+  ],
+  "stop_reason": null,
+  "superseded": {},
+  "usage": {
+    "tokens": {
+      "heimdall": {
+        "input": 12781,
+        "output": 1524,
+        "calls": 2
+      },
+      "thor": {
+        "input": 57248,
+        "output": 10031,
+        "calls": 4
+      },
+      "loki": {
+        "input": 59382,
+        "output": 6097,
+        "calls": 4
+      },
+      "odin": {
+        "input": 7093,
+        "output": 11898,
+        "calls": 1
+      }
+    },
+    "tool_calls": {
+      "heimdall": 10,
+      "thor": 13,
+      "loki": 17
+    },
+    "evidence_refs": 120,
+    "runs": 1,
+    "llm_calls": {
+      "used": 11,
+      "limit": 30,
+      "cached": 0
+    }
+  },
+  "attempt": 1
+}

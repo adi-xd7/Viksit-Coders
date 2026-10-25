@@ -1,0 +1,17 @@
+DOC_ID: SYN-0009
+EVENT_ID: EVZ
+TITLE: Port fees unchanged for spring
+SOURCE_NAME: Test Wire
+SOURCE_TYPE: news
+RELIABILITY: 2
+PUB_DATE: 2030-03-15
+PUB_TIME: 10:00
+COUNTRY: Alpha
+SECTOR: Grain
+LANGUAGE: en
+---
+Port fees unchanged for spring
+
+[P1] The Beta port authority kept its fees unchanged for the spring schedule.
+
+[P2] Fees will be reviewed in July.

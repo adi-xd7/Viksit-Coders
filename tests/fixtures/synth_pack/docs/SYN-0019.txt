@@ -1,0 +1,17 @@
+DOC_ID: SYN-0019
+EVENT_ID: NONE
+TITLE: Community notes
+SOURCE_NAME: Test Wire
+SOURCE_TYPE: explainer
+RELIABILITY: 2
+PUB_DATE: 2030-03-10
+PUB_TIME: 09:30
+COUNTRY: Alpha
+SECTOR: general
+LANGUAGE: en
+---
+Community notes
+
+The first block of text.
+
+The second block of text.

@@ -1,0 +1,691 @@
+{
+  "rulings": [
+    {
+      "ruling_id": "R-T1-1",
+      "run_number": 1,
+      "claim_id": "T1-1",
+      "verdict": "established",
+      "claim_type": "fact",
+      "rationale": "The tier-2 Midgard Times passage states the claim directly: buyers expected renewal and the agreement expired on 10 September without a replacement. It is consistent with the tier-1 ministry notice (ORV-0016/P1-P2) and the ORV-0013 correction of the false renewal report. No counter-evidence or attack was raised.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0006",
+          "paragraph_ref": "P3",
+          "row_id": null,
+          "pub_date": "2026-10-08",
+          "quote": "It expired on 10 September without a replacement."
+        },
+        {
+          "doc_id": "ORV-0016",
+          "paragraph_ref": "P1",
+          "row_id": null,
+          "pub_date": "2026-09-10",
+          "quote": "The Corridor Agreement expired on 10 September 2026."
+        }
+      ],
+      "contradicting_citations": [],
+      "concession_id": null
+    },
+    {
+      "ruling_id": "R-T1-2",
+      "run_number": 1,
+      "claim_id": "T1-2",
+      "verdict": "conceded",
+      "claim_type": "inference",
+      "rationale": "The cited tier-1 ministry rows exist and match the quoted figures. The two calcs are verified: CALC-54746bbc2bce35cc gives -104.2 USD M (Nov-Dec) and CALC-2471c1be02c2601c gives -216.2 USD M (Sep-Dec). Under attack A1-L1, Thor partially conceded. The figure is a gross decline on the Orvan route, not net exposure or unmet need. Vanir wheat rose over the same months and Ravik rail flows are unmeasured. The revised wording (gross route decline of 104.2-216.2 USD M) is reproducible and usable as gross trade exposure. Attribution to the corridor alone is also confounded by the dock strike from 14 September (ORV-0032).",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0009",
+          "paragraph_ref": null,
+          "row_id": "ORV-0009#R3",
+          "pub_date": "2027-01-19",
+          "quote": "In September 2026, the value was USD 38.2M and the volume was 93,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0009",
+          "paragraph_ref": null,
+          "row_id": "ORV-0009#R9",
+          "pub_date": "2027-01-19",
+          "quote": "In September 2025, the value was USD 97.9M and the volume was 272,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0009",
+          "paragraph_ref": null,
+          "row_id": "ORV-0009#R6",
+          "pub_date": "2027-01-19",
+          "quote": "In December 2026, the value was USD 34.1M and the volume was 83,000 tonnes."
+        }
+      ],
+      "contradicting_citations": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Millers say the substitute supply is reliable enough for current demand but more expensive to handle."
+        },
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": null,
+          "row_id": "ORV-0027#R6",
+          "pub_date": "2027-01-22",
+          "quote": "In December 2026, the value was USD 36.9M and the volume was 92,000 tonnes."
+        }
+      ],
+      "concession_id": "C-A1-L1"
+    },
+    {
+      "ruling_id": "R-T1-3",
+      "run_number": 1,
+      "claim_id": "T1-3",
+      "verdict": "established",
+      "claim_type": "inference",
+      "rationale": "The tier-1 rows show October 2026 at 62.1 USD M and November/December near 31-32 USD M. The ministry paragraph P14 explains the lag by delayed delivery terms. Both calcs are verified: CALC-c4d8aa36b4090272 gives -105.7 (Nov-Dec) and CALC-8b68f9523d386676 gives -126.4 (Oct-Dec). Attack A1-L2 showed the decline mixes corridor and dock-strike effects. Thor accepted this, and the claim's assumptions already name the strike. The upheld reading is therefore a gross corridor-plus-strike decline on the Orvan route. It is not a corridor-only figure, and no recovery is assumed or ruled out. Substitute maize flows are not measured.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R4",
+          "pub_date": "2027-01-21",
+          "quote": "In October 2026, the value was USD 62.1M and the volume was 146,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R5",
+          "pub_date": "2027-01-21",
+          "quote": "In November 2026, the value was USD 31.9M and the volume was 75,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "a share of the maize trade was on delayed delivery terms"
+        }
+      ],
+      "contradicting_citations": [
+        {
+          "doc_id": "ORV-0032",
+          "paragraph_ref": "P2",
+          "row_id": null,
+          "pub_date": "2026-09-15",
+          "quote": "Some grain berths are closed and the remaining berths are working at reduced speed."
+        }
+      ],
+      "concession_id": null
+    },
+    {
+      "ruling_id": "R-T1-4",
+      "run_number": 1,
+      "claim_id": "T1-4",
+      "verdict": "established",
+      "claim_type": "inference",
+      "rationale": "The tier-2 Harbour Review rows exist and match the quotes (Sep 2026 17.0 vs Sep 2025 43.4 USD M). The low bound is verified: CALC-9b914fa4d6443634 gives -46.5 USD M for Nov-Dec. The high-bound calc CALC-c1d6da086b7f9f04 (-96.0) is not among my verified records. Both advocates cite it, but it must be confirmed before I use it as a bound. The claim was not attacked. Caveats: this is a gross route decline that does not net the Vanir wheat rise to Tolan, the dock strike confounds attribution, and the data source is tier 2.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": null,
+          "row_id": "ORV-0046#R3",
+          "pub_date": "2027-01-20",
+          "quote": "In September 2026, the value was USD 17.0M and the volume was 43,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": null,
+          "row_id": "ORV-0046#R9",
+          "pub_date": "2027-01-20",
+          "quote": "In September 2025, the value was USD 43.4M and the volume was 124,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": null,
+          "row_id": "ORV-0046#R6",
+          "pub_date": "2027-01-20",
+          "quote": "In December 2026, the value was USD 15.0M and the volume was 38,000 tonnes."
+        }
+      ],
+      "contradicting_citations": [
+        {
+          "doc_id": "ORV-0044",
+          "paragraph_ref": null,
+          "row_id": "ORV-0044#R6",
+          "pub_date": "2027-01-22",
+          "quote": "In December 2026, the value was USD 25.7M and the volume was 65,000 tonnes."
+        }
+      ],
+      "concession_id": null
+    },
+    {
+      "ruling_id": "R-T1-5",
+      "run_number": 1,
+      "claim_id": "T1-5",
+      "verdict": "established",
+      "claim_type": "inference",
+      "rationale": "The only maize trade table retrieved is for Orvan to Midgard (ORV-0030/P1). No Orvan to Tolan or Vanir to Tolan maize table exists in the case. This matches the case missing-data list and Loki's concession on L1-5. Tolan maize exposure is unquantified, not zero and not low.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P1",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "Route: Orvan to Midgard, maize."
+        }
+      ],
+      "contradicting_citations": [],
+      "concession_id": null
+    },
+    {
+      "ruling_id": "R-T1-6",
+      "run_number": 1,
+      "claim_id": "T1-6",
+      "verdict": "conceded",
+      "claim_type": "inference",
+      "rationale": "The cited Vanir rows exist (Nov 2026: 38.5 USD M to Midgard, 26.5 USD M to Tolan). Under attack A1-L3, Thor conceded calling the offset 'small' and treating it as a minor limit. Ravik rail and Vanir maize flows are unquantified, and Vanir volumes were still rising from November. The surviving point is that the Vanir wheat rise is a measured floor on substitution. The +18.6 and +14.4 USD M figures are not in my verified calc records and cannot be used until confirmed.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": null,
+          "row_id": "ORV-0027#R5",
+          "pub_date": "2027-01-22",
+          "quote": "In November 2026, the value was USD 38.5M and the volume was 96,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0044",
+          "paragraph_ref": null,
+          "row_id": "ORV-0044#R5",
+          "pub_date": "2027-01-22",
+          "quote": "In November 2026, the value was USD 26.5M and the volume was 67,000 tonnes."
+        }
+      ],
+      "contradicting_citations": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P3",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Midgard millers have increased purchases from Vanir and moved more grain by rail through Ravik."
+        },
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-22",
+          "quote": "Vanir wheat reached Midgard in larger volumes from November, mostly on short-term contracts."
+        }
+      ],
+      "concession_id": "C-A1-L3"
+    },
+    {
+      "ruling_id": "R-L1-1",
+      "run_number": 1,
+      "claim_id": "L1-1",
+      "verdict": "conceded",
+      "claim_type": "inference",
+      "rationale": "Loki conceded attack A1-T1. The December-only low bound (-50.9, CALC-4f4dbc28c8da5691, not in my verified records) understates a persistent shortfall that ran every month from September to December. The revised range of 104.2-216.2 USD M rests on verified calcs CALC-54746bbc2bce35cc and CALC-2471c1be02c2601c. It now matches T1-2's gross route decline and remains exposure before netting Vanir flows.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0009",
+          "paragraph_ref": null,
+          "row_id": "ORV-0009#R6",
+          "pub_date": "2027-01-19",
+          "quote": "In December 2026, the value was USD 34.1M and the volume was 83,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Millers say the substitute supply is reliable enough for current demand but more expensive to handle."
+        }
+      ],
+      "contradicting_citations": [
+        {
+          "doc_id": "ORV-0009",
+          "paragraph_ref": null,
+          "row_id": "ORV-0009#R3",
+          "pub_date": "2027-01-19",
+          "quote": "In September 2026, the value was USD 38.2M and the volume was 93,000 tonnes."
+        }
+      ],
+      "concession_id": "C-A1-T1"
+    },
+    {
+      "ruling_id": "R-L1-2",
+      "run_number": 1,
+      "claim_id": "L1-2",
+      "verdict": "established",
+      "claim_type": "inference",
+      "rationale": "I reclassify this as an inference, because the dollar changes are computed rather than directly stated. The tier-1 ministry paragraph P14 directly states that Vanir wheat reached Midgard in larger volumes from November. Attack A1-T2 (the rise was late, partial and costly) is consistent with the claim's own wording that it offsets only a small part of the decline, and Loki defended on that basis. The qualitative point is upheld. The +18.6 and +8.8 USD M figures are not in my verified calc records and will not be used until confirmed by trade_calc.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-22",
+          "quote": "Vanir wheat reached Midgard in larger volumes from November, mostly on short-term contracts."
+        },
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": null,
+          "row_id": "ORV-0027#R5",
+          "pub_date": "2027-01-22",
+          "quote": "In November 2026, the value was USD 38.5M and the volume was 96,000 tonnes."
+        }
+      ],
+      "contradicting_citations": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "more expensive to handle"
+        }
+      ],
+      "concession_id": null
+    },
+    {
+      "ruling_id": "R-L1-3",
+      "run_number": 1,
+      "claim_id": "L1-3",
+      "verdict": "contested",
+      "claim_type": "inference",
+      "rationale": "The high bound (-126.4, CALC-8b68f9523d386676) is verified. The December-only low bound (-52.9, CALC-0287015df6718f88) is not among my verified records. It suffers the same single-month weakness Loki conceded for wheat in L1-1. The verified Nov-Dec run-rate of -105.7 (CALC-c4d8aa36b4090272) is the more defensible low. The statement that September 2026 was 'near normal' cites no September 2025 row, so it is unsupported as cited. The point about missing substitute data is valid. The range is also corridor-plus-strike.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R6",
+          "pub_date": "2027-01-21",
+          "quote": "In December 2026, the value was USD 31.5M and the volume was 74,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R3",
+          "pub_date": "2027-01-21",
+          "quote": "In September 2026, the value was USD 80.2M and the volume was 211,000 tonnes."
+        }
+      ],
+      "contradicting_citations": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R5",
+          "pub_date": "2027-01-21",
+          "quote": "In November 2026, the value was USD 31.9M and the volume was 75,000 tonnes."
+        }
+      ],
+      "concession_id": null
+    },
+    {
+      "ruling_id": "R-L1-4",
+      "run_number": 1,
+      "claim_id": "L1-4",
+      "verdict": "contested",
+      "claim_type": "inference",
+      "rationale": "The cited rows exist. The December-only low bound (-22.8, CALC-85798617098204eb) is not among my verified records and has the same single-month weakness conceded in L1-1. The verified Nov-Dec figure of -46.5 (CALC-9b914fa4d6443634) is the better low. The high bound (-96.0, CALC-c1d6da086b7f9f04) is unverified by me. The documented partial Vanir offset to Tolan is plausible, but its +14.4 figure is also unverified. The data are tier 2, and the dock strike confounds attribution.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": null,
+          "row_id": "ORV-0046#R6",
+          "pub_date": "2027-01-20",
+          "quote": "In December 2026, the value was USD 15.0M and the volume was 38,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0044",
+          "paragraph_ref": null,
+          "row_id": "ORV-0044#R6",
+          "pub_date": "2027-01-22",
+          "quote": "In December 2026, the value was USD 25.7M and the volume was 65,000 tonnes."
+        }
+      ],
+      "contradicting_citations": [],
+      "concession_id": null
+    },
+    {
+      "ruling_id": "R-L1-5",
+      "run_number": 1,
+      "claim_id": "L1-5",
+      "verdict": "conceded",
+      "claim_type": "inference",
+      "rationale": "Loki conceded attack A1-T3: the cited ORV-0022/P3 passage concerns Midgard millers only and cannot support a statement about Tolan maize. The revised pure evidence-gap statement agrees with T1-5. With no Orvan to Tolan or Vanir to Tolan maize table and no Ravik data for Tolan, Tolan maize exposure is unknown, not zero.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P1",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "Route: Orvan to Midgard, maize."
+        }
+      ],
+      "contradicting_citations": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P3",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Midgard millers have increased purchases from Vanir and moved more grain by rail through Ravik."
+        }
+      ],
+      "concession_id": "C-A1-T3"
+    }
+  ],
+  "odin_ranges": [
+    {
+      "estimate_id": "E-odin-Midgard-wheat",
+      "agent": "odin",
+      "country": "Midgard",
+      "sector": "wheat",
+      "metric": "Gross decline in Orvan to Midgard wheat import value versus the same months a year earlier",
+      "metric_definition": "Absolute year-on-year fall in the value of wheat imports on the Orvan to Midgard route. Low bound is Nov-Dec 2026 vs Nov-Dec 2025; high bound is Sep-Dec 2026 vs Sep-Dec 2025. This is trade value that moved off the Orvan route, not economic loss or unmet import need. Vanir and Ravik substitute flows are not netted.",
+      "unit": "USD M",
+      "currency": "USD",
+      "period": "Sep-Dec 2026 (low: Nov-Dec 2026)",
+      "denominator": "n/a",
+      "low": 104.2,
+      "high": 216.2,
+      "insufficient_evidence": false,
+      "evidence": [],
+      "trade_row_refs": [
+        "ORV-0009#R10",
+        "ORV-0009#R11",
+        "ORV-0009#R12",
+        "ORV-0009#R3",
+        "ORV-0009#R4",
+        "ORV-0009#R5",
+        "ORV-0009#R6",
+        "ORV-0009#R9"
+      ],
+      "calculation_ids": [
+        "CALC-54746bbc2bce35cc",
+        "CALC-2471c1be02c2601c"
+      ],
+      "assumptions": [
+        "Same-month prior-year value is the baseline for exposed trade.",
+        "The decline is gross on one route and combines the corridor expiry with the dock strike from 14 September 2026 (ORV-0032); the corridor-only share cannot be isolated.",
+        "Substitute flows (Vanir wheat, Ravik rail) are not netted, so this overstates net exposure by an unknown amount."
+      ],
+      "missing_data": [
+        "Ravik Rail Link wheat volumes to Midgard.",
+        "A verified trade_calc of the Vanir to Midgard wheat year-on-year change, needed to net the documented substitute flow.",
+        "Total Midgard wheat imports from all origins, needed for an import-share measure.",
+        "Strike end date and any post-December recovery; no January 2027 data.",
+        "Ministry full port return based on loadings (ORV-0022 says it was still due)."
+      ],
+      "confidence": "medium",
+      "uncertainty_note": "Both bounds rest on verified calcs over tier-1 ministry rows (ORV-0009). Loki conceded the December-only low under A1-T1, so both advocates now agree on the Nov-Dec run-rate as the low and Sep-Dec as the high. Thor conceded under A1-L1 that this is a gross route decline. The tier-1 ministry note (ORV-0027/P14) documents a partial Vanir substitute flow from November, and ORV-0022/P5 says millers find it reliable enough for current demand. Confidence is medium, not high, because of the strike confound and the unnetted substitution."
+    },
+    {
+      "estimate_id": "E-odin-Midgard-maize",
+      "agent": "odin",
+      "country": "Midgard",
+      "sector": "maize",
+      "metric": "Gross decline in Orvan to Midgard maize import value versus the same months a year earlier",
+      "metric_definition": "Absolute year-on-year fall in the value of maize imports on the Orvan to Midgard route. Low bound is Nov-Dec 2026 vs Nov-Dec 2025; high bound is Oct-Dec 2026 vs Oct-Dec 2025. September is excluded because delayed delivery terms held flows up (ORV-0030/P14). The figure combines corridor and strike effects and is gross of any substitution.",
+      "unit": "USD M",
+      "currency": "USD",
+      "period": "Oct-Dec 2026 (low: Nov-Dec 2026)",
+      "denominator": "n/a",
+      "low": 105.7,
+      "high": 126.4,
+      "insufficient_evidence": false,
+      "evidence": [],
+      "trade_row_refs": [
+        "ORV-0030#R10",
+        "ORV-0030#R11",
+        "ORV-0030#R12",
+        "ORV-0030#R4",
+        "ORV-0030#R5",
+        "ORV-0030#R6"
+      ],
+      "calculation_ids": [
+        "CALC-c4d8aa36b4090272",
+        "CALC-8b68f9523d386676"
+      ],
+      "assumptions": [
+        "Same-month prior-year value is the baseline.",
+        "The lagged decline reflects delayed delivery terms, as stated by the ministry (ORV-0030/P14).",
+        "The decline is corridor-plus-strike; no recovery is assumed or ruled out.",
+        "No substitute maize flows are netted, because none are measured."
+      ],
+      "missing_data": [
+        "Vanir to Midgard maize trade table.",
+        "Ravik Rail Link maize volumes to Midgard.",
+        "Separation of the corridor and dock-strike effects, and the strike end date.",
+        "Total Midgard maize imports from all origins.",
+        "January 2027 data and the ministry's loadings-based port return."
+      ],
+      "confidence": "medium",
+      "uncertainty_note": "Both bounds are verified calcs over tier-1 ministry rows (ORV-0030). T1-3 is established and survived A1-L2 by labelling the range corridor-plus-strike. I reject L1-3's December-only low as a single-month understatement; its Oct-Dec high equals mine. No maize substitute data exist, so net exposure cannot be estimated, and gross may overstate the corridor-specific effect."
+    }
+  ],
+  "insufficient": [
+    {
+      "country": "Tolan",
+      "sector": "wheat",
+      "metric": "Gross decline in Orvan to Tolan wheat import value versus the same months a year earlier",
+      "missing_data": [
+        "Verification of CALC-c1d6da086b7f9f04 (Sep-Dec 2026 change), cited by both advocates but not in my verified records; it is needed for the high bound.",
+        "A verified calc of the Vanir to Tolan wheat year-on-year change.",
+        "Ravik Rail Link volumes to Tolan.",
+        "Total Tolan wheat imports from all origins.",
+        "A tier-1 source for Orvan to Tolan wheat; ORV-0046 is tier 2."
+      ],
+      "rationale": "T1-4 is established on tier-2 Harbour Review rows, which show September 2026 at 17.0 versus 43.4 USD M a year earlier, so the drop was immediate. The Nov-Dec decline of 46.5 USD M is verified and serves as a floor. The full range is marked insufficient until the Sep-Dec high-bound calc is verified. L1-4's December-only low is not used.",
+      "code_issues": []
+    },
+    {
+      "country": "Tolan",
+      "sector": "maize",
+      "metric": "Change in Orvan to Tolan maize import value versus the same months a year earlier",
+      "missing_data": [
+        "Orvan to Tolan maize trade table.",
+        "Vanir to Tolan maize trade table.",
+        "Ravik Rail Link maize volumes to Tolan.",
+        "Any document on Tolan maize stocks or alternative suppliers; Loki's search returned none."
+      ],
+      "rationale": "T1-5 is established and L1-5 is conceded into the same pure evidence-gap statement. The only maize table retrieved is Orvan to Midgard (ORV-0030/P1). Tolan maize exposure is unknown, not zero and not low. ORV-0017/P5 indicates Tolan buyers are rolling contracts month by month, which suggests some exposure but does not quantify it.",
+      "code_issues": []
+    }
+  ],
+  "sufficient": false,
+  "sufficiency_reason": "The evidence firmly establishes the event: the corridor expired on 10 September 2026 without renewal (tier-1 ORV-0016, corroborated by tier-2 sources, false renewal report corrected by ORV-0013). It also supports gross route-decline ranges for Midgard wheat and Midgard maize from tier-1 ministry rows. It is not enough for a reliable full briefing on net exposure. Tolan maize cannot be quantified at all. The Tolan wheat high bound rests on an unverified calc and tier-2 data. Substitute flows (Vanir, Ravik rail) are only partly measured and not verified by calc, so net exposure cannot be computed. The overlapping dock strike prevents attributing the declines to the corridor alone. Total imports by origin are missing, so import shares cannot be computed.",
+  "missing": [
+    {
+      "description": "Orvan to Tolan and Vanir to Tolan maize trade tables",
+      "why_needed": "Without them Tolan maize exposure is entirely unquantified, so half of the requested maize answer is missing.",
+      "countries": [
+        "Tolan"
+      ],
+      "sectors": [
+        "maize"
+      ],
+      "source_types": [
+        "trade_note",
+        "customs data"
+      ]
+    },
+    {
+      "description": "Ravik Rail Link grain volumes delivered to Midgard and Tolan",
+      "why_needed": "Rail substitution is documented (ORV-0022/P3) but unmeasured. The substitution offset is therefore only a floor and net exposure cannot be computed.",
+      "countries": [
+        "Midgard",
+        "Tolan"
+      ],
+      "sectors": [
+        "wheat",
+        "maize"
+      ],
+      "source_types": [
+        "rail operator statistics",
+        "ministry trade data"
+      ]
+    },
+    {
+      "description": "Verified trade_calc records for the Sep-Dec 2026 Orvan to Tolan wheat change (CALC-c1d6da086b7f9f04) and the Vanir to Midgard and Vanir to Tolan wheat year-on-year changes",
+      "why_needed": "These are needed for a Tolan wheat high bound and for netting documented Vanir substitution against the Orvan declines.",
+      "countries": [
+        "Midgard",
+        "Tolan"
+      ],
+      "sectors": [
+        "wheat"
+      ],
+      "source_types": [
+        "trade_calc"
+      ]
+    },
+    {
+      "description": "Dock strike end date and Orvan port loadings after December 2026, including the ministry's loadings-based full port return",
+      "why_needed": "The strike (ORV-0032) overlaps the decline. Without knowing when it ended, or whether loadings recovered, the corridor-only share and its persistence cannot be judged.",
+      "countries": [
+        "Orvan",
+        "Midgard",
+        "Tolan"
+      ],
+      "sectors": [
+        "wheat",
+        "maize"
+      ],
+      "source_types": [
+        "ministry port return",
+        "official notice",
+        "news"
+      ]
+    },
+    {
+      "description": "Total wheat and maize imports from all origins for Midgard and Tolan",
+      "why_needed": "Needed to express exposure as an import share and to judge whether substitution covered demand.",
+      "countries": [
+        "Midgard",
+        "Tolan"
+      ],
+      "sectors": [
+        "wheat",
+        "maize"
+      ],
+      "source_types": [
+        "customs data",
+        "ministry trade statistics"
+      ]
+    },
+    {
+      "description": "Vanir to Midgard maize trade table",
+      "why_needed": "Without it, no maize substitution offset can be assessed for Midgard.",
+      "countries": [
+        "Midgard"
+      ],
+      "sectors": [
+        "maize"
+      ],
+      "source_types": [
+        "trade_note"
+      ]
+    }
+  ],
+  "prechecks": {
+    "T1-1": {
+      "claim_id": "T1-1",
+      "valid_citations": 1,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "T1-2": {
+      "claim_id": "T1-2",
+      "valid_citations": 3,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "T1-3": {
+      "claim_id": "T1-3",
+      "valid_citations": 3,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "T1-4": {
+      "claim_id": "T1-4",
+      "valid_citations": 3,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "T1-5": {
+      "claim_id": "T1-5",
+      "valid_citations": 1,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "T1-6": {
+      "claim_id": "T1-6",
+      "valid_citations": 2,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "L1-1": {
+      "claim_id": "L1-1",
+      "valid_citations": 3,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "L1-2": {
+      "claim_id": "L1-2",
+      "valid_citations": 2,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "L1-3": {
+      "claim_id": "L1-3",
+      "valid_citations": 2,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "L1-4": {
+      "claim_id": "L1-4",
+      "valid_citations": 2,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "L1-5": {
+      "claim_id": "L1-5",
+      "valid_citations": 1,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    }
+  },
+  "guards": [],
+  "unruled": []
+}

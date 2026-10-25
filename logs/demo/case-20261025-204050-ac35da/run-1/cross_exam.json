@@ -1,0 +1,248 @@
+{
+  "attacks": [
+    {
+      "attack_id": "A1-T1",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "thor",
+      "target_claim_id": "L1-3",
+      "target_agent": "loki",
+      "objection": "Loki overstates the mitigating effect of Vanir wheat exports to Tolan, ignoring explicit reporting that Vanir replacement volumes were far smaller than the lost Orvan sea volumes and caused severe port congestion.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-20",
+          "quote": "Tolan buyers replaced part of the lost volume with wheat from Vanir, but the replacement was smaller than the gap."
+        },
+        {
+          "doc_id": "ORV-0044",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-22",
+          "quote": "The Vanir gain is real but small, and it does not replace the Orvan sea volume."
+        }
+      ],
+      "evidence_gap": "Loki provides no net import data or quantitative evidence showing Vanir wheat shipments fully offset or substantially reduced Tolan's direct loss of Orvan wheat.",
+      "why_it_matters": "Claiming effective mitigation without showing that substitute volumes matched the Orvan deficit understates Tolan's actual net exposure."
+    },
+    {
+      "attack_id": "A1-T2",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "thor",
+      "target_claim_id": "L1-1",
+      "target_agent": "loki",
+      "objection": "Loki uses potential Vanir supply to minimize Midgard's wheat exposure, despite evidence explicitly stating Vanir sales are small relative to Orvan's sea trade and carry higher handling costs.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0024",
+          "paragraph_ref": "P6",
+          "row_id": null,
+          "pub_date": "2026-09-12",
+          "quote": "The amounts are small compared with Orvan's sea trade."
+        },
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Millers say the substitute supply is reliable enough for current demand but more expensive to handle."
+        }
+      ],
+      "evidence_gap": "Loki lacks trade data demonstrating that Vanir wheat exports to Midgard significantly bridged the USD 156.5M to USD 216.2M YoY import shortfall from Orvan.",
+      "why_it_matters": "Assuming small, higher-cost alternative flows neutralize corridor disruption leads to an unrealistically low assessment of Midgard's import exposure."
+    },
+    {
+      "attack_id": "A1-T3",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "thor",
+      "target_claim_id": "L1-2",
+      "target_agent": "loki",
+      "objection": "Loki misinterprets a temporary delivery lag as evidence of limited exposure, ignoring the steep drop in Midgard maize imports that occurred immediately after delayed contracts cleared in Q4 2026.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P6",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "In November 2026, the value was USD 31.9M and the volume was 75,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "The October volume held up longer than the wheat routes because a share of the maize trade was on delayed delivery terms."
+        }
+      ],
+      "evidence_gap": "Loki provides no evidence that delayed delivery terms offered structural buffering rather than merely postponing the onset of a major import contraction.",
+      "why_it_matters": "Contractual delivery delays obscure the immediate post-expiration impact; once cleared, import values fell by over 60% YoY in November and December, confirming severe exposure."
+    },
+    {
+      "attack_id": "A1-L1",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "loki",
+      "target_claim_id": "T1-1",
+      "target_agent": "thor",
+      "objection": "Thor's claim treats gross bilateral drops from Orvan as equivalent to total trade exposure, ignoring documented substitute flows from Vanir and rail routes.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Orvan's share of Midgard's grain imports has fallen, while Vanir and rail deliveries have taken part of the gap."
+        }
+      ],
+      "evidence_gap": null,
+      "why_it_matters": "By relying strictly on bilateral Orvan sea loading totals, Thor overstates net economic exposure by omitting active substitution mechanisms."
+    },
+    {
+      "attack_id": "A1-L2",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "loki",
+      "target_claim_id": "T1-2",
+      "target_agent": "thor",
+      "objection": "Thor's estimate overstates post-expiration exposure by including September 2026 in the post-expiration period even though maize shipments remained steady that month due to delayed delivery terms.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "The October volume held up longer than the wheat routes because a share of the maize trade was on delayed delivery terms."
+        }
+      ],
+      "evidence_gap": null,
+      "why_it_matters": "Including pre-disruption/cushioned contract periods misattributes contract-hedged deliveries as active losses, overestimating net exposure."
+    },
+    {
+      "attack_id": "A1-L3",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "loki",
+      "target_claim_id": "T1-3",
+      "target_agent": "thor",
+      "objection": "Thor calculates Tolan's wheat exposure strictly from Orvan loss figures without subtracting alternative supplies, directly contradicting documented replacement shipments from Vanir.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-20",
+          "quote": "Tolan buyers replaced part of the lost volume with wheat from Vanir, but the replacement was smaller than the gap."
+        }
+      ],
+      "evidence_gap": null,
+      "why_it_matters": "Ignoring confirmed substitute flows exaggerates net trade deficit and net exposure."
+    }
+  ],
+  "defenses": [
+    {
+      "defense_id": "D-A1-T2",
+      "run_number": 1,
+      "defender": "loki",
+      "attack_id": "A1-T2",
+      "claim_id": "L1-1",
+      "argument": "New evidence confirms that Vanir wheat shipments to Midgard increased in volume in late 2026 via short-term contracts, actively filling part of the import gap alongside rail routes and providing reliable substitute supply.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Orvan's share of Midgard's grain imports has fallen, while Vanir and rail deliveries have taken part of the gap."
+        },
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-22",
+          "quote": "Vanir wheat reached Midgard in larger volumes from November, mostly on short-term contracts."
+        }
+      ]
+    },
+    {
+      "defense_id": "D-A1-L1",
+      "run_number": 1,
+      "defender": "thor",
+      "attack_id": "A1-L1",
+      "claim_id": "T1-1",
+      "argument": "While alternative supplies from Vanir and rail routes exist, official trade reviews confirm that substitute flows are small compared with Orvan's sea trade and cannot close the gap, leaving Midgard's primary sea import exposure high.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0024",
+          "paragraph_ref": "P6",
+          "row_id": null,
+          "pub_date": "2026-09-12",
+          "quote": "Vanir also sells wheat, and some of that supply can reach Tolan and Midgard. The amounts are small compared with Orvan's sea trade."
+        }
+      ]
+    },
+    {
+      "defense_id": "D-A1-L2",
+      "run_number": 1,
+      "defender": "thor",
+      "attack_id": "A1-L2",
+      "claim_id": "T1-2",
+      "argument": "The low bound of the exposure estimate strictly incorporates November and December 2026 to reflect the period after delayed delivery terms expired, while official notes acknowledge October volume held up temporarily under those terms.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "The October volume held up longer than the wheat routes because a share of the maize trade was on delayed delivery terms."
+        }
+      ]
+    },
+    {
+      "defense_id": "D-A1-L3",
+      "run_number": 1,
+      "defender": "thor",
+      "attack_id": "A1-L3",
+      "claim_id": "T1-3",
+      "argument": "Although Tolan buyers secured replacement wheat from Vanir, official trade documents confirm that the substitute volume was smaller than the gap created by the corridor expiration, leaving high net exposure.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-20",
+          "quote": "Tolan buyers replaced part of the lost volume with wheat from Vanir, but the replacement was smaller than the gap."
+        }
+      ]
+    }
+  ],
+  "concessions": [
+    {
+      "concession_id": "C-A1-T1",
+      "run_number": 1,
+      "agent": "loki",
+      "claim_id": "L1-3",
+      "attack_id": "A1-T1",
+      "reason": "We concede that while Vanir provided replacement wheat shipments, documented sources confirm these volumes were smaller than the lost Orvan sea trade and could not fully eliminate Tolan's exposure gap.",
+      "partial": true,
+      "revised_claim_text": "Tolan wheat imports saw post-expiration declines from Orvan, and while alternative shipments from Vanir provided partial substitution, they were insufficient to fully offset the import gap."
+    },
+    {
+      "concession_id": "C-A1-T3",
+      "run_number": 1,
+      "agent": "loki",
+      "claim_id": "L1-2",
+      "attack_id": "A1-T3",
+      "reason": "We concede that delayed delivery terms provided only temporary buffering in October 2026, and that Midgard maize imports from Orvan subsequently suffered steep YoY contractions in November and December 2026 once those contracts cleared.",
+      "partial": true,
+      "revised_claim_text": "Midgard's maize import exposure following the Orvan corridor expiration was delayed into October 2026 by existing delivery terms, after which imports contracted sharply in November and December 2026."
+    }
+  ],
+  "invalid_defenses": [],
+  "unanswered": [],
+  "failures": [],
+  "rejected_attacks": []
+}

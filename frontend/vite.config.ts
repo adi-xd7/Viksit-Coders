@@ -1,28 +1,19 @@
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
-// https://vite.dev/config/
+// The dev server proxies the API (default http://127.0.0.1:8000; override with RAGNAROK_API).
+const api = process.env.RAGNAROK_API ?? 'http://127.0.0.1:8000';
+const proxied = ['/cases', '/docs', '/trade', '/feed', '/ingest', '/api', '/health'];
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: {
     port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://127.0.0.1:8000',
-        changeOrigin: true,
-      },
-      '/health': {
-        target: 'http://127.0.0.1:8000',
-        changeOrigin: true,
-      },
-      '/cases': {
-        target: 'http://127.0.0.1:8000',
-        changeOrigin: true,
-      },
-    },
+    proxy: Object.fromEntries(proxied.map((p) => [p, { target: api, changeOrigin: true }])),
   },
   test: {
     globals: true,
     environment: 'jsdom',
   },
-})
+});

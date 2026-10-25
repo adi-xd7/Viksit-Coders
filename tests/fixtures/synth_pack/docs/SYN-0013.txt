@@ -1,0 +1,27 @@
+DOC_ID: SYN-0013
+EVENT_ID: EVZ
+TITLE: Trade table: Gamma to Alpha, fuel
+SOURCE_NAME: Test Ministry
+SOURCE_TYPE: trade_table
+RELIABILITY: 1
+PUB_DATE: 2030-07-21
+PUB_TIME: 12:00
+COUNTRY: Alpha
+SECTOR: Fuel
+LANGUAGE: en
+---
+TABLE_ID: TT-SYN-01
+COUNTRY_PAIR: Gamma -> Alpha
+SECTOR: fuel
+UNIT: USD M; tonnes
+PERIOD: 2030-01..2030-07
+EVENT_ID: EVZ
+
+ROW  PERIOD   VALUE_USD_M  VOLUME_TONNES
+1    2030-01  12.5         30,000
+2    2030-02               29,500
+3    2030-03  1x.0         28,000
+4    2030-04  11.0         27,000
+4    2030-04  11.0         27,000
+5    2030-05  10.5         26,000
+6    2030-06  10.1

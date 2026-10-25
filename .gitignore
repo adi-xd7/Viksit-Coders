@@ -1,3 +1,8 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
 # Python
 __pycache__/
 *.py[cod]
@@ -30,12 +35,15 @@ ENV/
 .pytest_cache/
 .coverage
 htmlcov/
+.mypy_cache/
+.ruff_cache/
 
 # IDE & OS
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
+*.tsbuildinfo
 
 # Loki local memory data (if written to disk)
 *.log
@@ -45,9 +53,23 @@ backend/app/data/
 03_Ragnarok Trial of the Nine Realms/
 
 # Node & Frontend
+node_modules/
 frontend/node_modules/
 frontend/dist/
 frontend/.env
+
+# Generated data / indexes
+data/index/
+data/processed/
+
+# Logs and databases (demo logs are kept)
+logs/*.db
+logs/*.db-*
+logs/*.sqlite
+logs/**/*.jsonl
+logs/cases/
+!logs/demo/
+!logs/demo/**
 
 # UI UX Pro Max CLI local files
 .claude/

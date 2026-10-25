@@ -1,0 +1,132 @@
+{
+  "heimdall": [
+    {
+      "memory_id": "M-heimdall-4acb6828ab",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Quantitative monthly data for alternative <place> exports and <place> rail loadings to <place> and <place>.\" (source types: official_trade_table, customs_data). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-204050-ac35da run 1: Quantitative monthly data for alternative Vanir exports and Ravik rail loadings to Midgard and Tolan. | why: Required to calculate net economic loss by accounting for substitution effects.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T20:46:23.612330Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T20:46:23.612330Z"
+    },
+    {
+      "memory_id": "M-heimdall-45565cfd51",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Complete monthly trade volume and value series for <place> maize imports from <place>.\" (source types: official_trade_table, trade_note). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-204050-ac35da run 1: Complete monthly trade volume and value series for Tolan maize imports from Orvan. | why: Required to calculate trade exposure range for Tolan maize imports following corridor expiration.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T20:46:23.608050Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T20:46:23.608050Z"
+    },
+    {
+      "memory_id": "M-heimdall-290d689b03",
+      "agent": "heimdall",
+      "lesson": "Corrections, retractions or contradicting reports changed the record of the event. Search for correction and retraction notices and official notices before setting the event status.",
+      "context": "case case-20261025-111938-c5c54f: 1 correction note(s)",
+      "case_scope": null,
+      "confidence": 0.65,
+      "created_at": "2026-10-25T10:22:03.401088Z",
+      "kind": "corrections_matter",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 3,
+      "source_case": "case-20261025-111938-c5c54f",
+      "source_run": 1,
+      "updated_at": "2026-10-25T11:21:18.282961Z"
+    }
+  ],
+  "loki": [
+    {
+      "memory_id": "M-loki-773fa80751",
+      "agent": "loki",
+      "lesson": "I conceded a claim (citing shipping_update, trade_note) after the opponent showed counter-evidence from trade_note: \"Loki provides no net import data or quantitative evidence showing <place> wheat shipments fully offset or substantially reduced <place>'s di...\". Before making this kind of claim, look for that evidence myself and state the limitation.",
+      "context": "case case-20261025-204050-ac35da run 1: L1-3 conceded - Loki conceded (C-A1-T1) that while alternative Vanir wheat shipments existed, they were smaller than the lost Orvan sea trade and insufficient to eliminate Tolan's exposure gap.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T20:46:23.595051Z",
+      "kind": "conceded_after_attack",
+      "stages": [
+        "brief",
+        "cross_exam",
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T20:46:23.595051Z"
+    },
+    {
+      "memory_id": "M-loki-3de412ab03",
+      "agent": "loki",
+      "lesson": "I conceded a claim (citing trade_note) after the opponent showed counter-evidence from trade_note: \"Loki provides no evidence that delayed delivery terms offered structural buffering rather than merely postponing the onset of a major import...\". Before making this kind of claim, look for that evidence myself and state the limitation.",
+      "context": "case case-20261025-204050-ac35da run 1: L1-2 conceded - Loki conceded (C-A1-T3) that delayed delivery terms provided only temporary buffering in October 2026, and that Midgard maize imports contracted sharply in November and December 2026.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T20:46:23.591052Z",
+      "kind": "conceded_after_attack",
+      "stages": [
+        "brief",
+        "cross_exam",
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T20:46:23.591052Z"
+    }
+  ],
+  "thor": [
+    {
+      "memory_id": "M-thor-c562b4cc41",
+      "agent": "thor",
+      "lesson": "An estimate of the metric \"YoY import value loss\" (USD M) computed with trade_calc from trade_note evidence (tier 2) was established; this metric definition held up.",
+      "context": "case case-20261025-204050-ac35da run 1: T1-3 established - Trade notes in ORV-0046 demonstrate immediate and persistent YoY drops in Tolan wheat imports from Orvan. Loki conceded (C-A1-T1) that alternative shipments from Vanir were smaller than the trade gap and could not offset the exposure.",
+      "case_scope": null,
+      "confidence": 0.55,
+      "created_at": "2026-10-25T20:46:23.583045Z",
+      "kind": "established_estimate",
+      "stages": [
+        "brief"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T20:46:23.583045Z"
+    },
+    {
+      "memory_id": "M-thor-bab01c73da",
+      "agent": "thor",
+      "lesson": "An estimate of the metric \"YoY import value loss\" (USD M) computed with trade_calc from trade_note evidence (tier 1) was established; this metric definition held up.",
+      "context": "case case-20261025-204050-ac35da run 1: T1-2 established - Supported by official trade records in ORV-0030 showing sharp declines in November and December 2026 after delayed delivery terms ended. Loki formally conceded (C-A1-T3) that delayed delivery terms provided only temporary buffering in October 2026.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T20:46:23.574051Z",
+      "kind": "established_estimate",
+      "stages": [
+        "brief"
+      ],
+      "times_seen": 2,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T20:46:23.579045Z"
+    }
+  ],
+  "odin": []
+}

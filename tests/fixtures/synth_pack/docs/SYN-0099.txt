@@ -1,0 +1,15 @@
+DOC_ID: SYN-0099
+EVENT_ID: EVZ
+TITLE: Late addition
+SOURCE_NAME: Test Wire
+SOURCE_TYPE: news
+RELIABILITY: 2
+PUB_DATE: 2030-03-18
+PUB_TIME: 09:30
+COUNTRY: Alpha
+SECTOR: Grain
+LANGUAGE: en
+---
+Late addition
+
+[P1] A file the manifest does not list.

@@ -1,0 +1,37 @@
+{
+  "sendback_id": "SB-1",
+  "run_number": 1,
+  "reason": "Official trade tables for Tolan maize imports are missing completely from the record, preventing direct numerical estimation for that pair. Additionally, quantitative baseline and post-expiration series for alternative rail routes and Vanir grain shipments are incomplete.",
+  "missing": [
+    {
+      "description": "Complete monthly trade volume and value series for Tolan maize imports from Orvan.",
+      "why_needed": "Required to calculate trade exposure range for Tolan maize imports following corridor expiration.",
+      "countries": [
+        "Tolan"
+      ],
+      "sectors": [
+        "maize"
+      ],
+      "source_types": [
+        "official_trade_table",
+        "trade_note"
+      ]
+    },
+    {
+      "description": "Quantitative monthly data for alternative Vanir exports and Ravik rail loadings to Midgard and Tolan.",
+      "why_needed": "Required to calculate net economic loss by accounting for substitution effects.",
+      "countries": [
+        "Midgard",
+        "Tolan"
+      ],
+      "sectors": [
+        "wheat",
+        "maize"
+      ],
+      "source_types": [
+        "official_trade_table",
+        "customs_data"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+DOC_ID: SYN-0018
+EVENT_ID: EVZ
+TITLE: Correction: Alpha grain loadings
+SOURCE_NAME: Test Wire
+SOURCE_TYPE: correction
+RELIABILITY: 2
+PUB_DATE: 2030-03-13
+PUB_TIME: 09:30
+COUNTRY: Alpha
+SECTOR: Grain
+LANGUAGE: en
+---
+Correction: Alpha grain loadings
+
+[P1] On 10 March we reported that grain loadings fell sharply after the lock closed.
+
+[P2] The fall was smaller than reported; loadings fell by about a fifth.

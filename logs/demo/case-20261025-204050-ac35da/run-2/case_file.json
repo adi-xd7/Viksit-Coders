@@ -1,0 +1,68 @@
+{
+  "case_id": "case-20261025-204050-ac35da",
+  "question": "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.",
+  "as_of": "2027-01-25",
+  "created_at": "2026-10-25T20:41:10.139087Z",
+  "countries": [
+    "Midgard",
+    "Tolan"
+  ],
+  "sectors": [
+    "wheat",
+    "maize"
+  ],
+  "related_countries": [
+    "Orvan",
+    "Asgard",
+    "Vanir"
+  ],
+  "commodities": [
+    "wheat",
+    "maize"
+  ],
+  "routes": [
+    "Orvan to Midgard",
+    "Orvan to Tolan"
+  ],
+  "candidate_event_ids": [
+    "ORV-CORRIDOR-EXPIRATION"
+  ],
+  "event_status": "established",
+  "event_verification_notes": "Official government notices and reliable trade sources confirm that the Corridor Agreement, signed on 10 September 2025 for a one-year period, expired on 10 September 2026 without a replacement agreement.",
+  "event_citations": [
+    {
+      "doc_id": "ORV-0002",
+      "paragraph_ref": "P2",
+      "row_id": null,
+      "pub_date": "2026-06-15",
+      "quote": "The agreement was signed on 10 September 2025 and ran for one year. It covered wheat and maize shipped by sea from Orvan Grain Port."
+    },
+    {
+      "doc_id": "ORV-0006",
+      "paragraph_ref": "P3",
+      "row_id": null,
+      "pub_date": "2026-10-08",
+      "quote": "Midgard buyers had expected the corridor agreement to be renewed. It expired on 10 September without a replacement."
+    }
+  ],
+  "evidence_doc_ids": [
+    "ORV-0002",
+    "ORV-0006",
+    "ORV-0009",
+    "ORV-0024",
+    "ORV-0030",
+    "ORV-0046"
+  ],
+  "trade_table_ids": [
+    "ORV-0009",
+    "ORV-0030",
+    "ORV-0046"
+  ],
+  "missing_data": [
+    "Complete monthly trade volume and value series for Tolan wheat and maize imports from Orvan.",
+    "Complete baseline and post-expiration trade data for Vanir alternative grain supply to Tolan and Midgard.",
+    "Specific elasticity and trade diversion parameters for calculating exact low and high range bounds for Tolan maize exposure."
+  ],
+  "corrections": [],
+  "run_number": 1
+}
