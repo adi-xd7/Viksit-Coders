@@ -73,7 +73,23 @@ class DamageKind(StrEnum):
     UNPARSEABLE = "unparseable"
     MISSING_HEADER = "missing_header"
     METADATA_CONFLICT = "metadata_conflict"
-    DUPLICATE = "duplicate"
+    DUPLICATE = "duplicate"  # exact duplicate of another document
+    POSSIBLE_DUPLICATE = "possible_duplicate"  # near-duplicate; never merged
+    HEADER_ONLY = "header_only"  # metadata header but no body text
+    MALFORMED = "malformed"  # broken structure, e.g. repeated or missing [Pn] markers
+    BAD_METADATA = "bad_metadata"  # unparseable date, tier out of range, ...
+    NOT_IN_MANIFEST = "not_in_manifest"
+    HASH_MISMATCH = "hash_mismatch"  # file differs from the pack's published checksum
+
+
+# Kinds that mean the content itself is damaged or unreliable to read. The other
+# kinds (duplicates, metadata conflicts, not in manifest) are notices: the
+# document is readable but needs care.
+DAMAGE_KINDS = frozenset({
+    DamageKind.EMPTY, DamageKind.TRUNCATED, DamageKind.BAD_ENCODING, DamageKind.UNPARSEABLE,
+    DamageKind.MISSING_HEADER, DamageKind.HEADER_ONLY, DamageKind.MALFORMED, DamageKind.BAD_METADATA,
+    DamageKind.HASH_MISMATCH,
+})
 
 
 class RelationType(StrEnum):
@@ -91,6 +107,7 @@ class RowStatus(StrEnum):
     BAD_NUMBER = "bad_number"
     DUPLICATE_ROW = "duplicate_row"
     TRUNCATED = "truncated"
+    MALFORMED = "malformed"  # unparseable period or row structure
     OUT_OF_WINDOW = "out_of_window"
 
 
@@ -158,7 +175,7 @@ class DocMeta(_Model):
     source_name: str
     source_type: str  # lower-case, open set (unseen packs may add types)
     reliability_tier: int | None = Field(default=None, ge=1, le=4)
-    pub_date: date
+    pub_date: date | None = None  # None only for unreadable files with no manifest entry; never passes an as_of gate
     pub_time: time | None = None
     country: str | None = None
     sector: str | None = None  # lower-case for filtering
@@ -181,6 +198,8 @@ class DocMeta(_Model):
     @field_validator("pub_date", mode="before")
     @classmethod
     def _strict_date(cls, v: Any) -> Any:
+        if isinstance(v, str) and v.strip() == "":
+            return None
         if isinstance(v, str) and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v.strip()):
             raise ValueError(f"pub_date must be YYYY-MM-DD, got {v!r}")
         return v
@@ -190,7 +209,9 @@ class DocMeta(_Model):
         return self.event_id is None
 
     @property
-    def published_at(self) -> datetime:
+    def published_at(self) -> datetime | None:
+        if self.pub_date is None:
+            return None
         return datetime.combine(self.pub_date, self.pub_time or time(0, 0))
 
     @classmethod
@@ -248,6 +269,7 @@ class InjectionFlag(_Model):
     start: int = Field(ge=0)
     end: int = Field(ge=0)
     pattern: str
+    field: str | None = None  # set when the span is in metadata (header key, file properties) rather than a paragraph
     excerpt: str
     severity: Literal["low", "medium", "high"] = "medium"
 
@@ -267,7 +289,8 @@ class DocRelation(_Model):
 class Paragraph(_Model):
     ref: str  # stable ref, e.g. "P3" (from the document's own [P3] marker when present)
     ordinal: int = Field(ge=0)
-    text: str
+    text: str  # original text (whitespace-normalised only)
+    evidence_text: str | None = None  # text shown to agents, flagged spans marked; None => same as text
 
     @field_validator("ref")
     @classmethod
@@ -285,9 +308,17 @@ class ParserInfo(_Model):
 
 
 class Document(_Model):
+    """A parsed document.
+
+    file_sha256 hashes the original bytes on disk (never modified). content_sha256
+    hashes the normalised body (paragraph texts, whitespace collapsed, case folded)
+    and is what exact-duplicate detection compares.
+    """
+
     meta: DocMeta
     paragraphs: list[Paragraph] = Field(default_factory=list)
-    file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    text: str = ""  # full decoded text, header included, as extracted
+    file_sha256: str | None = Field(pattern=r"^[0-9a-f]{64}$")  # None only when the file could not be read at all
     content_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     parser: ParserInfo
     pack_id: str
@@ -308,7 +339,11 @@ class Document(_Model):
 
     @property
     def is_damaged(self) -> bool:
-        return bool(self.damage_flags)
+        return any(f.kind in DAMAGE_KINDS for f in self.damage_flags)
+
+    @property
+    def is_exact_duplicate(self) -> bool:
+        return any(r.type == RelationType.DUPLICATE_OF for r in self.relations)
 
 
 # --------------------------------------------------------------------------- #
@@ -325,7 +360,7 @@ class TradeRow(_Model):
     origin: str
     destination: str
     sector: str
-    period: str  # YYYY-MM
+    period: str | None  # YYYY-MM; None only for malformed rows whose period could not be read
     value: float | None = None
     currency: str | None = None
     volume: float | None = None
@@ -334,11 +369,12 @@ class TradeRow(_Model):
     damage_reason: str | None = None
     raw_text: str
     provenance: str  # parser + layout, e.g. "prose-v1"
+    warnings: list[str] = Field(default_factory=list)  # suspicious but not invalid, e.g. value identical to previous month
 
     @field_validator("period")
     @classmethod
-    def _period(cls, v: str) -> str:
-        if not _PERIOD_RE.match(v):
+    def _period(cls, v: str | None) -> str | None:
+        if v is not None and not _PERIOD_RE.match(v):
             raise ValueError(f"period must be YYYY-MM, got {v!r}")
         return v
 
@@ -352,6 +388,8 @@ class TradeRow(_Model):
         if self.row_id != f"{self.table_id}#R{self.row_number}":
             raise ValueError("row_id must be '<table_id>#R<row_number>'")
         if self.status == RowStatus.VALID:
+            if self.period is None:
+                raise ValueError("a valid row must have a period")
             if self.value is None:
                 raise ValueError("a valid row must have a value (missing values are not valid rows)")
             if self.value < 0 or (self.volume is not None and self.volume < 0):

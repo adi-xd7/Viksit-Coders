@@ -1,0 +1,29 @@
+DOC_ID: SYN-0012
+EVENT_ID: EVZ
+TITLE: Trade note: Alpha to Beta, grain, January to June 2030
+SOURCE_NAME: Test Ministry
+SOURCE_TYPE: trade_note
+RELIABILITY: 1
+PUB_DATE: 2030-07-20
+PUB_TIME: 09:30
+COUNTRY: Beta
+SECTOR: Rice
+LANGUAGE: en
+---
+Trade note: Alpha to Beta, grain, January to June 2030
+
+[P1] Route: Alpha to Beta, grain.
+
+[P2] In January 2030, the value was USD 40.0M and the volume was 100,000 tonnes.
+
+[P3] In February 2030, the value was not reported and the volume was 98,000 tonnes.
+
+[P4] In March 2030, the value was USD 3O.5M and the volume was 80,000 tonnes.
+
+[P5] In April 2030, the value was USD 22.0M and the volume was 55,000 tonnes.
+
+[P6] In April 2030, the value was USD 22.0M and the volume was 55,000 tonnes.
+
+[P7] In May 2030, the value was USD 25.0M and the volume was 60,000 tonnes.
+
+[P8] In June 2030, the value was USD 26.0M and the vol

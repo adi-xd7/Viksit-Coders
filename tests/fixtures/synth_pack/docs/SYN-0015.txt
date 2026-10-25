@@ -1,0 +1,17 @@
+DOC_ID: SYN-0015
+EVENT_ID: EVZ
+TITLE: Café owners note higher bread prices
+SOURCE_NAME: Test Wire
+SOURCE_TYPE: news
+RELIABILITY: 3
+PUB_DATE: 2030-03-10
+PUB_TIME: 09:30
+COUNTRY: Alpha
+SECTOR: Grain
+LANGUAGE: en
+---
+Café owners note higher bread prices
+
+[P1] Café owners in Beta said bread prices rose – slightly – this month.
+
+[P2] They expect prices to settle by summer.

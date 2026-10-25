@@ -1,0 +1,19 @@
+DOC_ID: SYN-0010
+EVENT_ID: EVZ
+TITLE: Lock closure cuts Alpha grain loadings
+SOURCE_NAME: Test Wire
+SOURCE_TYPE: news
+RELIABILITY: 2
+PUB_DATE: 2030-03-11
+PUB_TIME: 09:30
+COUNTRY: Alpha
+SECTOR: Grain
+LANGUAGE: en
+---
+Lock closure cuts Alpha grain loadings
+
+[P1] The Alpha harbour authority said loadings of grain fell sharply in March after the river lock closed for repairs.
+
+[P2] Exporters moved part of the cargo to the rail line through Gamma, but the rail operator said its spare capacity was limited.
+
+[P3] Buyers in Beta reported that delivered p
