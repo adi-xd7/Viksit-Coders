@@ -139,3 +139,27 @@ python backend/run_loki.py --round 2
 ```bash
 python backend/run_loki.py --round 1 --json
 ```
+
+---
+
+## 7. Running the FastAPI API Server
+
+Start the interactive FastAPI server layer locally:
+```bash
+uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Interactive OpenAPI Swagger UI is available at:
+```text
+http://localhost:8000/docs
+```
+
+### Endpoints
+- `GET /health` — Service health and Runemark corpus status
+- `POST /cases` — Register and validate a disruption CaseFile
+- `GET /cases` — List registered cases and their analysis state
+- `GET /cases/{case_id}` — Retrieve CaseFile parameters
+- `POST /cases/{case_id}/debate` — Run multi-agent debate and bounded sufficiency feedback loop
+- `GET /cases/{case_id}/results` — Retrieve complete DebateResult deliverable
+- `GET /cases/{case_id}/briefing` — Retrieve or generate Executive Briefing
+- `GET /cases/{case_id}/trials` — Retrieve trial history audit trace

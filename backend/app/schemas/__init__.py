@@ -18,6 +18,14 @@ from backend.app.schemas.executive_briefing import (
     ExecutiveBriefing,
 )
 
+from backend.app.schemas.api import (
+    HealthResponse,
+    CaseCreateRequest,
+    DebateRunRequest,
+    CaseSummaryResponse,
+    ErrorResponse,
+)
+
 __all__ = [
     "EvidenceReference",
     "Document",
@@ -41,4 +49,9 @@ __all__ = [
     "ConcessionSummary",
     "CitedSourceProvenance",
     "ExecutiveBriefing",
+    "HealthResponse",
+    "CaseCreateRequest",
+    "DebateRunRequest",
+    "CaseSummaryResponse",
+    "ErrorResponse",
 ]
