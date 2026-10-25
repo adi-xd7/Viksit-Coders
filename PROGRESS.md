@@ -143,10 +143,22 @@ To maintain modularity and isolation:
   - [x] Integration with Phase 4 LangGraph trial state machine (`node_briefing`)
   - [x] Comprehensive test suite (`tests/test_briefing.py` - 18/18 passing, 94/94 total)
 
-- [ ] **Phase 6 — FastAPI Integration and Persistence**
-  - [ ] `POST /cases`, `GET /cases/{id}`, `GET /cases/{id}/stream` (SSE)
-  - [ ] SQLite case snapshot persistence
-  - [ ] API tests (`tests/test_api.py`)
+- [x] **Phase 6 — FastAPI Integration and Case Persistence**
+  - [x] FastAPI application entry point and factory (`backend/app.py`)
+  - [x] Request and response Pydantic schemas (`backend/api/schemas.py`)
+  - [x] Case and trial registry with concurrency locks (`backend/case_store.py`)
+  - [x] Service layer executing LangGraph trial and LogBook events (`backend/api/service.py`)
+  - [x] REST routes (`backend/api/routes.py`):
+    - [x] `GET /health`: Health check (process + database)
+    - [x] `POST /api/cases`: Create case with Pydantic validation
+    - [x] `GET /api/cases`: List cases with pagination
+    - [x] `GET /api/cases/{case_id}`: Retrieve case metadata
+    - [x] `POST /api/cases/{case_id}/trials`: Start/execute trial (synchronous or background, 409 on duplicate concurrent execution)
+    - [x] `GET /api/cases/{case_id}/trials/{trial_id}`: Sanitized trial status
+    - [x] `GET /api/cases/{case_id}/trials/{trial_id}/rulings`: Odin's final rulings
+    - [x] `GET /api/cases/{case_id}/trials/{trial_id}/briefing`: Phase 5 validated briefing (409 if pending research)
+  - [x] Error handling & security: sanitized errors (400, 404, 409, 422, 500), zero leakage of raw traces, API keys, or private memory
+  - [x] Comprehensive test suite (`tests/test_api.py` - 22/22 passing, 116/116 total)
 
 - [ ] **Phase 7 — Integration, Adversarial Testing, and Final Demonstration**
   - [ ] Synthetic pack generator and adversarial tests (injections, retractions, clock traps, missing data)
@@ -339,9 +351,84 @@ To maintain modularity and isolation:
   - Grounding Exclusivity: Briefings are strictly derived from Odin's binding rulings. Advocate claims provide statement context for ruled claims only; unadjudicated claims from Thor or Loki are never exposed in findings.
   - Substantive Claim Support Check: Citation support validation verifies substantive statement keywords and sector against paragraph text, preventing spurious matches based solely on country jurisdiction.
   - Zero Mental Math: All exposure totals and bounds in Section F reuse deterministic calculations from Phase 2; missing advocate estimates are recorded as `None` with assumptions rather than zero.
-  - Replay Preserved: Graph replay reuses already persisted briefing files without modifying file timestamps or duplicating assumptions.
 - **Dependencies for Phase 6**:
-  - FastAPI endpoints (`POST /cases`, `GET /cases/{id}`, `GET /cases/{id}/stream`), SSE streaming, and SQLite case persistence.
+  - Successfully integrated in Phase 6.
+
+---
+
+## Phase 6 Execution Notes — API Integration & Trial Exposure
+
+- **Objective**: Expose the existing Phase 1–5 judicial engine, LangGraph trial workflow, and validated briefings through a robust, production-grade FastAPI application.
+- **Components Created & Modified**:
+  - `backend/case_store.py`:
+    - SQLite and file-backed case and trial registry (`CaseStore`, `CaseRecord`, `TrialRecord`).
+    - Thread-safe concurrency control via `acquire_case_lock(case_id)` and `release_case_lock(case_id)` to prevent duplicate concurrent runs on the same case.
+    - Full persistence of final artifacts (`rulings.json`, `briefing.json`, `final_state.json`) in `logs/cases/<case_id>/`.
+    - Pagination support with upper bounds (`limit <= 100`, `offset`).
+  - `backend/api/schemas.py`:
+    - Strict Pydantic v2 request/response schemas: `CreateCaseRequest`, `CaseResponse`, `CaseListResponse`, `StartTrialRequest`, `TrialStatusResponse`, `RulingsResponse`, `HealthResponse`, `ErrorResponse`.
+    - Validation: Date format (`YYYY-MM-DD`), non-empty queries, target pairs, and status enums.
+  - `backend/api/service.py`:
+    - `TrialService` business logic layer:
+      - Validates case existence and as-of date before execution.
+      - Acquires per-case concurrency lock; raises `TrialConflictError` (409) if already running.
+      - Invokes canonical `run_trial()` from `backend/trial.py`.
+      - Extracts and persists Odin rulings and validated Phase 5 `Briefing`.
+      - Enforces case/run tenant isolation.
+      - Emits structured lifecycle events (`case_created`, `trial_started`, `trial_completed`, `trial_failed`, `briefing_retrieved`, `citation_validation_failed`) to `LogBook`.
+  - `backend/api/routes.py`:
+    - `GET /health`: Health check evaluating both server process and database availability.
+    - `POST /api/cases`: Create a new case file.
+    - `GET /api/cases`: List registered cases with pagination.
+    - `GET /api/cases/{case_id}`: Retrieve safe case metadata.
+    - `POST /api/cases/{case_id}/trials`: Start or execute a LangGraph trial (supports synchronous or background execution).
+    - `GET /api/cases/{case_id}/trials/{trial_id}`: Honest trial execution status, active node, timestamps, and error state.
+    - `GET /api/cases/{case_id}/trials/{trial_id}/rulings`: Odin's final rulings (`established`, `contested`, `conceded`, `rejected`).
+    - `GET /api/cases/{case_id}/trials/{trial_id}/briefing`: Validated Phase 5 briefing (returns 409 if pending research or still executing).
+  - `backend/app.py`:
+    - Application factory `create_app()` with CORS middleware.
+    - Sanitized exception handlers for 422 Unprocessable Entity, HTTPException, and unhandled 500 exceptions, guaranteeing zero exposure of stack traces, secrets, or internal paths.
+  - `backend/models.py`:
+    - Added `@property def target_country_sector_pairs` to `CaseFile` for seamless schema interoperability.
+  - `backend/logbook.py`:
+    - Added `record_event()` convenience method.
+  - `backend/trial.py`:
+    - Updated `node_heimdall` and `run_trial` to preserve caller-provided `case_id` across graph transitions, snapshots, and briefings.
+  - `README.md`:
+    - Added complete API documentation, environment variables, local execution guide, endpoint request/response examples, and status semantics.
+- **Tests Executed**:
+  - `tests/test_api.py` covering all 22 required scenarios:
+    1. Health endpoint (`GET /health`).
+    2. Successful case creation (`POST /api/cases`).
+    3. Invalid case input (invalid date, empty query) returning 422.
+    4. Case retrieval and missing-case behavior (`404 Not Found`).
+    5. Case listing, pagination, and page-size limits (`limit <= 100`).
+    6. Trial start for an existing case (`200 OK` sync, `202 Accepted` background).
+    7. Trial start for a nonexistent case (`404 Not Found`).
+    8. Duplicate concurrent trial start (`409 Conflict`).
+    9. Trial status before execution (`pending`).
+    10. Trial status after successful execution (`completed`).
+    11. Trial status after failure or resource-limit termination (`limits_exhausted`).
+    12. Rulings endpoint returns only final Odin rulings (`established`, `contested`, `conceded`, `rejected`).
+    13. Briefing endpoint returns validated Phase 5 briefing.
+    14. Briefing unavailable while research is pending (`409 Conflict`).
+    15. Citation-validation failure is not presented as a validated success.
+    16. `not_real` and `uncertain` event handling.
+    17. Malformed IDs and invalid state transitions (`400 Bad Request`).
+    18. Provider failure without secret leakage.
+    19. Persistence failure behavior (`500 Internal Server Error`).
+    20. Case/run isolation (data from one case cannot appear in another case's responses).
+    21. Regression verification across all Phases 1–5 test suites.
+    22. JSON serialization of dates, enums, and nested briefing data.
+  - `python -m pytest tests -v`
+  - Result: **116 passed in 4.28s (100% pass rate)**.
+- **Key Architectural Decisions & Safety Guarantees**:
+  - **Zero Fabrication**: Statuses, rulings, and briefings reflect actual graph and storage state; no synthetic progress percentages or dummy verdicts.
+  - **Strict Grounding & Citation Integrity**: The briefing endpoint serves only briefings verified by Phase 5 `validate_citation_provenance`.
+  - **Thread-Safe Concurrency**: Trial execution utilizes per-case mutex locks; concurrent requests for an active case return `409 Conflict`.
+  - **Information Security**: Private agent memories, chain-of-thought, system prompts, filesystem paths, and exception tracebacks are strictly excluded from API responses.
+- **Dependencies for Phase 7**:
+  - Ready for Phase 7 end-to-end demonstration, synthetic adversarial injection tests, and final hackathon evaluation.
 
 
 

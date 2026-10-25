@@ -88,3 +88,176 @@ The outlet credibility tier model in `ATL-0012` is inspired by standard source r
 *This dataset is for educational and competition use only.*
 
 ---
+
+## Odin Courtroom API Documentation (Phase 6)
+
+The Odin Courtroom provides a FastAPI backend exposing case registration, LangGraph trial execution, binding judicial rulings, and verified intelligence briefings.
+
+### 1. Environment Configuration
+
+Copy or export environment variables without real secrets:
+
+```bash
+# LLM Provider Configuration (Optional for mock/deterministic testing)
+export ANTHROPIC_API_KEY="sk-ant-your-key-here"
+
+# Audit Logging & Storage (Defaults to logs/audit.db and logs/cases/)
+export LOGBOOK_DB_PATH="logs/audit.db"
+export LOGBOOK_JSONL_PATH="logs/audit.jsonl"
+```
+
+### 2. Running Locally
+
+Start the development server using Uvicorn:
+
+```bash
+# Using uvicorn directly:
+uvicorn backend.app:app --host 0.0.0.0 --port 8000 --reload
+
+# Or via Python module:
+python -m backend.app
+```
+
+Interactive Swagger documentation is available at `http://localhost:8000/docs` and ReDoc at `http://localhost:8000/redoc`.
+
+### 3. Running Automated Tests
+
+Run the full suite of 116 unit, integration, and API tests:
+
+```bash
+python -m pytest tests -v
+```
+
+### 4. API Endpoints Reference
+
+#### System Health
+- **`GET /health`**
+  - Response:
+    ```json
+    {
+      "status": "ok",
+      "version": "1.0.0",
+      "process": "healthy",
+      "database": "healthy",
+      "timestamp": "2027-01-25T12:00:00Z"
+    }
+    ```
+
+#### Case Management
+- **`POST /api/cases`**
+  - Creates a new case.
+  - Request:
+    ```json
+    {
+      "query": "As of 25 January 2027, how exposed is Midgard wheat to the canal lock disruption?",
+      "as_of": "2027-01-25",
+      "case_id": "CASE-MIDGARD-01",
+      "target_country_sector_pairs": [["Midgard", "wheat"]]
+    }
+    ```
+  - Response (`201 Created`):
+    ```json
+    {
+      "case_id": "CASE-MIDGARD-01",
+      "query": "As of 25 January 2027, how exposed is Midgard wheat to the canal lock disruption?",
+      "as_of": "2027-01-25",
+      "verification_status": "real",
+      "verification_reason": null,
+      "target_country_sector_pairs": [["Midgard", "wheat"]],
+      "status": "created",
+      "created_at": "2027-01-25T12:00:00Z",
+      "updated_at": "2027-01-25T12:00:00Z"
+    }
+    ```
+
+- **`GET /api/cases`**
+  - Lists cases with pagination (`limit` up to 100, `offset`).
+  - Response (`200 OK`):
+    ```json
+    {
+      "items": [...],
+      "total": 1,
+      "limit": 20,
+      "offset": 0
+    }
+    ```
+
+- **`GET /api/cases/{case_id}`**
+  - Retrieves safe metadata and status for a specific case.
+
+#### Trial Execution
+- **`POST /api/cases/{case_id}/trials`**
+  - Initiates a LangGraph trial run for the case.
+  - Request:
+    ```json
+    {
+      "max_runs": 3,
+      "max_rounds": 2,
+      "background": false
+    }
+    ```
+  - Response (`200 OK` if synchronous, `202 Accepted` if `background=true`):
+    ```json
+    {
+      "case_id": "CASE-MIDGARD-01",
+      "trial_id": "TRIAL-B812F9A1",
+      "status": "completed",
+      "current_node": "briefing",
+      "run_count": 1,
+      "max_runs": 3,
+      "start_time": "2027-01-25T12:00:00Z",
+      "end_time": "2027-01-25T12:00:03Z",
+      "is_awaiting_research": false,
+      "is_completed": true,
+      "error_message": null
+    }
+    ```
+
+- **`GET /api/cases/{case_id}/trials/{trial_id}`**
+  - Retrieves sanitized trial execution status, active node, timestamps, and completion flags.
+
+#### Judicial Rulings & Briefing Deliverable
+- **`GET /api/cases/{case_id}/trials/{trial_id}/rulings`**
+  - Returns Odin's binding rulings (`established`, `contested`, `conceded`, `rejected`) with admissible citations.
+  - Response (`200 OK`):
+    ```json
+    {
+      "case_id": "CASE-MIDGARD-01",
+      "trial_id": "TRIAL-B812F9A1",
+      "rulings_count": 2,
+      "rulings": [
+        {
+          "claim_id": "THOR-C1-MID-WHE",
+          "verdict": "established",
+          "basis": "sourced_fact",
+          "rationale": "Sufficiently proven by corridor damage record.",
+          "disqualified_reason": null,
+          "admissible_citations": [{"doc_id": "ATL-0001", "paragraph_num": 2, "pub_date": "2027-01-10"}],
+          "inadmissible_citations": []
+        }
+      ]
+    }
+    ```
+
+- **`GET /api/cases/{case_id}/trials/{trial_id}/briefing`**
+  - Returns the full Phase 5 judicial intelligence briefing model including Executive Summary, Established/Contested/Conceded/Rejected Findings, Exposure Analysis Table, Outlook, Verification Summary, Sources & Traps Caught, and complete Markdown document.
+  - Returns `409 Conflict` if the trial is awaiting research or still executing.
+
+### 5. Trial Lifecycle & Status Semantics
+
+| Status | Meaning |
+| :--- | :--- |
+| `pending` | Trial registered and queued. |
+| `running` | Trial in progress through courtroom workflow. |
+| `completed` | Trial reached evidence sufficiency; validated briefing generated. |
+| `awaiting_research` | Insufficient evidence base; send-back loop active awaiting Heimdall. |
+| `limits_exhausted` | Maximum trial runs or token/tool-call budget reached. |
+| `incomplete` | Investigation halted due to budget or 0 new evidence discovered. |
+| `event_not_real` | Event confirmed as fake/decoy notice; early conclusion with zero exposure. |
+| `failed` | System or unrecoverable provider exception. |
+
+### 6. Architectural Assumptions & Limitations
+
+- **Authentication**: Unauthenticated by default for hackathon development. For production deployments, deploy behind an API gateway with OAuth2 / mTLS.
+- **Data Isolation**: Case and trial operations verify case-ID ownership (`/api/cases/{case_id}/trials/{trial_id}`), preventing cross-tenant data leakage.
+- **Execution Mode**: Default `background=false` executes synchronously for deterministic client inspection; `background=true` executes via asynchronous background tasks for polling architectures.

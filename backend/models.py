@@ -101,6 +101,10 @@ class CaseFile(BaseModel):
     verification_reason: Optional[str] = None
     active_event_id: Optional[str] = None
 
+    @property
+    def target_country_sector_pairs(self) -> List[Tuple[str, str]]:
+        return self.target_pairs
+
 
 class Claim(BaseModel):
     claim_id: str

@@ -158,8 +158,12 @@ class TrialGraphBuilder:
         try:
             # Parse question and establish CaseFile if not already present
             case_file = state.get("case_file")
-            if case_file is None or run_count == 1:
+            if case_file is None:
                 case_file = self.heimdall.parse_question(question, as_of)
+                if state.get("case_id"):
+                    case_file.case_id = state.get("case_id")
+            elif state.get("case_id"):
+                case_file.case_id = state.get("case_id")
 
             prev_ids = set(state.get("previous_evidence_ids", []))
             prev_hashes = dict(state.get("previous_evidence_hashes", {}))
@@ -602,14 +606,20 @@ async def run_trial(
     max_runs: int = MAX_RUNS,
     max_rounds: int = MAX_ROUNDS,
     builder: Optional[TrialGraphBuilder] = None,
+    case_id: Optional[str] = None,
+    case_file: Optional[CaseFile] = None,
 ) -> TrialState:
     """Convenience runner to execute a trial through the compiled LangGraph workflow."""
     active_builder = builder or TrialGraphBuilder()
     graph = active_builder.build_graph()
 
+    cid = case_id or (case_file.case_id if case_file else None)
+
     initial_state: TrialState = {
         "question": question,
         "as_of": as_of,
+        "case_id": cid,
+        "case_file": case_file,
         "run_count": 1,
         "max_runs": max_runs,
         "round_count": 1,

@@ -170,6 +170,27 @@ class LogBook:
 
         return event
 
+    def record_event(
+        self,
+        event_type: LogEventType | str,
+        case_id: str,
+        agent: AgentRole | str = AgentRole.ODIN,
+        payload: Optional[Dict[str, Any]] = None,
+        run_num: int = 1,
+        round_num: int = 1,
+        event_id: Optional[str] = None,
+    ) -> LogEvent:
+        """Convenience alias for log()."""
+        return self.log(
+            event_type=event_type,
+            agent=agent,
+            case_id=case_id,
+            payload=payload,
+            run_num=run_num,
+            round_num=round_num,
+            event_id=event_id,
+        )
+
     def get_events(
         self,
         case_id: Optional[str] = None,
