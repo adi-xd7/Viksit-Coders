@@ -3,7 +3,7 @@
 ## Project Overview
 - **Project**: Trial of the Nine Realms — Supply Chain Disruption Impact Analyzer (RAGNAROK Hackathon)
 - **Role**: Senior Python Backend Engineer — Odin (Judge), Trial Orchestration, and Evidence-Grounded Briefing
-- **Branch**: `feat/trial-briefing` (branched from `Odin`)
+- **Branch**: `Odin`
 
 ---
 
