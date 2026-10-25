@@ -10,6 +10,8 @@ from backend.app.services.retrieval import (
     RunemarkCorpusRetrievalService,
 )
 from backend.app.services.debate_orchestrator import DebateOrchestrator
+from backend.app.services.feedback_loop import SufficiencyFeedbackEngine
+from backend.app.services.executive_briefing import ExecutiveBriefingGenerator
 
 __all__ = [
     "StructuredLogger",
@@ -20,4 +22,6 @@ __all__ = [
     "MockRetrievalService",
     "RunemarkCorpusRetrievalService",
     "DebateOrchestrator",
+    "SufficiencyFeedbackEngine",
+    "ExecutiveBriefingGenerator",
 ]
