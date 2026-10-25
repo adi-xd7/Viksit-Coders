@@ -6,10 +6,12 @@ from datetime import datetime
 
 from backend.app.schemas.case_file import CaseFile
 from backend.app.schemas.debate_result import DebateResult
+from backend.app.schemas.heimdall_result import HeimdallVerificationResult
 from backend.app.schemas.loki_result import LokiResult
 from backend.app.schemas.thor_result import ThorResult
 from backend.app.agents.loki import LokiAgent
 from backend.app.agents.thor import ThorAgent
+from backend.app.agents.heimdall import HeimdallAgent
 from backend.app.services.retrieval import BaseRetrievalService
 from backend.app.services.memory import LokiMemoryService
 from backend.app.services.thor_memory import ThorMemoryService
@@ -25,11 +27,12 @@ class DebateOrchestrator:
 
     Deterministic sequence:
       1. Validation of case file & clock parameters.
-      2. Loki Round 1 (Low-Exposure Advocacy).
-      3. Thor Round 1 (High-Exposure Advocacy).
-      4. Loki Round 2 (Cross-Examination of Thor's claims).
-      5. Thor Round 2 (Cross-Examination of Loki's claims & Formal Concessions).
-      6. Assembly of final CaseFile and structured DebateResult.
+      2. Heimdall Pre-Debate Evidence Verification Gate.
+      3. Loki Round 1 (Low-Exposure Advocacy).
+      4. Thor Round 1 (High-Exposure Advocacy).
+      5. Loki Round 2 (Cross-Examination of Thor's claims).
+      6. Thor Round 2 (Cross-Examination of Loki's claims & Formal Concessions).
+      7. Assembly of final CaseFile and structured DebateResult.
     """
 
     def __init__(
@@ -37,11 +40,14 @@ class DebateOrchestrator:
         retrieval_service: Optional[BaseRetrievalService] = None,
         loki_agent: Optional[LokiAgent] = None,
         thor_agent: Optional[ThorAgent] = None,
+        heimdall_agent: Optional[HeimdallAgent] = None,
         loki_memory: Optional[LokiMemoryService] = None,
         thor_memory: Optional[ThorMemoryService] = None,
         logger_service: Optional[StructuredLogger] = None,
+        enable_heimdall: bool = True,
     ):
         self.logger = logger_service or StructuredLogger(agent_name="orchestrator")
+        self.enable_heimdall = enable_heimdall
 
         # 1. Initialize or assign LokiAgent
         if loki_agent is not None:
@@ -67,7 +73,23 @@ class DebateOrchestrator:
         else:
             raise ValueError("Either retrieval_service or both loki_agent and thor_agent must be provided.")
 
-        # 3. Enforce that Loki and Thor do NOT share the same memory instance (NFR 1, NFR 6)
+        # 3. Initialize or assign HeimdallAgent
+        if heimdall_agent is not None:
+            self.heimdall_agent: Optional[HeimdallAgent] = heimdall_agent
+        elif enable_heimdall and retrieval_service is not None:
+            self.heimdall_agent = HeimdallAgent(
+                retrieval_service=retrieval_service,
+                logger_service=StructuredLogger(agent_name="heimdall"),
+            )
+        elif enable_heimdall and getattr(self.loki_agent, "retrieval", None) is not None:
+            self.heimdall_agent = HeimdallAgent(
+                retrieval_service=self.loki_agent.retrieval,
+                logger_service=StructuredLogger(agent_name="heimdall"),
+            )
+        else:
+            self.heimdall_agent = None
+
+        # 4. Enforce that Loki and Thor do NOT share the same memory instance (NFR 1, NFR 6)
         if hasattr(self.loki_agent, "memory") and hasattr(self.thor_agent, "memory"):
             if self.loki_agent.memory is self.thor_agent.memory:
                 raise ValueError(
@@ -122,6 +144,70 @@ class DebateOrchestrator:
         })
 
         # ---------------------------------------------------------------------
+        # Stage 0: Heimdall Pre-Debate Evidence Verification Gate
+        # ---------------------------------------------------------------------
+        heimdall_res: Optional[HeimdallVerificationResult] = None
+        if self.enable_heimdall:
+            stage_name = "heimdall_verification"
+            if stage_name in executed_stages:
+                raise RuntimeError(f"Duplicate stage execution prevented: {stage_name} already executed.")
+
+            try:
+                heimdall_res = self.pre_debate_verify(active_case_file)
+            except Exception as e:
+                logger.exception(f"Heimdall verification execution error on case {case_id}: {e}")
+                return DebateResult(
+                    case_id=case_id,
+                    as_of_date=as_of_date,
+                    run_number=run_no,
+                    status="error",
+                    failed_stage=stage_name,
+                    error_message=f"Heimdall verification execution error: {e}",
+                    case_file=active_case_file,
+                    stages_executed=stages_executed,
+                )
+
+            executed_stages.add(stage_name)
+            stages_executed.append(stage_name)
+            active_case_file.is_verified = heimdall_res.is_event_real
+
+            if heimdall_res.verification_status == "error":
+                return DebateResult(
+                    case_id=case_id,
+                    as_of_date=as_of_date,
+                    run_number=run_no,
+                    status="error",
+                    failed_stage=stage_name,
+                    error_message=heimdall_res.error_message or "Heimdall verification failed with error",
+                    heimdall_verification=heimdall_res,
+                    case_file=active_case_file,
+                    stages_executed=stages_executed,
+                )
+
+            if not heimdall_res.is_event_real:
+                if heimdall_res.verification_status == "contradicted":
+                    err_msg = (
+                        f"Pre-debate verification failed: Foundational disruption event is contradicted "
+                        f"({', '.join(heimdall_res.contradicted_premises)})"
+                    )
+                else:
+                    err_msg = (
+                        f"Pre-debate verification failed: Foundational disruption premises could not be verified "
+                        f"({', '.join(heimdall_res.unverified_premises)})"
+                    )
+                return DebateResult(
+                    case_id=case_id,
+                    as_of_date=as_of_date,
+                    run_number=run_no,
+                    status="error",
+                    failed_stage=stage_name,
+                    error_message=err_msg,
+                    heimdall_verification=heimdall_res,
+                    case_file=active_case_file,
+                    stages_executed=stages_executed,
+                )
+
+        # ---------------------------------------------------------------------
         # Stage 1: Loki Round 1 (Low-Exposure Advocacy)
         # ---------------------------------------------------------------------
         stage_name = "loki_round1"
@@ -142,6 +228,7 @@ class DebateOrchestrator:
                 status="error",
                 failed_stage=stage_name,
                 error_message=f"Loki Round 1 execution error: {e}",
+                heimdall_verification=heimdall_res,
                 case_file=active_case_file,
                 stages_executed=stages_executed,
             )
@@ -154,6 +241,7 @@ class DebateOrchestrator:
                 status="error",
                 failed_stage=stage_name,
                 error_message=loki_r1.error_message or "Loki Round 1 returned error status",
+                heimdall_verification=heimdall_res,
                 loki_round1=loki_r1,
                 case_file=active_case_file,
                 stages_executed=stages_executed,
@@ -188,6 +276,7 @@ class DebateOrchestrator:
                 status="partial",
                 failed_stage=stage_name,
                 error_message=f"Thor Round 1 execution error: {e}",
+                heimdall_verification=heimdall_res,
                 loki_round1=loki_r1,
                 case_file=active_case_file,
                 stages_executed=stages_executed,
@@ -201,6 +290,7 @@ class DebateOrchestrator:
                 status="partial",
                 failed_stage=stage_name,
                 error_message=thor_r1.error_message or "Thor Round 1 returned error status",
+                heimdall_verification=heimdall_res,
                 loki_round1=loki_r1,
                 thor_round1=thor_r1,
                 case_file=active_case_file,
@@ -236,6 +326,7 @@ class DebateOrchestrator:
                 status="partial",
                 failed_stage=stage_name,
                 error_message=f"Loki Round 2 execution error: {e}",
+                heimdall_verification=heimdall_res,
                 loki_round1=loki_r1,
                 thor_round1=thor_r1,
                 case_file=active_case_file,
@@ -250,6 +341,7 @@ class DebateOrchestrator:
                 status="partial",
                 failed_stage=stage_name,
                 error_message=loki_r2.error_message or "Loki Round 2 returned error status",
+                heimdall_verification=heimdall_res,
                 loki_round1=loki_r1,
                 thor_round1=thor_r1,
                 loki_round2=loki_r2,
@@ -293,6 +385,7 @@ class DebateOrchestrator:
                 status="partial",
                 failed_stage=stage_name,
                 error_message=f"Thor Round 2 execution error: {e}",
+                heimdall_verification=heimdall_res,
                 loki_round1=loki_r1,
                 thor_round1=thor_r1,
                 loki_round2=loki_r2,
@@ -308,6 +401,7 @@ class DebateOrchestrator:
                 status="partial",
                 failed_stage=stage_name,
                 error_message=thor_r2.error_message or "Thor Round 2 returned error status",
+                heimdall_verification=heimdall_res,
                 loki_round1=loki_r1,
                 thor_round1=thor_r1,
                 loki_round2=loki_r2,
@@ -364,6 +458,7 @@ class DebateOrchestrator:
             status="success",
             failed_stage=None,
             error_message=None,
+            heimdall_verification=heimdall_res,
             loki_round1=loki_r1,
             thor_round1=thor_r1,
             loki_round2=loki_r2,
@@ -379,9 +474,27 @@ class DebateOrchestrator:
     # Clean Integration Hooks for Future Phases (Heimdall & Odin)
     # -------------------------------------------------------------------------
 
-    def pre_debate_verify(self, case_file: CaseFile) -> bool:
-        """Integration hook for Heimdall verification (Part 5B)."""
-        return getattr(case_file, "is_verified", True)
+    def pre_debate_verify(
+        self,
+        case_file: CaseFile,
+        custom_premises: Optional[list[str]] = None,
+    ) -> HeimdallVerificationResult:
+        """
+        Integration hook executing Heimdall pre-debate evidence verification.
+        Verifies foundational disruption events and material factual premises.
+        """
+        if self.heimdall_agent is not None:
+            return self.heimdall_agent.verify_case(case_file, custom_premises=custom_premises)
+
+        is_ver = getattr(case_file, "is_verified", True)
+        return HeimdallVerificationResult(
+            case_id=case_file.case_id,
+            as_of_date=case_file.as_of_date,
+            event_id=case_file.event_id,
+            is_event_real=is_ver,
+            verification_status="verified" if is_ver else "unverified",
+            summary="Heimdall agent not configured; defaulted from case_file.is_verified.",
+        )
 
     def post_debate_adjudicate(self, debate_result: DebateResult) -> Optional[dict]:
         """Integration hook for Odin judicial ruling (Part 6)."""

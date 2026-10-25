@@ -206,6 +206,23 @@ def orchestrator_mock_documents() -> list[Document]:
             content="Corvan Grain reported October loadings down 62% year over year.",
             paragraphs={"P1": "Loadings fell 62% year over year."}
         ),
+        Document(
+            doc_id="ORV-0016",
+            event_id="E5",
+            title="MOCK: Corridor Agreement expires with no renewal",
+            source_name="Realm Trade Ministry",
+            source_type="official_notice",
+            reliability_tier=1,
+            pub_date="2026-09-10",
+            country="Realm",
+            sector="Wheat",
+            format="PDF",
+            content="Notice from Realm Trade Ministry. The Corridor Agreement expired on 10 September 2026. Talks on renewal ended without agreement.",
+            paragraphs={
+                "P1": "Notice from the Realm Trade Ministry. The Corridor Agreement expired on 10 September 2026.",
+                "P2": "Talks on renewal ended without agreement. No replacement arrangement has been signed."
+            }
+        ),
     ]
 
 
@@ -252,9 +269,14 @@ def test_debate_successful_full_sequence_call_order(
     assert result.failed_stage is None
     assert result.error_message is None
 
-    # Verify all expected stages executed in strict chronological order
-    expected_stages = ["validation", "loki_round1", "thor_round1", "loki_round2", "thor_round2"]
+    # Verify all expected stages executed in strict chronological order, starting with Heimdall verification
+    expected_stages = ["validation", "heimdall_verification", "loki_round1", "thor_round1", "loki_round2", "thor_round2"]
     assert result.stages_executed == expected_stages
+
+    # Verify Heimdall verification deliverable preserved
+    assert result.heimdall_verification is not None
+    assert result.heimdall_verification.is_event_real is True
+    assert result.heimdall_verification.verification_status == "verified"
 
     # Verify structured deliverables preserved
     assert result.loki_round1 is not None
@@ -544,7 +566,8 @@ def test_no_stage_silently_executed_twice(
 
     stages = result.stages_executed
     assert len(stages) == len(set(stages)), "Stage duplicated in execution log!"
-    assert stages == ["validation", "loki_round1", "thor_round1", "loki_round2", "thor_round2"]
+    assert stages == ["validation", "heimdall_verification", "loki_round1", "thor_round1", "loki_round2", "thor_round2"]
+
 
 
 # -----------------------------------------------------------------------------

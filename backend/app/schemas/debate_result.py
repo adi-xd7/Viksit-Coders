@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from backend.app.schemas.case_file import CaseFile
 from backend.app.schemas.loki_result import LokiResult
 from backend.app.schemas.thor_result import ThorResult
+from backend.app.schemas.heimdall_result import HeimdallVerificationResult
 from backend.app.schemas.claim import Claim
 from backend.app.schemas.debate import CrossExamination, Concession
 
@@ -25,6 +26,10 @@ class DebateResult(BaseModel):
     error_message: Optional[str] = Field(
         default=None,
         description="Diagnostic error message if an agent or stage failed"
+    )
+    heimdall_verification: Optional[HeimdallVerificationResult] = Field(
+        default=None,
+        description="Heimdall's pre-debate verification gate deliverable"
     )
     loki_round1: Optional[LokiResult] = Field(
         default=None,
