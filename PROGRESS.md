@@ -135,12 +135,13 @@ To maintain modularity and isolation:
   - [x] CLI runner (`python -m backend.trial "<question>" --as-of YYYY-MM-DD`)
   - [x] Tests (`tests/test_trial_graph.py`, `tests/test_trial_limits.py` - 15/15 passing, 76/76 total)
 
-- [ ] **Phase 5 — Final Briefing Generation and Citation Validation**
-  - [ ] Briefing generator (`backend/briefing.py`) strictly grounded in Odin's rulings
-  - [ ] Sections A through J implementation
-  - [ ] Strict inline citation validator (`[DOC_ID Pn, YYYY-MM-DD]`, `<table/doc>#<row>`)
-  - [ ] Markdown and JSON exporters
-  - [ ] Tests (`tests/test_briefing.py`)
+- [x] **Phase 5 — Final Briefing Generation and Citation Validation**
+  - [x] Briefing generator (`backend/briefing.py`) strictly grounded in Odin's rulings
+  - [x] Sections A through J implementation
+  - [x] Strict inline citation validator (`[DOC_ID Pn, YYYY-MM-DD]`, `<table/doc>#<row>`)
+  - [x] Markdown and JSON exporters
+  - [x] Integration with Phase 4 LangGraph trial state machine (`node_briefing`)
+  - [x] Comprehensive test suite (`tests/test_briefing.py` - 18/18 passing, 94/94 total)
 
 - [ ] **Phase 6 — FastAPI Integration and Persistence**
   - [ ] `POST /cases`, `GET /cases/{id}`, `GET /cases/{id}/stream` (SSE)
@@ -272,6 +273,76 @@ To maintain modularity and isolation:
   - Early Event Termination: If an event is verified as `not_real`, the graph branches directly to `END`, preventing unnecessary advocate hearings or judicial LLM calls.
 - **Dependencies for Phase 5**:
   - Final intelligence briefing generator (`backend/briefing.py`) implementing Sections A through J grounded strictly in Odin's rulings, with inline citation validation, and Markdown / JSON export.
+
+---
+
+## Phase 5 Execution Notes
+
+- **Status**: Completed
+- **Files Created / Changed**:
+  - `backend/models.py`:
+    - Enriched `Citation` model with optional `pub_date: Optional[str] = None` and updated `display_str()` to render canonical string `[DOC_ID Pn, YYYY-MM-DD]` or `[TAB#row, YYYY-MM]`.
+    - Added `executive_summary: str = ""` and `verification_summary: Dict[str, Any] = Field(default_factory=dict)` to `Briefing` model with backward-compatible defaults.
+  - `backend/briefing.py`:
+    - Implemented `validate_citation_provenance()` providing deterministic provenance verification:
+      - Document and paragraph existence in physical evidence store.
+      - As-of cutoff clock constraint compliance (`pub_date <= as_of`).
+      - Cited publication date match against source metadata.
+      - Disqualification of formally retracted, superseded, damaged, or duplicate documents.
+      - Normalized/exact quote substring matching (`quoted_text in paragraph_text`).
+      - Structural claim support verification: checks substantive statement content words and sector overlap against paragraph text, rejecting unsupported claims while documenting structural vs semantic NLP limitations.
+      - Trade row existence, damage check, and month cutoff constraint.
+    - Implemented canonical string parser `parse_citation()` and `validate_citation_str()`.
+    - Implemented `BriefingGenerator` assembling Sections A through J strictly from Odin's final rulings:
+      - **Section A (Executive Summary)**: Disruption event, as-of date, judicial breakdown, and status. Handles `not_real` counterfeit notice (zero net exposure across all sectors) and `uncertain` provisional findings warning.
+      - **Section B (Established Findings)**: Sourced facts and inferences with verdict `established`, canonical citations, excerpts, and rationale. Marks findings lacking valid citations as `[INSUFFICIENTLY SUPPORTED - Citations Failed Validation]`.
+      - **Section C (Contested Findings)**: Disputed claims with cross-examination opposing arguments and missing evidence to resolve.
+      - **Section D (Conceded Findings)**: Explicit concessions on record; advocate timeouts or failures are never treated as concessions.
+      - **Section E (Rejected Findings)**: Disqualified claims with reason, clarifying rejection is lack of proof, not affirmation of converse.
+      - **Section F (Exposure Analysis Table)**: Grounded in Phase 2 models and deterministic calculations; zero LLM mental math; represents failed advocates as `None` with explicit assumption note (never assumed zero).
+      - **Section G (Outlook & Implications)**: Distinctly separates established facts, inferences, contested disputes, and unknown gaps.
+      - **Section H (Verification Summary)**: Verdict counts, citation verification stats, source counts, tier distribution, clock compliance, execution metrics, advocate statuses, and validation methodology disclosure.
+      - **Section I (Sources & Traps Caught)**: Cited sources list and actual recorded traps (prompt injections, retractions, corrections, duplicates, damaged records, clock violations, Tier 4 rejections).
+      - **Section J (Markdown Report)**: Complete, publication-grade formatted briefing.
+    - Implemented `generate_briefing()` convenience helper.
+  - `backend/trial_state.py`:
+    - Added `briefing: Optional[Any]` and `persisted_briefing_path: Optional[str]` to `TrialState`.
+  - `backend/trial.py`:
+    - Wired `node_briefing` into the LangGraph state machine: routes terminal states (`ready_for_briefing`, `terminated_limits_exhausted`, `incomplete`, `event_not_real`) to `node_briefing -> END`.
+    - Persists `briefing.json` (with secret redaction) and `briefing.md` in `logs/cases/<case_id>/`.
+    - Added replay preservation check: re-running on state with existing briefing reuses persisted files without overwriting or corrupting.
+    - Enhanced CLI `main()` to display persisted briefing path and executive summary snippet.
+  - `tests/test_briefing.py`:
+    - Comprehensive unit and integration test suite covering all 18 required scenarios:
+      1. Ordinary case with established, contested, conceded, and rejected rulings.
+      2. Multiple countries and sectors.
+      3. No exposure data.
+      4. One advocate failed and the other succeeded.
+      5. Both advocates failed.
+      6. Missing and malformed citations.
+      7. Nonexistent document citation.
+      8. Nonexistent paragraph citation.
+      9. Ineligible source published after as-of date (clock violation).
+      10. Evidence paragraph does not support claim (quote mismatch & zero topic overlap).
+      11. Event classified as not_real.
+      12. Event classified as uncertain.
+      13. Trial stopped by run or resource limit.
+      14. Trial awaiting research / send-back.
+      15. Briefing contains only final Odin rulings (unadjudicated advocacy claims excluded).
+      16. Empty or minimal case.
+      17. Replay idempotency / persistence preservation.
+      18. End-to-end regression confirming Phase 1-4 trial workflow produces briefing.
+- **Tests Executed**:
+  - `python -m pytest tests -v`
+  - Result: 94 passed in 2.83s (100% pass rate: 20 Phase 1 + 21 Phase 2 + 20 Phase 3 + 15 Phase 4 + 18 Phase 5).
+- **Decisions Made**:
+  - Grounding Exclusivity: Briefings are strictly derived from Odin's binding rulings. Advocate claims provide statement context for ruled claims only; unadjudicated claims from Thor or Loki are never exposed in findings.
+  - Substantive Claim Support Check: Citation support validation verifies substantive statement keywords and sector against paragraph text, preventing spurious matches based solely on country jurisdiction.
+  - Zero Mental Math: All exposure totals and bounds in Section F reuse deterministic calculations from Phase 2; missing advocate estimates are recorded as `None` with assumptions rather than zero.
+  - Replay Preserved: Graph replay reuses already persisted briefing files without modifying file timestamps or duplicating assumptions.
+- **Dependencies for Phase 6**:
+  - FastAPI endpoints (`POST /cases`, `GET /cases/{id}`, `GET /cases/{id}/stream`), SSE streaming, and SQLite case persistence.
+
 
 
 

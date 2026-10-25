@@ -81,3 +81,5 @@ class TrialState(TypedDict, total=False):
     thor_failed: bool
     loki_failed: bool
     persisted_snapshot_path: Optional[str]
+    briefing: Optional[Any]  # Briefing
+    persisted_briefing_path: Optional[str]

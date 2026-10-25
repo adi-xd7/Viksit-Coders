@@ -39,6 +39,7 @@ from backend.agents.adapters import (
     ThorAdapter,
 )
 from backend.agents.odin import OdinJudge
+from backend.briefing import generate_briefing
 from backend.llm import (
     BudgetExceededError,
     LLMClient,
@@ -470,6 +471,66 @@ class TrialGraphBuilder:
 
         return updates
 
+    def node_briefing(self, state: TrialState) -> Dict[str, Any]:
+        """Node F: Assembles final intelligence briefing and exports JSON/Markdown."""
+        existing_briefing = state.get("briefing")
+        existing_path = state.get("persisted_briefing_path")
+        if existing_briefing is not None and existing_path and os.path.exists(existing_path):
+            return {
+                "briefing": existing_briefing,
+                "persisted_briefing_path": existing_path,
+                "current_node": "briefing",
+            }
+
+        case_file = state.get("case_file")
+        if not case_file:
+            case_file = CaseFile(
+                case_id=state.get("case_id", "CASE-UNKNOWN"),
+                query=state.get("question", ""),
+                as_of=state.get("as_of", "2027-01-25"),
+                verification_status=state.get("event_verification", EventVerificationStatus.UNCERTAIN),
+            )
+
+        briefing = generate_briefing(
+            case_file=case_file,
+            rulings=state.get("rulings", []),
+            exposure_ranges=state.get("exposure_ranges", []),
+            doc_store=state.get("doc_store", {}),
+            trade_store=state.get("trade_store", {}),
+            claims=state.get("claims", []),
+            attacks=state.get("attacks", []),
+            defenses=state.get("defenses", []),
+            concessions=state.get("concessions", []),
+            sufficiency_result=state.get("sufficiency_result"),
+            overall_status=state.get("overall_status", "ready_for_briefing"),
+            incomplete_reason=state.get("incomplete_reason"),
+            run_count=state.get("run_count", 1),
+            max_runs=state.get("max_runs", MAX_RUNS),
+            thor_failed=state.get("thor_failed", False),
+            loki_failed=state.get("loki_failed", False),
+            token_usage=self.llm_client.total_tokens_used,
+            tool_call_counts=dict(self.llm_client.tool_call_counts),
+        )
+
+        # Persist briefing files
+        case_id = case_file.case_id
+        case_dir = os.path.join(self.output_dir, case_id)
+        os.makedirs(case_dir, exist_ok=True)
+        briefing_json_path = os.path.join(case_dir, "briefing.json")
+        briefing_md_path = os.path.join(case_dir, "briefing.md")
+
+        with open(briefing_json_path, "w", encoding="utf-8") as f:
+            json.dump(redact_secrets(briefing.model_dump()), f, indent=2, default=str)
+
+        with open(briefing_md_path, "w", encoding="utf-8") as f:
+            f.write(briefing.markdown_content)
+
+        return {
+            "briefing": briefing,
+            "persisted_briefing_path": briefing_json_path,
+            "current_node": "briefing",
+        }
+
     def build_graph(self) -> StateGraph:
         """Constructs and wires the StateGraph workflow."""
         builder = StateGraph(TrialState)
@@ -481,6 +542,7 @@ class TrialGraphBuilder:
         builder.add_node("cross_exam", self.node_cross_exam)
         builder.add_node("odin", self.node_odin)
         builder.add_node("sufficiency", self.node_sufficiency)
+        builder.add_node("briefing", self.node_briefing)
 
         # Edges from START to Heimdall
         builder.add_edge(START, "heimdall")
@@ -489,7 +551,7 @@ class TrialGraphBuilder:
         def route_after_heimdall(state: TrialState) -> List[str] | str:
             status = state.get("overall_status", "")
             if status in ("event_not_real", "incomplete", "error"):
-                return END
+                return "briefing"
             # Parallel fan-out to Thor and Loki
             return ["thor", "loki"]
 
@@ -499,7 +561,7 @@ class TrialGraphBuilder:
             {
                 "thor": "thor",
                 "loki": "loki",
-                END: END,
+                "briefing": "briefing",
             },
         )
 
@@ -518,16 +580,18 @@ class TrialGraphBuilder:
             status = state.get("overall_status", "")
             if status == "send_back_loop":
                 return "heimdall"
-            return END
+            return "briefing"
 
         builder.add_conditional_edges(
             "sufficiency",
             route_after_sufficiency,
             {
                 "heimdall": "heimdall",
-                END: END,
+                "briefing": "briefing",
             },
         )
+
+        builder.add_edge("briefing", END)
 
         return builder.compile()
 
@@ -620,6 +684,12 @@ def main():
 
     if state.get("persisted_snapshot_path"):
         print(f"\nPersisted Run Snapshot: {state.get('persisted_snapshot_path')}")
+    if state.get("persisted_briefing_path"):
+        print(f"Persisted Briefing: {state.get('persisted_briefing_path')}")
+        b_obj = state.get("briefing")
+        if b_obj and hasattr(b_obj, "executive_summary"):
+            print("\n--- EXECUTIVE SUMMARY ---")
+            print(b_obj.executive_summary)
     print("======================================================================")
 
 

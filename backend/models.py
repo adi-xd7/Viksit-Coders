@@ -40,9 +40,11 @@ class Citation(BaseModel):
     paragraph_num: Optional[int] = None
     trade_row_ref: Optional[str] = None  # e.g., "TAB-001#5"
     quoted_text: Optional[str] = None
+    pub_date: Optional[str] = None  # Optional cited publication date (YYYY-MM-DD)
 
     def display_str(self, pub_date: Optional[str] = None) -> str:
-        date_part = f", {pub_date}" if pub_date else ""
+        eff_date = pub_date or self.pub_date
+        date_part = f", {eff_date}" if eff_date else ""
         if self.paragraph_num is not None:
             return f"[{self.doc_id} P{self.paragraph_num}{date_part}]"
         if self.trade_row_ref:
@@ -189,6 +191,7 @@ class Briefing(BaseModel):
     case_id: str
     as_of: str
     event_verification: Dict[str, Any]
+    executive_summary: str = ""
     established_findings: List[Dict[str, Any]] = Field(default_factory=list)
     contested_findings: List[Dict[str, Any]] = Field(default_factory=list)
     conceded_claims: List[Dict[str, Any]] = Field(default_factory=list)
@@ -196,6 +199,7 @@ class Briefing(BaseModel):
     exposure_table: List[ExposureRange] = Field(default_factory=list)
     next_quarter_outlook: str = ""
     assumptions: List[str] = Field(default_factory=list)
+    verification_summary: Dict[str, Any] = Field(default_factory=dict)
     traps_and_data_quality: Dict[str, Any] = Field(default_factory=dict)
     sources: List[Dict[str, Any]] = Field(default_factory=list)
     markdown_content: str = ""
