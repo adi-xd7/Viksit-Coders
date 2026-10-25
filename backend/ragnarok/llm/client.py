@@ -12,6 +12,11 @@
   case (MAX_LLM_CALLS_PER_CASE); budgets are checked before every call and
   LimitHit is raised when a call would start over budget.
 - Every request is recorded (agent, label, stage, repair, tokens) in the ledger.
+- Model chain (Gemini): each model has its own daily quota. When the model in use
+  reports its daily quota as used up (or keeps failing), the same request goes to
+  the next model in the chain; used-up models are skipped until their reset time
+  (persisted in SQLite, shared by all processes). Every switch is logged. When the
+  whole chain is used up the case pauses (QuotaPause) instead of failing.
 - Optional response cache scoped to ONE case: replies are stored per case and
   read back only when the same case is resumed, so finished steps replay
   without API calls. Never shared across cases.
@@ -26,6 +31,7 @@ import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 from typing import Any, Generic, Protocol, TypeVar
 
 from pydantic import BaseModel, ValidationError
@@ -43,6 +49,33 @@ class LLMError(RuntimeError):
 
 class LLMOutputError(LLMError):
     """Output still invalid after the single repair attempt."""
+
+
+class QuotaExhausted(LLMError):
+    """A model's daily request quota is used up (raised by a backend without retrying)."""
+
+    def __init__(self, model: str, retry_after_s: float | None, message: str) -> None:
+        super().__init__(message)
+        self.model, self.retry_after_s = model, retry_after_s
+
+
+class ModelUnavailable(LLMError):
+    """A model kept failing (server errors / timeouts) after the backend's bounded retries."""
+
+    def __init__(self, model: str, message: str) -> None:
+        super().__init__(message)
+        self.model = model
+
+
+class QuotaPause(RuntimeError):
+    """Every model in the chain has used up its daily quota: the case pauses and can be
+    resumed after `resume_after` (finished steps then replay from the case cache).
+    Deliberately not an LLMError, so no agent treats it as its own failure."""
+
+    def __init__(self, resume_after: datetime, models: list[str]) -> None:
+        super().__init__(f"daily request quota used up for {', '.join(models)}; resumable after "
+                         f"{resume_after.strftime('%Y-%m-%d %H:%M')} UTC")
+        self.resume_after, self.models = resume_after, models
 
 
 class LimitHit(RuntimeError):
@@ -189,7 +222,8 @@ class TokenLedger:
                 out[k] = out.get(k, 0) + 1
             return dict(sorted(out.items()))
         return {"calls_used": len(real), "calls_limit": self.call_limit, "cached_replays": len(recs) - len(real),
-                "repairs": sum(1 for r in real if r["repair"]),
+                "repairs": sum(1 for r in real if r["repair"]), "failed_requests": sum(1 for r in real if r.get("failed")),
+                "by_model": count(lambda r: r.get("model", "")),
                 "input_tokens": sum(r["input_tokens"] for r in real), "output_tokens": sum(r["output_tokens"] for r in real),
                 "by_agent": count(lambda r: r["agent"]), "by_stage": count(lambda r: f"run {r['run']} {r['stage']}"),
                 "by_label": count(lambda r: r["label"] + (" [repair]" if r["repair"] else ""))}
@@ -224,58 +258,153 @@ class ResponseCache:
             s.llm_cache_put(self.case_id, key, agent, label, schema_name, result_json, inp, out)
 
 
+class ModelPool:
+    """Which models are currently unusable (daily quota used up, or repeated failures), and
+    until when. Persisted in SQLite (table model_quota) when a db path is given, so the CLI,
+    the API and later cases all skip a used-up model until its reset; in memory otherwise."""
+
+    def __init__(self, db_path=None, scope: str = "") -> None:
+        self.db_path = db_path
+        self.scope = scope  # the API key's fingerprint: quotas belong to one key's project; a new key starts clean
+        self.mem: dict[str, tuple[str, str]] = {}
+        self.lock = threading.Lock()
+
+    def _name(self, model: str) -> str:
+        return f"{self.scope}|{model}" if self.scope else model
+
+    def _all(self) -> dict[str, tuple[str, str]]:
+        if self.db_path is None:
+            rows = dict(self.mem)
+        else:
+            from ragnarok.store.db import Store
+
+            with Store(self.db_path) as s:
+                rows = s.model_unavailable()
+        prefix = f"{self.scope}|" if self.scope else ""
+        return {k[len(prefix):]: v for k, v in rows.items() if (k.startswith(prefix) if prefix else "|" not in k)}
+
+    def blocked(self, now: datetime | None = None) -> dict[str, tuple[datetime, str]]:
+        now = now or datetime.now(timezone.utc)
+        out = {}
+        for m, (until, why) in self._all().items():
+            t = datetime.fromisoformat(until)
+            if t > now:
+                out[m] = (t, why)
+        return out
+
+    def mark(self, model: str, until: datetime, reason: str) -> None:
+        with self.lock:
+            if self.db_path is None:
+                self.mem[self._name(model)] = (until.isoformat(), reason)
+                return
+            from ragnarok.store.db import Store
+
+            with Store(self.db_path) as s:
+                s.set_model_unavailable(self._name(model), until.isoformat(), reason)
+
+
 class LLMClient:
     def __init__(self, settings: Settings, ledger: TokenLedger, backend: Backend | None = None,
                  on_event: Callable[[str, AgentName, str, dict], None] | None = None,
-                 cache: ResponseCache | None = None, context: Callable[[], dict] | None = None) -> None:
+                 cache: ResponseCache | None = None, context: Callable[[], dict] | None = None,
+                 pool: ModelPool | None = None) -> None:
         self.settings = settings
         self.ledger = ledger
         self.backend = backend or make_backend(settings)
         self.on_event = on_event or (lambda *a: None)
         self.cache = cache
+        self.pool = pool or ModelPool()
         self.context = context or (lambda: {"stage": "", "run": 0})  # trial stage/run at call time (for the records)
         if hasattr(self.backend, "on_retry"):  # make provider retries visible in the audit log
             self.backend.on_retry = lambda summary, payload: self.on_event("retry", AgentName.SYSTEM, summary, payload)
 
-    def model_for(self, agent: AgentName) -> str:
-        return self.settings.model_for("judge" if agent == AgentName.ODIN else "advocate")
+    def role(self, agent: AgentName) -> str:
+        return "judge" if agent == AgentName.ODIN else "advocate"
 
-    def _once(self, agent: AgentName, system: str, user: str, schema: type[T], effort: str, label: str = "",
-              repair: bool = False) -> BackendResult[T]:
-        model = self.model_for(agent)
-        ctx = self.context()
-        base = {"agent": agent.value, "label": label or schema.__name__, "schema": schema.__name__, "repair": repair,
-                "stage": ctx.get("stage", ""), "run": ctx.get("run", 0), "model": model}
-        key = ResponseCache.key(model, system, user, schema.__name__) if self.cache is not None else None
-        hit = self.cache.get(key) if key else None
-        if hit is not None:
+    def model_for(self, agent: AgentName) -> str:
+        return self.settings.model_for(self.role(agent))
+
+    def chain_for(self, agent: AgentName) -> list[str]:
+        return self.settings.model_chain(self.role(agent))
+
+    def _replay(self, agent, system, user, schema, base) -> BackendResult | None:
+        """Resume: a reply this case already received for this exact prompt, from any model of the chain."""
+        if self.cache is None or not self.cache.reading:
+            return None
+        for model in self.chain_for(agent):
+            key = ResponseCache.key(model, system, user, schema.__name__)
+            hit = self.cache.get(key)
+            if hit is None:
+                continue
             try:
                 parsed = schema.model_validate_json(hit[0])
             except (ValidationError, ValueError):
-                parsed = None
-            if parsed is not None:
-                rec = self.ledger.record(base | {"cached": True, "input_tokens": 0, "output_tokens": 0,
-                                                 "cached_tokens": hit[1] + hit[2], "stop_reason": "end_turn", "ms": 0})
-                self.on_event("cache_hit", agent, f"{rec['label']}: reply replayed from this case's response cache "
-                              "(no API request)", {"call": rec, "cache_key": key})
-                return BackendResult(parsed=parsed, raw_text=hit[0], input_tokens=0, output_tokens=0,
-                                     stop_reason="end_turn", model=model, cached=True)
-        self.ledger.check(agent)
-        t0 = time.monotonic()
-        res = self.backend.call(model=model, system=system, user=user, schema=schema, effort=effort,
-                                max_tokens=self.settings.llm_max_output_tokens, agent=agent)
-        self.ledger.add(agent, res.input_tokens, res.output_tokens)
-        self.ledger.record(base | {"cached": False, "input_tokens": res.input_tokens, "output_tokens": res.output_tokens,
-                                   "stop_reason": res.stop_reason, "ms": int((time.monotonic() - t0) * 1000)})
-        if res.stop_reason == "refusal":
-            raise LLMError(f"{agent.value}: the model refused the request")
-        if key and res.parsed is not None and res.stop_reason not in ("max_tokens", "invalid"):
+                continue
+            rec = self.ledger.record(base | {"model": model, "cached": True, "input_tokens": 0, "output_tokens": 0,
+                                             "cached_tokens": hit[1] + hit[2], "stop_reason": "end_turn", "ms": 0})
+            self.on_event("cache_hit", agent, f"{rec['label']}: reply replayed from this case's response cache "
+                          "(no API request)", {"call": rec, "cache_key": key})
+            return BackendResult(parsed=parsed, raw_text=hit[0], input_tokens=0, output_tokens=0,
+                                 stop_reason="end_turn", model=model, cached=True)
+        return None
+
+    def _once(self, agent: AgentName, system: str, user: str, schema: type[T], effort: str, label: str = "",
+              repair: bool = False) -> BackendResult[T]:
+        ctx = self.context()
+        chain = self.chain_for(agent)
+        base = {"agent": agent.value, "label": label or schema.__name__, "schema": schema.__name__, "repair": repair,
+                "stage": ctx.get("stage", ""), "run": ctx.get("run", 0), "model": chain[0]}
+        replayed = self._replay(agent, system, user, schema, base)
+        if replayed is not None:
+            return replayed
+        blocked = self.pool.blocked()
+        tried: list[str] = []
+        for model in chain:
+            if model in blocked:
+                continue
+            self.ledger.check(agent)
+            t0 = time.monotonic()
             try:
-                self.cache.put(key, agent.value, base["label"], schema.__name__, res.parsed.model_dump_json(),
-                               res.input_tokens, res.output_tokens)
-            except Exception as exc:  # noqa: BLE001 - the cache is an optimisation; never break a call
-                self.on_event("cache_error", agent, f"{base['label']}: response cache write failed: {exc}"[:500], {})
-        return res
+                res = self.backend.call(model=model, system=system, user=user, schema=schema, effort=effort,
+                                        max_tokens=self.settings.llm_max_output_tokens, agent=agent)
+            except (QuotaExhausted, ModelUnavailable) as exc:
+                quota = isinstance(exc, QuotaExhausted)
+                wait = (exc.retry_after_s or 3600.0) if quota else self.settings.model_cooldown_s
+                until = datetime.now(timezone.utc) + timedelta(seconds=wait)
+                self.pool.mark(model, until, "daily quota used up" if quota else f"unavailable: {str(exc)[:200]}")
+                blocked[model] = (until, "")
+                tried.append(model)
+                self.ledger.record(base | {"model": model, "cached": False, "failed": "quota" if quota else "unavailable",
+                                           "input_tokens": 0, "output_tokens": 0, "stop_reason": "error",
+                                           "ms": int((time.monotonic() - t0) * 1000)})
+                nxt = next((m for m in chain if m not in blocked), None)
+                self.on_event("model_switch", agent, f"{base['label']}: {model} "
+                              + ("daily request quota used up" if quota else "unavailable (server errors)")
+                              + f" until {until.strftime('%Y-%m-%d %H:%M')} UTC; "
+                              + (f"switching to {nxt}" if nxt else "no other model in the chain is available"),
+                              {"model": model, "reason": "quota" if quota else "unavailable", "until": until.isoformat(),
+                               "next_model": nxt, "chain": chain, "error": str(exc)[:300]})
+                continue
+            self.ledger.add(agent, res.input_tokens, res.output_tokens)
+            self.ledger.record(base | {"model": model, "cached": False, "input_tokens": res.input_tokens,
+                                       "output_tokens": res.output_tokens, "stop_reason": res.stop_reason,
+                                       "ms": int((time.monotonic() - t0) * 1000)})
+            if res.stop_reason == "refusal":
+                raise LLMError(f"{agent.value}: the model refused the request")
+            if self.cache is not None and res.parsed is not None and res.stop_reason not in ("max_tokens", "invalid"):
+                try:
+                    self.cache.put(ResponseCache.key(model, system, user, schema.__name__), agent.value, base["label"],
+                                   schema.__name__, res.parsed.model_dump_json(), res.input_tokens, res.output_tokens)
+                except Exception as exc:  # noqa: BLE001 - the cache is an optimisation; never break a call
+                    self.on_event("cache_error", agent, f"{base['label']}: response cache write failed: {exc}"[:500], {})
+            return res
+        # nothing left in the chain
+        quota_blocked = {m: t for m, (t, why) in self.pool.blocked().items() if m in chain and "quota" in why}
+        if quota_blocked and self.settings.quota_pause:
+            raise QuotaPause(min(quota_blocked.values()), chain)
+        raise LLMError(f"{agent.value}: no model available in the chain ({', '.join(chain)}): "
+                       + "; ".join(f"{m} until {t.strftime('%H:%M')} UTC" for m, (t, _) in self.pool.blocked().items()
+                                   if m in chain))
 
     def structured(self, agent: AgentName, system: str, user: str, schema: type[T], *, effort: str = "medium",
                    validate: Validator | None = None, label: str = "", allow_residual: bool = False,

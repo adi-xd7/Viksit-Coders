@@ -248,6 +248,31 @@ def test_run2_is_delta_only(world, settings):
     assert "T2-1" in eff.payload["claims_citing_new_evidence"]
 
 
+def test_exclude_filter_leaves_out_given_paragraphs(world, settings):
+    from ragnarok.retrieval.types import SearchFilters
+    store, svc = world
+    s12 = settings.model_copy(update={"max_evidence_per_query": 12})
+    svc12 = RetrievalService(store, s12, index=svc.index)
+    first = svc12.search("grain loadings lock closure", AS_OF, "heimdall", case_id="x1")
+    top = [h.chunk_id for h in first.hits[:3]]
+    again = svc12.search("grain loadings lock closure", AS_OF, "heimdall", SearchFilters(exclude_chunks=top), case_id="x1")
+    assert not again.reused and not set(top) & {h.chunk_id for h in again.hits}  # a different request, not the cached one
+    q = [e for e in store.events("x1") if e.type == LogEventType.QUERY][-1]
+    assert q.payload["filters"]["exclude_chunks"] == "3 already-retrieved paragraph(s)"  # a count in the log, not the list
+
+
+def test_sendback_searches_look_past_run1_evidence(world, settings):
+    t, b = trial(world, settings, TWO_RUNS)
+    r = t.run()
+    store = world[0]
+    run1 = {ref for e in store.events(t.case_id) if e.type == LogEventType.RETRIEVED and e.run_number == 1 for ref in e.refs}
+    h2 = [e for e in store.events(t.case_id) if e.type == LogEventType.RETRIEVED and e.agent.value == "heimdall"
+          and e.run_number == 2 and e.payload.get("query_seq")]
+    assert h2 and all(not ({ref for ref in e.refs if "#P" in ref} & run1) for e in h2)
+    prompt = next(c["user"] for c in b.calls if c["schema"] == "ResearchFindings")
+    assert "already retrieved in earlier runs" in prompt and r.runs_completed == 2
+
+
 def test_run2_revision_without_new_evidence_is_dropped(world, settings):
     def thor_resummary(user, n):  # "revises" T1-1 citing only its run-1 evidence
         return S.AdvocateRevision(claims=[S.RevisedClaimDraft(
@@ -285,6 +310,34 @@ def test_resumed_complete_case_replays_without_api_calls(world, settings):
     assert [(x.claim_id, x.verdict) for x in r2.odin.rulings] == [(x.claim_id, x.verdict) for x in r1.odin.rulings]
     replayed = [e for e in events(world[0], t1.case_id, LogEventType.MEMORY_WRITE) if e.payload.get("replayed")]
     assert replayed  # lessons from attempt 1 are not reinforced twice
+
+
+def test_resume_does_not_depend_on_parallel_timing(world, settings):
+    """Thor and Loki answer attacks in parallel; with real models the order of their records depends on
+    which reply arrives first. A replay (instant replies) must still rebuild Odin's prompt exactly."""
+    import time
+
+    slow = default_handlers()[("thor", "ResponseSet")]
+
+    def thor_slow(user, n):  # attempt 1: Thor's answer arrives well after Loki's
+        time.sleep(0.5)
+        return slow(user, n)
+
+    def loki_defends(user, n):  # both advocates defend, so both write into the same list
+        import re
+        aids = re.findall(r"\[(A\d+-[TL]\d+)\]", user.split("<attacks_on_your_claims>")[1])
+        return S.ResponseSet(responses=[S.ResponseDraft(attack_id=a, response="defend", argument="Stocks cushion the gap.",
+                                                        new_evidence=[C("SYN-0003", "P2", "Stocks cover about six weeks of demand.")])
+                                        for a in aids])
+    over = {("thor", "ResponseSet"): thor_slow, ("loki", "ResponseSet"): loki_defends}
+    t1, b1 = trial(world, settings, over)
+    r1 = t1.run()
+    ids1 = [d.attack_id for d in r1.cross_exam.defenses]
+    assert len({i[3] for i in ids1}) == 2 and ids1 == sorted(ids1)  # Thor's (late) defense still sorted into place
+    t2, b2 = trial(world, settings, over, case_id=t1.case_id)
+    r2 = t2.run()
+    assert b2.calls == [] and r2.history == r1.history  # Odin's verdict replayed too: identical prompt
+    assert [d.attack_id for d in r2.cross_exam.defenses] == ids1
 
 
 def test_case_failing_midway_resumes_with_only_the_missing_calls(world, settings):

@@ -9,12 +9,17 @@ validated against it in code (never trusted unparsed).
 - Finish reasons: MAX_TOKENS -> "max_tokens"; safety / blocklist / prohibited
   content and prompt blocks -> "refusal" (LLMClient turns that into LLMError).
 - Rate limits: an optional minimum interval between request starts (shared by
-  all agent threads), and bounded retries on 429 / 5xx / timeouts that honour
-  the server's retryDelay. Other errors are not retried.
+  all agent threads), and bounded retries on per-minute 429s that honour the
+  server's retryDelay. A DAILY quota 429 is not retried (every attempt would count
+  against the same exhausted quota): QuotaExhausted is raised at once with the
+  server's reset delay, so LLMClient can move to the next model of its chain.
+  5xx / timeouts: LLM_SERVER_RETRIES retries, then ModelUnavailable. Other errors
+  are not retried.
 """
 
 from __future__ import annotations
 
+import json
 import re
 import threading
 import time
@@ -23,7 +28,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from ragnarok.config import Settings
-from ragnarok.llm.client import BackendResult, LLMError
+from ragnarok.llm.client import BackendResult, LLMError, ModelUnavailable, QuotaExhausted
 
 _REFUSAL = {"SAFETY", "PROHIBITED_CONTENT", "BLOCKLIST", "SPII", "RECITATION", "IMAGE_SAFETY"}
 _RETRY_CODES = {429, 500, 502, 503, 504}
@@ -46,6 +51,13 @@ def retry_delay(exc: Exception) -> float | None:
         if m:
             return float(m.group(1))
     return None
+
+
+def is_daily_quota(exc: Exception) -> bool:
+    """A 429 whose QuotaFailure names a per-day quota (e.g. GenerateRequestsPerDayPerProjectPerModel-FreeTier)."""
+    details = getattr(exc, "details", None)
+    text = (json.dumps(details) if details is not None else "") + str(exc)
+    return bool(re.search(r"PerDay", text))
 
 
 class _Pacer:
@@ -90,21 +102,32 @@ class GeminiBackend:
         import httpx
 
         s = self.settings
-        attempts = max(s.max_retries, s.llm_rate_limit_retries) + 1
+        attempts = max(s.max_retries, s.llm_rate_limit_retries, s.llm_server_retries) + 1
+        server_failures = 0
         for i in range(attempts):
             PACER.wait(s.llm_min_interval_s, sleep=self.sleep)
             try:
                 return self.client.models.generate_content(model=model, contents=user, config=config)
             except self.errors.APIError as exc:
                 code = getattr(exc, "code", None)
-                if code not in _RETRY_CODES or i == attempts - 1:
+                if code == 429 and is_daily_quota(exc):
+                    raise QuotaExhausted(model, retry_delay(exc), f"{model}: daily request quota used up "
+                                         f"(429): {str(exc)[:300]}") from exc
+                if code in (500, 502, 503, 504):
+                    server_failures += 1
+                    if server_failures > s.llm_server_retries:
+                        raise ModelUnavailable(model, f"{model}: API error {code} after {i + 1} attempt(s): "
+                                               f"{str(exc)[:300]}") from exc
+                if code not in _RETRY_CODES or i == attempts - 1 or (code == 429 and i >= s.llm_rate_limit_retries):
                     kind = "rate limited" if code == 429 else f"API error {code}"
                     raise LLMError(f"{kind} after {i + 1} attempt(s): {str(exc)[:300]}") from exc
                 wait = retry_delay(exc) or min(5.0 * 2 ** i, s.llm_rate_limit_max_wait_s)
                 reason = f"HTTP {code}"
             except (httpx.TimeoutException, httpx.TransportError) as exc:
-                if i >= s.max_retries:
-                    raise LLMError(f"request failed after {i + 1} attempt(s): {type(exc).__name__}: {exc}") from exc
+                server_failures += 1
+                if server_failures > min(s.max_retries, s.llm_server_retries):
+                    raise ModelUnavailable(model, f"{model}: request failed after {i + 1} attempt(s): "
+                                           f"{type(exc).__name__}: {exc}") from exc
                 wait = min(5.0 * 2 ** i, s.llm_rate_limit_max_wait_s)
                 reason = type(exc).__name__
             pause = min(wait + 1.0, s.llm_rate_limit_max_wait_s)
