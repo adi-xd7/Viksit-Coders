@@ -1,0 +1,370 @@
+{
+  "active": [
+    "T1-1",
+    "T1-2",
+    "T1-3",
+    "L1-1",
+    "L1-2",
+    "L1-3",
+    "L1-4"
+  ],
+  "superseded": {},
+  "claims": [
+    {
+      "claim_id": "T1-1",
+      "run_number": 1,
+      "agent": "thor",
+      "text": "Midgard wheat imports from Orvan experienced severe declines post-corridor expiration, demonstrating high trade exposure.",
+      "country": "Midgard",
+      "sector": "wheat",
+      "claim_type": "inference",
+      "citations": [
+        {
+          "doc_id": "ORV-0009",
+          "paragraph_ref": null,
+          "row_id": "ORV-0009#R3",
+          "pub_date": "2027-01-19",
+          "quote": "In September 2026, the value was USD 38.2M and the volume was 93,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0009",
+          "paragraph_ref": null,
+          "row_id": "ORV-0009#R9",
+          "pub_date": "2027-01-19",
+          "quote": "In September 2025, the value was USD 97.9M and the volume was 272,000 tonnes."
+        }
+      ],
+      "assumptions": [
+        "Trade reduction directly reflects corridor agreement expiration."
+      ],
+      "exposure": {
+        "estimate_id": "E-thor",
+        "agent": "thor",
+        "country": "Midgard",
+        "sector": "wheat",
+        "metric": "YoY import value loss",
+        "metric_definition": "Year-over-year reduction in wheat import value from Orvan following corridor expiration",
+        "unit": "USD M",
+        "currency": "USD",
+        "period": "Post-expiration 2026 vs 2025",
+        "denominator": "N/A",
+        "low": 156.5,
+        "high": 216.2,
+        "insufficient_evidence": false,
+        "evidence": [],
+        "trade_row_refs": [
+          "ORV-0009#R10",
+          "ORV-0009#R11",
+          "ORV-0009#R12",
+          "ORV-0009#R3",
+          "ORV-0009#R4",
+          "ORV-0009#R5",
+          "ORV-0009#R6",
+          "ORV-0009#R9"
+        ],
+        "calculation_ids": [
+          "CALC-cb98e8e7d6f3bbe6",
+          "CALC-2471c1be02c2601c"
+        ],
+        "assumptions": [
+          "Corridor expiration drove the monthly YoY deficit."
+        ],
+        "missing_data": [
+          "Alternative rail imports not fully captured."
+        ],
+        "confidence": "high",
+        "uncertainty_note": "Range depends on whether September 2026 transition month is included."
+      },
+      "limitations": [
+        "Excludes potential rail diversion."
+      ],
+      "calculation_ids": [
+        "CALC-cb98e8e7d6f3bbe6",
+        "CALC-2471c1be02c2601c"
+      ],
+      "revises_claim_id": null
+    },
+    {
+      "claim_id": "T1-2",
+      "run_number": 1,
+      "agent": "thor",
+      "text": "Midgard maize imports dropped substantially following the expiration of delayed delivery terms, leading to high exposure.",
+      "country": "Midgard",
+      "sector": "maize",
+      "claim_type": "inference",
+      "citations": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R5",
+          "pub_date": "2027-01-21",
+          "quote": "In November 2026, the value was USD 31.9M and the volume was 75,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R11",
+          "pub_date": "2027-01-21",
+          "quote": "In November 2025, the value was USD 84.7M and the volume was 223,000 tonnes."
+        }
+      ],
+      "assumptions": [
+        "Delayed deliveries postponed post-expiration impact until late Q4 2026."
+      ],
+      "exposure": {
+        "estimate_id": "E-thor",
+        "agent": "thor",
+        "country": "Midgard",
+        "sector": "maize",
+        "metric": "YoY import value loss",
+        "metric_definition": "Year-over-year reduction in maize import value from Orvan post-expiration",
+        "unit": "USD M",
+        "currency": "USD",
+        "period": "Post-expiration 2026 vs 2025",
+        "denominator": "N/A",
+        "low": 105.7,
+        "high": 126.4,
+        "insufficient_evidence": false,
+        "evidence": [],
+        "trade_row_refs": [
+          "ORV-0030#R10",
+          "ORV-0030#R11",
+          "ORV-0030#R12",
+          "ORV-0030#R4",
+          "ORV-0030#R5",
+          "ORV-0030#R6"
+        ],
+        "calculation_ids": [
+          "CALC-c4d8aa36b4090272",
+          "CALC-8b68f9523d386676"
+        ],
+        "assumptions": [
+          "November-December drop demonstrates full effect after delayed contracts cleared."
+        ],
+        "missing_data": [
+          "Exact baseline substitution levels."
+        ],
+        "confidence": "high",
+        "uncertainty_note": "Lower bound uses Nov-Dec post-expiration window; upper bound includes October transition."
+      },
+      "limitations": [
+        "Alternative grain sources not factored into gross trade loss."
+      ],
+      "calculation_ids": [
+        "CALC-c4d8aa36b4090272",
+        "CALC-8b68f9523d386676"
+      ],
+      "revises_claim_id": null
+    },
+    {
+      "claim_id": "T1-3",
+      "run_number": 1,
+      "agent": "thor",
+      "text": "Tolan wheat imports suffered immediate and persistent losses following the end of the Orvan corridor agreement.",
+      "country": "Tolan",
+      "sector": "wheat",
+      "claim_type": "inference",
+      "citations": [
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": null,
+          "row_id": "ORV-0046#R3",
+          "pub_date": "2027-01-20",
+          "quote": "In September 2026, the value was USD 17.0M and the volume was 43,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": null,
+          "row_id": "ORV-0046#R9",
+          "pub_date": "2027-01-20",
+          "quote": "In September 2025, the value was USD 43.4M and the volume was 124,000 tonnes."
+        }
+      ],
+      "assumptions": [
+        "Tolan relies heavily on Orvan maritime wheat shipments."
+      ],
+      "exposure": {
+        "estimate_id": "E-thor",
+        "agent": "thor",
+        "country": "Tolan",
+        "sector": "wheat",
+        "metric": "YoY import value loss",
+        "metric_definition": "Year-over-year reduction in wheat import value from Orvan",
+        "unit": "USD M",
+        "currency": "USD",
+        "period": "Post-expiration 2026 vs 2025",
+        "denominator": "N/A",
+        "low": 69.6,
+        "high": 96.0,
+        "insufficient_evidence": false,
+        "evidence": [],
+        "trade_row_refs": [
+          "ORV-0046#R10",
+          "ORV-0046#R11",
+          "ORV-0046#R12",
+          "ORV-0046#R3",
+          "ORV-0046#R4",
+          "ORV-0046#R5",
+          "ORV-0046#R6",
+          "ORV-0046#R9"
+        ],
+        "calculation_ids": [
+          "CALC-d0e20968679cf6e7",
+          "CALC-c1d6da086b7f9f04"
+        ],
+        "assumptions": [
+          "Corridor expiration is primary driver of import fall."
+        ],
+        "missing_data": [
+          "Exact Vanir offset numbers not fully itemized."
+        ],
+        "confidence": "high",
+        "uncertainty_note": "Depends on inclusion of September 2026 transition month."
+      },
+      "limitations": [
+        "Vanir offset volumes are relatively small."
+      ],
+      "calculation_ids": [
+        "CALC-d0e20968679cf6e7",
+        "CALC-c1d6da086b7f9f04"
+      ],
+      "revises_claim_id": null
+    },
+    {
+      "claim_id": "L1-1",
+      "run_number": 1,
+      "agent": "loki",
+      "text": "Midgard's post-expiration wheat import decline from Orvan was limited to a net YoY reduction of USD 156.5M to USD 216.2M across the late 2026 months, buffered partly by alternative Vanir exports.",
+      "country": "Midgard",
+      "sector": "wheat",
+      "claim_type": "inference",
+      "citations": [
+        {
+          "doc_id": "ORV-0009",
+          "paragraph_ref": null,
+          "row_id": "ORV-0009#R3",
+          "pub_date": "2027-01-19",
+          "quote": "In September 2026, the value was USD 38.2M and the volume was 93,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0024",
+          "paragraph_ref": "P6",
+          "row_id": null,
+          "pub_date": "2026-09-12",
+          "quote": "Vanir also sells wheat, and some of that supply can reach Tolan and Midgard."
+        }
+      ],
+      "assumptions": [
+        "Post-expiration disruption is evaluated based on year-over-year changes post-September 2026.",
+        "Vanir wheat exports partially offset losses."
+      ],
+      "exposure": null,
+      "limitations": [
+        "Does not capture exact pricing adjustments or rail freight costs.",
+        "estimate removed by code: low -156.5 is greater than high -216.2"
+      ],
+      "calculation_ids": [
+        "CALC-cb98e8e7d6f3bbe6",
+        "CALC-2471c1be02c2601c"
+      ],
+      "revises_claim_id": null
+    },
+    {
+      "claim_id": "L1-2",
+      "run_number": 1,
+      "agent": "loki",
+      "text": "Midgard's maize import exposure following the Orvan corridor expiration was delayed and limited to between USD 126.4M and USD 128.7M in YoY import reductions due to delayed delivery terms.",
+      "country": "Midgard",
+      "sector": "maize",
+      "claim_type": "inference",
+      "citations": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "The October volume held up longer than the wheat routes because a share of the maize trade was on delayed delivery terms."
+        },
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R4",
+          "pub_date": "2027-01-21",
+          "quote": "In October 2026, the value was USD 62.1M and the volume was 146,000 tonnes."
+        }
+      ],
+      "assumptions": [
+        "Delayed delivery terms provided a buffer against immediate post-expiration supply drops in October 2026."
+      ],
+      "exposure": null,
+      "limitations": [
+        "Delayed delivery terms only temporary buffer trade flow.",
+        "estimate removed by code: low -126.4 is greater than high -128.7"
+      ],
+      "calculation_ids": [
+        "CALC-8b68f9523d386676",
+        "CALC-700fa3f8b8920c34"
+      ],
+      "revises_claim_id": null
+    },
+    {
+      "claim_id": "L1-3",
+      "run_number": 1,
+      "agent": "loki",
+      "text": "Tolan wheat imports saw moderate post-expiration declines from Orvan, but exposure is mitigated by alternative shipments from Vanir.",
+      "country": "Tolan",
+      "sector": "wheat",
+      "claim_type": "fact",
+      "citations": [
+        {
+          "doc_id": "ORV-0035",
+          "paragraph_ref": "P4",
+          "row_id": null,
+          "pub_date": "2027-01-14",
+          "quote": "Rail loadings through Ravik remain high, and Vanir has increased wheat shipments to Tolan and Midgard."
+        },
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": null,
+          "row_id": "ORV-0046#R3",
+          "pub_date": "2027-01-20",
+          "quote": "In September 2026, the value was USD 17.0M and the volume was 43,000 tonnes."
+        }
+      ],
+      "assumptions": [
+        "Vanir wheat shipments buffer Tolan's import gap."
+      ],
+      "exposure": null,
+      "limitations": [
+        "Exact low and high range bounds calculation blocked by missing comprehensive trade calculation records for Tolan."
+      ],
+      "calculation_ids": [],
+      "revises_claim_id": null
+    },
+    {
+      "claim_id": "L1-4",
+      "run_number": 1,
+      "agent": "loki",
+      "text": "Tolan's maize exposure cannot be quantified directly from official trade tables due to absent trade records, representing a major data gap.",
+      "country": "Tolan",
+      "sector": "maize",
+      "claim_type": "fact",
+      "citations": [
+        {
+          "doc_id": "ORV-0024",
+          "paragraph_ref": "P3",
+          "row_id": null,
+          "pub_date": "2026-09-12",
+          "quote": "Under the agreement, sea exports ran at about 95% of the old normal."
+        }
+      ],
+      "assumptions": [],
+      "exposure": null,
+      "limitations": [
+        "Complete monthly trade volume and value series for Tolan maize imports from Orvan are missing."
+      ],
+      "calculation_ids": [],
+      "revises_claim_id": null
+    }
+  ]
+}
