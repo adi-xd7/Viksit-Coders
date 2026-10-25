@@ -1,0 +1,8 @@
+DOC_ID: ALT-E6-0004
+PUB_DATE: 2026-12-15
+RELIABILITY: 2
+COUNTRY: Vanaheim
+SECTOR: timber
+---
+[P1] Commercial freight operators have established secondary overland timber hauling via the Western Ridge Spur.
+[P2] The Western Ridge road network can absorb approximately 15,000 tonnes per month, mitigating up to 12% of lost volume.

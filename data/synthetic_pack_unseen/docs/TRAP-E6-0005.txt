@@ -1,0 +1,8 @@
+DOC_ID: TRAP-E6-0005
+PUB_DATE: 2026-11-20
+RELIABILITY: 4
+COUNTRY: Vanaheim
+SECTOR: timber
+---
+[P1] Unverified rumours claim catastrophic sabotage destroyed all warehouses across Vanaheim, wiping out 100% of global timber reserves.
+[P2] Sources close to anonymous dockworkers claim Midgard will experience immediate collapse of all timber operations tomorrow.

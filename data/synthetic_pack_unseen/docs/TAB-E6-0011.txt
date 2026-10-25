@@ -1,0 +1,11 @@
+DOC_ID: TAB-E6-0011
+PUB_DATE: 2026-12-22
+RELIABILITY: 2
+COUNTRY: Vanaheim
+SECTOR: timber
+---
+[P1] Damaged regional trade reporting.
+Month | Route | Value_USD | Volume_Tonnes
+2026-06 | Ridge Road | 5000000 | 15000
+2026-07 | Ridge Road | CORRUPTED | 15000
+2026-07 | Ridge Road | 5200000 | 15200

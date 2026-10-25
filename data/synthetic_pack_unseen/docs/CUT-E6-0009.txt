@@ -1,0 +1,5 @@
+DOC_ID: CUT-E6-0009
+PUB_DATE: 2026-12-12
+RELIABILITY: 2
+---
+[P1] Urgent notice regarding downstream lock water levels. The river has experienced an abrupt

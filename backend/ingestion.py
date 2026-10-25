@@ -250,7 +250,13 @@ class IngestionEngine:
 
         result = IngestionResult()
         manifest_data = self.load_manifest()
-        meta_by_id = {d["DOC_ID"]: d for d in manifest_data.get("documents", [])}
+        if isinstance(manifest_data, list):
+            doc_list = manifest_data
+        elif isinstance(manifest_data, dict):
+            doc_list = manifest_data.get("documents", [])
+        else:
+            doc_list = []
+        meta_by_id = {d["DOC_ID"]: d for d in doc_list if isinstance(d, dict) and "DOC_ID" in d}
 
         if not os.path.exists(self.docs_dir):
             logger.warning("Docs directory does not exist: %s", self.docs_dir)

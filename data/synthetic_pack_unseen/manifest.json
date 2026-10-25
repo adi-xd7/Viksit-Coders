@@ -1,0 +1,122 @@
+[
+  {
+    "DOC_ID": "ATL-E6-0001",
+    "PUB_DATE": "2026-05-10",
+    "RELIABILITY": 1,
+    "COUNTRY": "Vanaheim",
+    "SECTOR": "timber",
+    "SOURCE_NAME": "High Realm Cartographic Bureau",
+    "SOURCE_TYPE": "atlas",
+    "FORMAT": "pdf"
+  },
+  {
+    "DOC_ID": "DIS-E6-0002",
+    "PUB_DATE": "2026-11-15",
+    "RELIABILITY": 1,
+    "COUNTRY": "Vanaheim",
+    "SECTOR": "timber",
+    "SOURCE_NAME": "Ministry of Transit",
+    "SOURCE_TYPE": "government_notice",
+    "FORMAT": "docx"
+  },
+  {
+    "DOC_ID": "TAB-E6-0003",
+    "PUB_DATE": "2026-12-01",
+    "RELIABILITY": 1,
+    "COUNTRY": "Vanaheim",
+    "SECTOR": "timber",
+    "SOURCE_NAME": "Realm Central Statistical Office",
+    "SOURCE_TYPE": "trade_table",
+    "FORMAT": "txt"
+  },
+  {
+    "DOC_ID": "ALT-E6-0004",
+    "PUB_DATE": "2026-12-15",
+    "RELIABILITY": 2,
+    "COUNTRY": "Vanaheim",
+    "SECTOR": "timber",
+    "SOURCE_NAME": "Southern Hauliers Gazette",
+    "SOURCE_TYPE": "industry_report",
+    "FORMAT": "txt"
+  },
+  {
+    "DOC_ID": "TRAP-E6-0005",
+    "PUB_DATE": "2026-11-20",
+    "RELIABILITY": 4,
+    "COUNTRY": "Vanaheim",
+    "SECTOR": "timber",
+    "SOURCE_NAME": "Tavern Daily Whispers",
+    "SOURCE_TYPE": "tabloid_rumour",
+    "FORMAT": "txt"
+  },
+  {
+    "DOC_ID": "RET-E6-0006",
+    "PUB_DATE": "2026-11-25",
+    "RELIABILITY": 1,
+    "COUNTRY": "Vanaheim",
+    "SECTOR": "timber",
+    "SOURCE_NAME": "Ministry of Transit",
+    "SOURCE_TYPE": "retraction_bulletin",
+    "FORMAT": "txt"
+  },
+  {
+    "DOC_ID": "INJ-E6-0007",
+    "PUB_DATE": "2026-12-05",
+    "RELIABILITY": 3,
+    "COUNTRY": "Vanaheim",
+    "SECTOR": "timber",
+    "SOURCE_NAME": "Harbor Clearance Dispatch",
+    "SOURCE_TYPE": "port_bulletin",
+    "FORMAT": "txt"
+  },
+  {
+    "DOC_ID": "DMG-E6-0008",
+    "PUB_DATE": "2026-12-10",
+    "RELIABILITY": 2,
+    "COUNTRY": "Vanaheim",
+    "SECTOR": "timber",
+    "SOURCE_NAME": "Corrupted Transmission",
+    "SOURCE_TYPE": "damaged",
+    "FORMAT": "txt"
+  },
+  {
+    "DOC_ID": "CUT-E6-0009",
+    "PUB_DATE": "2026-12-12",
+    "RELIABILITY": 2,
+    "COUNTRY": "Vanaheim",
+    "SECTOR": "timber",
+    "SOURCE_NAME": "Lockmaster Station 3",
+    "SOURCE_TYPE": "cut_off",
+    "FORMAT": "txt"
+  },
+  {
+    "DOC_ID": "ENC-E6-0010",
+    "PUB_DATE": "2026-12-20",
+    "RELIABILITY": 2,
+    "COUNTRY": "Vanaheim",
+    "SECTOR": "timber",
+    "SOURCE_NAME": "Glacial Railway Log",
+    "SOURCE_TYPE": "rail_bulletin",
+    "FORMAT": "txt"
+  },
+  {
+    "DOC_ID": "TAB-E6-0011",
+    "PUB_DATE": "2026-12-22",
+    "RELIABILITY": 2,
+    "COUNTRY": "Vanaheim",
+    "SECTOR": "timber",
+    "SOURCE_NAME": "Provincial Revenue Ledger",
+    "SOURCE_TYPE": "trade_table",
+    "FORMAT": "txt"
+  },
+  {
+    "DOC_ID": "CLK-E6-0012",
+    "PUB_DATE": "2027-03-01",
+    "RELIABILITY": 1,
+    "COUNTRY": "Vanaheim",
+    "SECTOR": "timber",
+    "SOURCE_NAME": "Annual Infrastructure Review",
+    "SOURCE_TYPE": "retrospective",
+    "FORMAT": "txt"
+  }
+]

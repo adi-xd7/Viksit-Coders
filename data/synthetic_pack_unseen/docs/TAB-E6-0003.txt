@@ -1,0 +1,13 @@
+DOC_ID: TAB-E6-0003
+PUB_DATE: 2026-12-01
+RELIABILITY: 1
+COUNTRY: Vanaheim
+SECTOR: timber
+---
+[P1] Monthly trade volumes for Vanaheim timber exports to Midgard through South Reach.
+Month | Route | Value_USD | Volume_Tonnes
+2026-06 | South Reach Sluice | 45000000 | 120000
+2026-07 | South Reach Sluice | 48000000 | 125000
+2026-08 | South Reach Sluice | 52000000 | 130000
+2026-09 | South Reach Sluice | 50000000 | 128000
+2026-10 | South Reach Sluice | 47000000 | 122000

@@ -1,0 +1,8 @@
+DOC_ID: CLK-E6-0012
+PUB_DATE: 2027-03-01
+RELIABILITY: 1
+COUNTRY: Vanaheim
+SECTOR: timber
+---
+[P1] Post-investigation retrospective published in March 2027.
+[P2] Complete sluice restoration was completed in February 2027, reopening all corridors.

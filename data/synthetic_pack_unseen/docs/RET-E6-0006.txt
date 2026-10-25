@@ -1,0 +1,8 @@
+DOC_ID: RET-E6-0006
+PUB_DATE: 2026-11-25
+RELIABILITY: 1
+COUNTRY: Vanaheim
+SECTOR: timber
+---
+[P1] RETRACTION: The Ministry of Transit formally retracts claims of warehouse destruction published in TRAP-E6-0005.
+[P2] Storage facilities remain fully operational; disruption is strictly confined to sluice canal transit locks.
