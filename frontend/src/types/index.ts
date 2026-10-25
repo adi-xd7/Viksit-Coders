@@ -58,8 +58,10 @@ export interface ExposureEstimate {
   metric: string;
   unit: string;
   period: string;
-  lower_bound: number;
-  upper_bound: number;
+  lower_bound?: number;
+  upper_bound?: number;
+  min_estimate?: number;
+  max_estimate?: number;
   point_estimate?: number | null;
   baseline_or_denominator?: string | null;
   calculation_methodology?: string | null;
@@ -73,26 +75,36 @@ export interface Claim {
   claim_type: 'sourced_fact' | 'inference';
   citations: EvidenceReference[];
   exposure_estimate?: ExposureEstimate | null;
+  adjudicated_range?: ExposureEstimate | null;
   is_contested?: boolean;
   is_conceded?: boolean;
 }
 
 export interface CrossExamination {
-  attack_id: string;
-  attacker: 'loki' | 'thor';
+  challenge_id?: string;
+  attack_id?: string;
+  challenger?: 'loki' | 'thor';
+  attacker?: 'loki' | 'thor';
   target_claim_id: string;
-  attack_type: string;
-  argument: string;
-  counter_citations: EvidenceReference[];
+  challenge_type?: string;
+  attack_type?: string;
+  objection?: string;
+  reasoning?: string;
+  argument?: string;
+  counter_citations?: EvidenceReference[];
 }
 
 export interface Concession {
   concession_id: string;
-  advocate: 'loki' | 'thor';
+  agent?: 'loki' | 'thor';
+  advocate?: 'loki' | 'thor';
+  target_challenge_id?: string | null;
   target_claim_id: string;
   action: 'concede' | 'defend' | 'adjust_range';
   reason: string;
   adjusted_range?: ExposureEstimate | null;
+  adjusted_estimates?: ExposureEstimate[];
+  defence_citations?: EvidenceReference[];
 }
 
 export interface ClaimRuling {

@@ -260,62 +260,88 @@ export const CouncilVerdict: React.FC<CouncilVerdictProps> = ({
                   "{ruling.claim_statement}"
                 </div>
 
+                {/* Advocate Positions */}
+                {(ruling.thor_position || ruling.loki_position) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    {ruling.thor_position && (
+                      <div className="p-3 rounded bg-amber-50/70 border border-amber-200 text-xs text-amber-950">
+                        <strong className="text-amber-900 block mb-1 font-sans uppercase tracking-wider text-xs">
+                          ⚡ Thor's Assertion (High-Exposure):
+                        </strong>
+                        <p className="m-0 leading-relaxed font-serif text-stone-900">{ruling.thor_position}</p>
+                      </div>
+                    )}
+                    {ruling.loki_position && (
+                      <div className="p-3 rounded bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-950">
+                        <strong className="text-emerald-900 block mb-1 font-sans uppercase tracking-wider text-xs">
+                          🐍 Loki's Position (Mitigating Defense):
+                        </strong>
+                        <p className="m-0 leading-relaxed font-serif text-stone-900">{ruling.loki_position}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Adjudicated Range if present */}
                 {ruling.adjudicated_range && (
-                  <div className="mb-2 p-2 rounded bg-amber-50 border border-amber-200 text-xs text-stone-800 font-mono">
-                    <span className="font-bold text-amber-900">Adjudicated Range:</span> {ruling.adjudicated_range.lower_bound} to {ruling.adjudicated_range.upper_bound} {ruling.adjudicated_range.unit} ({ruling.adjudicated_range.metric} for {ruling.adjudicated_range.country})
+                  <div className="mb-2 p-2.5 rounded bg-amber-50 border border-amber-200 text-xs text-stone-800 font-mono">
+                    <span className="font-bold text-amber-900">Adjudicated Range: </span>
+                    {ruling.adjudicated_range.lower_bound ?? ruling.adjudicated_range.min_estimate}% to {ruling.adjudicated_range.upper_bound ?? ruling.adjudicated_range.max_estimate}% {ruling.adjudicated_range.unit} ({ruling.adjudicated_range.metric} for {ruling.adjudicated_range.country})
                   </div>
                 )}
 
                 {/* Judicial Reasoning */}
-                <div className="text-xs text-stone-700 mb-3 bg-stone-50 p-2.5 rounded border border-stone-200">
+                <div className="text-xs text-stone-700 mb-3 bg-stone-50 p-3 rounded border border-stone-200 leading-relaxed">
                   <span className="font-semibold text-stone-900">Odin's Rationale: </span>
                   {ruling.reasoning}
                 </div>
 
+                {ruling.discrepancy_notes && (
+                  <div className="text-xs text-amber-900 mb-2 p-2 rounded bg-amber-50/80 border border-amber-200">
+                    <strong>Evidentiary Discrepancy Note: </strong>{ruling.discrepancy_notes}
+                  </div>
+                )}
+
                 {/* Citations & Evidence Breakdown */}
-                <div className="flex flex-col sm:flex-row items-start justify-between gap-3 text-xs pt-2 border-t border-stone-100">
-                  <div className="flex-1">
-                    <span className="font-semibold text-stone-600 block mb-1">Supporting Citations:</span>
-                    {ruling.supporting_citations.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
+                <div className="space-y-2 text-xs pt-2 border-t border-stone-100">
+                  {ruling.supporting_citations.length > 0 && (
+                    <div>
+                      <span className="font-semibold text-stone-700 block mb-1">Supporting Admissible Citations:</span>
+                      <div className="space-y-1">
                         {ruling.supporting_citations.map((c, idx) => (
-                          <span
-                            key={idx}
-                            className="font-mono px-1.5 py-0.5 rounded bg-green-50 border border-green-200 text-green-900 text-xs"
-                            title={c.quote_or_datapoint}
-                          >
-                            {c.doc_id} {c.paragraph || ''}
-                          </span>
+                          <div key={idx} className="p-1.5 rounded bg-green-50/60 border border-green-200 text-xs text-stone-800">
+                            <span className="font-mono font-bold text-green-950 mr-2">{c.doc_id} {c.paragraph || ''}</span>
+                            <span className="text-stone-500 font-mono text-xs mr-2">[{c.source_name || ''} · Tier {c.reliability_tier || 1}]</span>
+                            <span className="italic">"{c.quote_or_datapoint}"</span>
+                          </div>
                         ))}
                       </div>
-                    ) : (
-                      <span className="text-stone-400 italic">None admissible</span>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {ruling.contradicting_citations.length > 0 && (
-                    <div className="flex-1">
-                      <span className="font-semibold text-amber-800 block mb-1">Counter Citations:</span>
-                      <div className="flex flex-wrap gap-1">
+                    <div className="mt-2">
+                      <span className="font-semibold text-rose-800 block mb-1">Contradicting Counter Citations:</span>
+                      <div className="space-y-1">
                         {ruling.contradicting_citations.map((c, idx) => (
-                          <span
-                            key={idx}
-                            className="font-mono px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-900 text-xs"
-                            title={c.quote_or_datapoint}
-                          >
-                            {c.doc_id} {c.paragraph || ''}
-                          </span>
+                          <div key={idx} className="p-1.5 rounded bg-rose-50/60 border border-rose-200 text-xs text-stone-800">
+                            <span className="font-mono font-bold text-rose-950 mr-2">{c.doc_id} {c.paragraph || ''}</span>
+                            <span className="text-stone-500 font-mono text-xs mr-2">[{c.source_name || ''} · Tier {c.reliability_tier || 2}]</span>
+                            <span className="italic">"{c.quote_or_datapoint}"</span>
+                          </div>
                         ))}
                       </div>
                     </div>
                   )}
 
                   {ruling.is_conceded && (
-                    <div className="text-right">
-                      <span className="px-2 py-0.5 rounded bg-red-50 border border-red-200 text-red-900 font-semibold text-xs">
-                        Conceded by {ruling.conceded_by?.toUpperCase() || 'advocate'}
-                      </span>
+                    <div className="mt-2 p-2 rounded bg-red-50 border border-red-200 text-red-950 font-medium">
+                      <span>⚖ Formally Conceded by {ruling.conceded_by?.toUpperCase() || 'advocate'}</span>
+                      {ruling.concessions && ruling.concessions.length > 0 && (
+                        <div className="mt-1 text-xs text-stone-700 font-normal italic">
+                          "{ruling.concessions[0].reason}"
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
