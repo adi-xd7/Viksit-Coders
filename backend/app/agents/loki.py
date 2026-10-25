@@ -379,13 +379,16 @@ class LokiAgent:
                     corr_doc = self.retrieval.get_document(corr_id, as_of_date=as_of_date)
                     counter_cits = []
                     if corr_doc:
+                        snippet = corr_doc.paragraphs.get("P1") if corr_doc.paragraphs else None
+                        if not snippet:
+                            snippet = corr_doc.content.split("---")[-1].strip()[:150] if "---" in corr_doc.content else corr_doc.content[:150]
                         counter_cits.append(EvidenceReference(
                             doc_id=corr_doc.doc_id,
                             paragraph="P1",
                             reliability_tier=corr_doc.reliability_tier,
                             source_name=corr_doc.source_name,
                             publication_date=corr_doc.pub_date,
-                            quote_or_datapoint=corr_doc.content[:150]
+                            quote_or_datapoint=snippet
                         ))
                     x = CrossExamination(
                         challenge_id=f"LOKI-X{len(challenges)+1:02d}",
@@ -572,8 +575,12 @@ class LokiAgent:
         """Convert matching retrieved documents into verified EvidenceReference objects."""
         citations: list[EvidenceReference] = []
         doc_map = {d.doc_id: d for d in docs}
+        seen_ids: set[str] = set()
 
         for target_id in target_doc_ids:
+            if target_id in seen_ids:
+                continue
+
             doc = doc_map.get(target_id)
             if not doc:
                 # Try fetching individually from retrieval service
@@ -583,6 +590,10 @@ class LokiAgent:
 
             # Verify as-of cutoff
             if CitationValidator.is_clock_violation(doc.pub_date, as_of_date):
+                continue
+
+            # Exclude retracted or contradicted sources from Loki's own affirmative claims
+            if CitationValidator.check_retraction(doc.doc_id):
                 continue
 
             # Select key snippet
@@ -601,35 +612,42 @@ class LokiAgent:
                     para = p_keys[0]
                     snippet = doc.paragraphs[para][:200]
 
+            if not snippet or not snippet.strip():
+                continue
+
             ref = EvidenceReference(
                 doc_id=doc.doc_id,
                 paragraph=para,
                 reliability_tier=doc.reliability_tier,
                 source_name=doc.source_name,
                 publication_date=doc.pub_date,
+                pub_time=doc.pub_time,
                 quote_or_datapoint=snippet,
                 is_off_runemark=False
             )
             citations.append(ref)
+            seen_ids.add(doc.doc_id)
 
         return citations
 
     def _get_substitution_counter_evidence(self, as_of_date: str) -> list[EvidenceReference]:
         """Fetch counter-evidence proving alternative supply and rail substitution."""
         counter_refs = []
-        for doc_id, para, snippet in [
+        for doc_id, para, fallback_snippet in [
             ("ORV-0027", "P6", "In November 2026, the value was USD 38.5M and the volume was 96,000 tonnes from Vanir to Midgard."),
             ("ORV-0050", "P2", "Grain traffic on the Ravik Rail Link normally carries about USD 25M of Orvan wheat a month, running well above previous year."),
             ("ORV-0018", "P8", "On these assumptions, the net value loss for Midgard wheat is close to 40%, once Vanir supply is included.")
         ]:
             doc = self.retrieval.get_document(doc_id, as_of_date=as_of_date)
             if doc:
+                snippet = doc.paragraphs.get(para) or fallback_snippet
                 counter_refs.append(EvidenceReference(
                     doc_id=doc.doc_id,
                     paragraph=para,
                     reliability_tier=doc.reliability_tier,
                     source_name=doc.source_name,
                     publication_date=doc.pub_date,
+                    pub_time=doc.pub_time,
                     quote_or_datapoint=snippet,
                     is_off_runemark=False
                 ))

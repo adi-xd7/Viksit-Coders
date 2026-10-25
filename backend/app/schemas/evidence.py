@@ -11,6 +11,7 @@ class EvidenceReference(BaseModel):
     reliability_tier: Optional[int] = Field(default=None, ge=1, le=4, description="Tier 1 (Official) to 4 (Weak)")
     source_name: Optional[str] = Field(default=None, description="Publishing outlet or authority name")
     publication_date: Optional[str] = Field(default=None, description="Publication date in YYYY-MM-DD")
+    pub_time: Optional[str] = Field(default=None, description="Publication time in HH:MM")
     quote_or_datapoint: str = Field(description="Directly quoted text or exact numerical observation")
     is_off_runemark: bool = Field(default=False, description="True if evidence is from outside Runemark")
 

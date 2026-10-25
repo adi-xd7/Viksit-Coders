@@ -4,6 +4,9 @@ from pathlib import Path
 import pytest
 from backend.app.agents.loki import LokiAgent
 from backend.app.schemas.case_file import CaseFile
+from backend.app.schemas.claim import Claim, ExposureEstimate
+from backend.app.schemas.evidence import Document, EvidenceReference
+from backend.app.schemas.debate import CrossExamination
 from backend.app.services.retrieval import MockRetrievalService, RunemarkCorpusRetrievalService
 from backend.app.services.memory import LokiMemoryService
 from backend.app.services.logging_service import StructuredLogger
@@ -140,6 +143,8 @@ def test_loki_end_to_end_with_real_runemark():
     """Integration test: Loki executing against real Runemark dev_pack_E5 corpus."""
     pack_dir = Path("03_Ragnarok Trial of the Nine Realms/dev_pack_E5")
     if not pack_dir.exists():
+        pack_dir = Path(__file__).resolve().parents[2] / "03_Ragnarok Trial of the Nine Realms" / "dev_pack_E5"
+    if not pack_dir.exists():
         pytest.skip("Official dev pack not available")
 
     real_retrieval = RunemarkCorpusRetrievalService(pack_dir=str(pack_dir))
@@ -172,3 +177,102 @@ def test_loki_end_to_end_with_real_runemark():
     event_types = [e["event_type"] for e in events]
     assert "search" in event_types
     assert "claim_submitted" in event_types
+
+
+def test_loki_round2_integration_with_real_runemark():
+    """Requirement 10: Run Loki Round 2 adversarial debate against real Runemark dev_pack_E5 corpus."""
+    pack_dir = Path("03_Ragnarok Trial of the Nine Realms/dev_pack_E5")
+    if not pack_dir.exists():
+        pack_dir = Path(__file__).resolve().parents[2] / "03_Ragnarok Trial of the Nine Realms" / "dev_pack_E5"
+    if not pack_dir.exists():
+        pytest.skip("Official dev pack not available")
+
+    real_retrieval = RunemarkCorpusRetrievalService(pack_dir=str(pack_dir))
+    memory = LokiMemoryService()
+    logger = StructuredLogger(agent_name="loki")
+    agent = LokiAgent(retrieval_service=real_retrieval, memory_service=memory, logger_service=logger)
+
+    case_file = CaseFile(
+        case_id="CASE-E5-ROUND2-REAL",
+        question="As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement?",
+        as_of_date="2027-01-25",
+        round_number=2,
+        run_number=1,
+    )
+    # Add Loki's prior claim and Thor's counter-claim citing retracted tabloid ORV-0028
+    case_file.claims.append(Claim(
+        claim_id="LOKI-C01",
+        agent="loki",
+        stance="limited_exposure",
+        claim_type="inference",
+        statement="Midgard wheat exposure is bounded at 35%-45% by rail and Vanir.",
+        reasoning="Alternative flows mitigate maritime shortfall.",
+        confidence=0.85,
+        estimates=[ExposureEstimate(country="Midgard", sector="Wheat", metric="net_value_loss_pct", min_estimate=35.0, max_estimate=45.0, unit="%")],
+        citations=[EvidenceReference(doc_id="ORV-0027", paragraph="P6", quote_or_datapoint="Vanir wheat delivery USD 38.5M")]
+    ))
+    case_file.claims.append(Claim(
+        claim_id="THOR-C01",
+        agent="thor",
+        stance="high_exposure",
+        claim_type="inference",
+        statement="Total collapse in trade.",
+        reasoning="Panic in market.",
+        confidence=0.9,
+        estimates=[ExposureEstimate(country="Midgard", sector="Wheat", metric="net_value_loss_pct", min_estimate=80.0, max_estimate=90.0, unit="%")],
+        citations=[EvidenceReference(doc_id="ORV-0028", paragraph="P1", reliability_tier=4, quote_or_datapoint="FAMINE FEAR")]
+    ))
+    case_file.attacks.append(CrossExamination(
+        challenge_id="THOR-X01",
+        challenger="thor",
+        target_claim_id="LOKI-C01",
+        challenge_type="unsupported_inference",
+        objection="Ravik Rail Link has capacity limits and cannot fully replace sea freight.",
+        reasoning="ORV-0001 shows rail is only a partial substitute.",
+        counter_citations=[]
+    ))
+
+    result = agent.investigate_and_argue(case_file)
+
+    assert result.status == "success"
+    assert len(result.attacks) >= 1
+    # Check that Loki attacks Thor's reliance on retracted tabloid ORV-0028
+    tabloid_attack = next((a for a in result.attacks if a.target_claim_id == "THOR-C01"), None)
+    assert tabloid_attack is not None
+
+    # Check that Loki concedes partially to rail limits and adjusts exposure
+    assert len(result.concessions) >= 1
+    concession = result.concessions[0]
+    assert concession.action == "concede"
+    assert concession.adjusted_estimates[0].min_estimate == 35.0
+    assert concession.adjusted_estimates[0].max_estimate == 45.0
+
+
+def test_loki_never_cites_retracted_source_for_affirmative_claims(mock_retrieval: MockRetrievalService):
+    """Requirement 6: Ensure retracted or contradicted sources (e.g. ORV-0043) are excluded from Loki claims."""
+    # Inject retracted document into mock retrieval
+    retracted_doc = Document(
+        doc_id="ORV-0043",
+        event_id="E5",
+        title="Corridor renewed",
+        source_name="Midgard Times",
+        source_type="news",
+        reliability_tier=2,
+        pub_date="2026-09-09",
+        country="Midgard",
+        sector="Wheat",
+        format="TXT",
+        content="False corridor renewal announcement",
+        paragraphs={"P1": "False renewal"}
+    )
+    mock_retrieval.add_document(retracted_doc)
+
+    agent = LokiAgent(retrieval_service=mock_retrieval)
+    # Extract citations explicitly requesting ORV-0043
+    citations = agent._extract_citations_for_docs(
+        docs=[retracted_doc],
+        target_doc_ids=["ORV-0043"],
+        as_of_date="2027-01-25"
+    )
+    # Must be filtered out
+    assert len(citations) == 0

@@ -72,10 +72,13 @@ class CitationValidator:
         """
         Check if document was published strictly AFTER the as-of cutoff date.
         Simulated clock rule: Any document dated > as_of_date is a clock violation.
+        Handles date-only (YYYY-MM-DD) and ISO/space timestamps safely.
         """
         if not pub_date or not as_of_date:
             return False
-        return pub_date.strip() > as_of_date.strip()
+        p_date = pub_date.strip().split("T")[0].split(" ")[0]
+        a_date = as_of_date.strip().split("T")[0].split(" ")[0]
+        return p_date > a_date
 
     @staticmethod
     def check_retraction(doc_id: str) -> Optional[Tuple[str, str]]:

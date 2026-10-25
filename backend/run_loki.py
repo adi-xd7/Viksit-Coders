@@ -37,6 +37,11 @@ def run_loki_cli():
 
     # Initialize retrieval
     pack_path = Path(args.pack_dir)
+    if not pack_path.exists():
+        fallback_path = Path(__file__).resolve().parent.parent / args.pack_dir
+        if fallback_path.exists():
+            pack_path = fallback_path
+
     if pack_path.exists() and not args.use_mock:
         retrieval = RunemarkCorpusRetrievalService(pack_dir=str(pack_path))
         print(f"[*] Ingested {len(retrieval.index)} documents from real Runemark corpus: {pack_path}")

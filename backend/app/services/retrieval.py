@@ -82,6 +82,7 @@ class MockRetrievalService(BaseRetrievalService):
             if not tokens or any(t in content_lower for t in tokens):
                 results.append(doc)
 
+        results.sort(key=lambda d: d.doc_id)
         return results[:limit]
 
     def get_document(self, doc_id: str, as_of_date: Optional[str] = None) -> Optional[Document]:
@@ -123,8 +124,8 @@ class RunemarkCorpusRetrievalService(BaseRetrievalService):
             except Exception:
                 pass
 
-        # 2. Ingest document files
-        for fpath in self.docs_dir.iterdir():
+        # 2. Ingest document files in deterministic sorted order
+        for fpath in sorted(self.docs_dir.iterdir()):
             doc_id = fpath.stem
             ext = fpath.suffix.lower()
 
@@ -141,7 +142,11 @@ class RunemarkCorpusRetrievalService(BaseRetrievalService):
             event_id = meta.get("EVENT_ID") or meta.get("event_id") or header_meta.get("EVENT_ID", "NONE")
             source_name = meta.get("SOURCE_NAME") or meta.get("source_name") or header_meta.get("SOURCE_NAME", "Unknown")
             source_type = meta.get("SOURCE_TYPE") or meta.get("source_type") or header_meta.get("SOURCE_TYPE", "news")
-            reliability = int(meta.get("RELIABILITY") or meta.get("reliability") or header_meta.get("RELIABILITY", 3))
+            rel_val = meta.get("RELIABILITY") or meta.get("reliability") or header_meta.get("RELIABILITY", 3)
+            try:
+                reliability = int(rel_val)
+            except (ValueError, TypeError):
+                reliability = 3
             pub_date = meta.get("PUB_DATE") or meta.get("pub_date") or header_meta.get("PUB_DATE", "2024-01-01")
             pub_time = meta.get("PUB_TIME") or meta.get("pub_time") or header_meta.get("PUB_TIME")
             country = meta.get("COUNTRY") or meta.get("country") or header_meta.get("COUNTRY", "Unknown")
@@ -235,6 +240,14 @@ class RunemarkCorpusRetrievalService(BaseRetrievalService):
             p_id = match.group(1)
             p_text = match.group(2).strip()
             paragraphs[p_id] = p_text
+
+        # Fallback if document content has no explicit [P\d+] markers
+        if not paragraphs and content.strip():
+            body = content.split("---", 1)[-1].strip() if "---" in content else content.strip()
+            lines = [line.strip() for line in body.split("\n") if line.strip()]
+            for idx, line in enumerate(lines, start=1):
+                paragraphs[f"P{idx}"] = line
+
         return paragraphs
 
     def search(
@@ -269,8 +282,8 @@ class RunemarkCorpusRetrievalService(BaseRetrievalService):
             if not tokens or matched_count > 0:
                 results.append((matched_count, doc))
 
-        # Sort by relevance
-        results.sort(key=lambda x: x[0], reverse=True)
+        # Sort by relevance score descending, with stable tie-breaking by doc_id ascending
+        results.sort(key=lambda x: (-x[0], x[1].doc_id))
         return [doc for _, doc in results[:limit]]
 
     def get_document(self, doc_id: str, as_of_date: Optional[str] = None) -> Optional[Document]:
