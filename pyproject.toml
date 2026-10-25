@@ -1,0 +1,10 @@
+[project]
+name = "ragnarok"
+version = "0.0.1"
+description = "Trial of the Nine Realms: adversarial multi-agent supply-chain disruption analyzer"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["tests"]
+addopts = "-q"

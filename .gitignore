@@ -1,0 +1,35 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Generated data / indexes
+data/index/
+data/processed/
+
+# Logs and databases (demo logs are kept)
+logs/*.db
+logs/*.db-*
+logs/*.sqlite
+logs/**/*.jsonl
+!logs/demo/
+!logs/demo/**
+
+# OS / editor
+.DS_Store
+Thumbs.db
