@@ -7,11 +7,13 @@ from datetime import datetime
 from backend.app.schemas.case_file import CaseFile
 from backend.app.schemas.debate_result import DebateResult
 from backend.app.schemas.heimdall_result import HeimdallVerificationResult
+from backend.app.schemas.odin_result import OdinResult
 from backend.app.schemas.loki_result import LokiResult
 from backend.app.schemas.thor_result import ThorResult
 from backend.app.agents.loki import LokiAgent
 from backend.app.agents.thor import ThorAgent
 from backend.app.agents.heimdall import HeimdallAgent
+from backend.app.agents.odin import OdinAgent
 from backend.app.services.retrieval import BaseRetrievalService
 from backend.app.services.memory import LokiMemoryService
 from backend.app.services.thor_memory import ThorMemoryService
@@ -32,7 +34,8 @@ class DebateOrchestrator:
       4. Thor Round 1 (High-Exposure Advocacy).
       5. Loki Round 2 (Cross-Examination of Thor's claims).
       6. Thor Round 2 (Cross-Examination of Loki's claims & Formal Concessions).
-      7. Assembly of final CaseFile and structured DebateResult.
+      7. Odin Final Judicial Adjudication Engine.
+      8. Assembly of final CaseFile and structured DebateResult.
     """
 
     def __init__(
@@ -41,13 +44,16 @@ class DebateOrchestrator:
         loki_agent: Optional[LokiAgent] = None,
         thor_agent: Optional[ThorAgent] = None,
         heimdall_agent: Optional[HeimdallAgent] = None,
+        odin_agent: Optional[OdinAgent] = None,
         loki_memory: Optional[LokiMemoryService] = None,
         thor_memory: Optional[ThorMemoryService] = None,
         logger_service: Optional[StructuredLogger] = None,
         enable_heimdall: bool = True,
+        enable_odin: bool = True,
     ):
         self.logger = logger_service or StructuredLogger(agent_name="orchestrator")
         self.enable_heimdall = enable_heimdall
+        self.enable_odin = enable_odin
 
         # 1. Initialize or assign LokiAgent
         if loki_agent is not None:
@@ -89,13 +95,26 @@ class DebateOrchestrator:
         else:
             self.heimdall_agent = None
 
-        # 4. Enforce that Loki and Thor do NOT share the same memory instance (NFR 1, NFR 6)
+        # 4. Initialize or assign OdinAgent
+        if odin_agent is not None:
+            self.odin_agent: Optional[OdinAgent] = odin_agent
+        elif enable_odin:
+            rs = retrieval_service or getattr(self.loki_agent, "retrieval", None)
+            self.odin_agent = OdinAgent(
+                retrieval_service=rs,
+                logger_service=StructuredLogger(agent_name="odin"),
+            )
+        else:
+            self.odin_agent = None
+
+        # 5. Enforce that Loki and Thor do NOT share the same memory instance (NFR 1, NFR 6)
         if hasattr(self.loki_agent, "memory") and hasattr(self.thor_agent, "memory"):
             if self.loki_agent.memory is self.thor_agent.memory:
                 raise ValueError(
                     "Loki and Thor must have separate, isolated memory service instances. "
                     "Sharing memory instances violates courtroom adversary rules."
                 )
+
 
     # -------------------------------------------------------------------------
     # Core Orchestration Sequence
@@ -439,9 +458,76 @@ class DebateOrchestrator:
                 logger.warning(f"Loki concessions follow-up evaluation exception: {e}")
 
         # ---------------------------------------------------------------------
-        # Final Assembly
+        # Final Assembly of CaseFile
         # ---------------------------------------------------------------------
         active_case_file.round_number = 2
+
+        # ---------------------------------------------------------------------
+        # Stage 6: Odin Final Judicial Adjudication Engine
+        # ---------------------------------------------------------------------
+        odin_res: Optional[OdinResult] = None
+        if self.enable_odin:
+            stage_name = "odin_adjudication"
+            if stage_name in executed_stages:
+                raise RuntimeError(f"Duplicate stage execution prevented: {stage_name} already executed.")
+
+            # Create an intermediate DebateResult representing the completed debate rounds
+            intermediate_result = DebateResult(
+                case_id=case_id,
+                as_of_date=as_of_date,
+                run_number=run_no,
+                status="success",
+                failed_stage=None,
+                error_message=None,
+                heimdall_verification=heimdall_res,
+                loki_round1=loki_r1,
+                thor_round1=thor_r1,
+                loki_round2=loki_r2,
+                thor_round2=thor_r2,
+                case_file=active_case_file,
+                stages_executed=list(stages_executed),
+            )
+
+            try:
+                odin_res = self.post_debate_adjudicate(intermediate_result)
+            except Exception as e:
+                logger.exception(f"Odin adjudication execution error on case {case_id}: {e}")
+                return DebateResult(
+                    case_id=case_id,
+                    as_of_date=as_of_date,
+                    run_number=run_no,
+                    status="partial",
+                    failed_stage=stage_name,
+                    error_message=f"Odin adjudication execution error: {e}",
+                    heimdall_verification=heimdall_res,
+                    loki_round1=loki_r1,
+                    thor_round1=thor_r1,
+                    loki_round2=loki_r2,
+                    thor_round2=thor_r2,
+                    case_file=active_case_file,
+                    stages_executed=stages_executed,
+                )
+
+            if odin_res is not None and getattr(odin_res, "adjudication_status", None) == "error":
+                return DebateResult(
+                    case_id=case_id,
+                    as_of_date=as_of_date,
+                    run_number=run_no,
+                    status="partial",
+                    failed_stage=stage_name,
+                    error_message=odin_res.error_message or "Odin adjudication returned error status",
+                    heimdall_verification=heimdall_res,
+                    loki_round1=loki_r1,
+                    thor_round1=thor_r1,
+                    loki_round2=loki_r2,
+                    thor_round2=thor_r2,
+                    odin_adjudication=odin_res,
+                    case_file=active_case_file,
+                    stages_executed=stages_executed,
+                )
+
+            executed_stages.add(stage_name)
+            stages_executed.append(stage_name)
 
         self.logger.log_event("debate_completed", case_id, {
             "status": "success",
@@ -463,6 +549,7 @@ class DebateOrchestrator:
             thor_round1=thor_r1,
             loki_round2=loki_r2,
             thor_round2=thor_r2,
+            odin_adjudication=odin_res,
             case_file=active_case_file,
             stages_executed=stages_executed,
         )
@@ -496,9 +583,15 @@ class DebateOrchestrator:
             summary="Heimdall agent not configured; defaulted from case_file.is_verified.",
         )
 
-    def post_debate_adjudicate(self, debate_result: DebateResult) -> Optional[dict]:
-        """Integration hook for Odin judicial ruling (Part 6)."""
+    def post_debate_adjudicate(self, debate_result: DebateResult) -> Optional[OdinResult]:
+        """
+        Integration hook executing Odin final judicial adjudication engine (Part 6A).
+        Consumes the completed debate deliverables and issues structured rulings.
+        """
+        if self.odin_agent is not None:
+            return self.odin_agent.adjudicate_debate(debate_result)
         return None
+
 
     # -------------------------------------------------------------------------
     # Helper Validation

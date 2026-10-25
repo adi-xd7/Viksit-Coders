@@ -269,8 +269,16 @@ def test_debate_successful_full_sequence_call_order(
     assert result.failed_stage is None
     assert result.error_message is None
 
-    # Verify all expected stages executed in strict chronological order, starting with Heimdall verification
-    expected_stages = ["validation", "heimdall_verification", "loki_round1", "thor_round1", "loki_round2", "thor_round2"]
+    # Verify all expected stages executed in strict chronological order, starting with Heimdall verification and concluding with Odin adjudication
+    expected_stages = [
+        "validation",
+        "heimdall_verification",
+        "loki_round1",
+        "thor_round1",
+        "loki_round2",
+        "thor_round2",
+        "odin_adjudication",
+    ]
     assert result.stages_executed == expected_stages
 
     # Verify Heimdall verification deliverable preserved
@@ -278,11 +286,17 @@ def test_debate_successful_full_sequence_call_order(
     assert result.heimdall_verification.is_event_real is True
     assert result.heimdall_verification.verification_status == "verified"
 
+    # Verify Odin judicial adjudication deliverable preserved
+    assert result.odin_adjudication is not None
+    assert result.odin_adjudication.adjudication_status == "completed"
+    assert len(result.odin_adjudication.claim_rulings) >= 1
+
     # Verify structured deliverables preserved
     assert result.loki_round1 is not None
     assert result.thor_round1 is not None
     assert result.loki_round2 is not None
     assert result.thor_round2 is not None
+
 
     # Verify both Loki and Thor submitted Round 1 claims
     assert len(result.loki_round1.claims) >= 1
@@ -566,7 +580,16 @@ def test_no_stage_silently_executed_twice(
 
     stages = result.stages_executed
     assert len(stages) == len(set(stages)), "Stage duplicated in execution log!"
-    assert stages == ["validation", "heimdall_verification", "loki_round1", "thor_round1", "loki_round2", "thor_round2"]
+    assert stages == [
+        "validation",
+        "heimdall_verification",
+        "loki_round1",
+        "thor_round1",
+        "loki_round2",
+        "thor_round2",
+        "odin_adjudication",
+    ]
+
 
 
 

@@ -8,6 +8,7 @@ from backend.app.schemas.loki_result import LokiResult
 from backend.app.schemas.thor_result import ThorResult
 from backend.app.schemas.debate_result import DebateResult
 from backend.app.schemas.heimdall_result import PremiseVerification, HeimdallVerificationResult
+from backend.app.schemas.odin_result import ClaimRuling, OdinResult
 
 __all__ = [
     "EvidenceReference",
@@ -22,4 +23,6 @@ __all__ = [
     "DebateResult",
     "PremiseVerification",
     "HeimdallVerificationResult",
+    "ClaimRuling",
+    "OdinResult",
 ]

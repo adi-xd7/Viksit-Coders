@@ -6,6 +6,7 @@ from backend.app.schemas.case_file import CaseFile
 from backend.app.schemas.loki_result import LokiResult
 from backend.app.schemas.thor_result import ThorResult
 from backend.app.schemas.heimdall_result import HeimdallVerificationResult
+from backend.app.schemas.odin_result import OdinResult
 from backend.app.schemas.claim import Claim
 from backend.app.schemas.debate import CrossExamination, Concession
 
@@ -47,9 +48,14 @@ class DebateResult(BaseModel):
         default=None,
         description="Thor's Round 2 cross-examination attacks against Loki and formal concessions"
     )
+    odin_adjudication: Optional[OdinResult] = Field(
+        default=None,
+        description="Odin's final judicial adjudication deliverable"
+    )
     case_file: CaseFile = Field(
         description="The final coordinated CaseFile containing all claims, attacks, and concessions"
     )
+
     stages_executed: list[str] = Field(
         default_factory=list,
         description="Ordered audit log of orchestration stages completed"
