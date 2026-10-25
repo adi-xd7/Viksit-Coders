@@ -28,6 +28,20 @@ def _close(a: float, b: float) -> bool:
     return abs(a - b) <= max(1e-6, 1e-4 * max(abs(a), abs(b)))
 
 
+def normalise_bounds(low: float | None, high: float | None) -> tuple[float | None, float | None, str | None]:
+    """Bounds are magnitudes of the calc results (see bound_problems). A model may write a fall as
+    negative numbers (low -156.5, high -216.2) or give the bounds in reverse order: same numbers,
+    so code puts them as ascending magnitudes and says so. A range that crosses zero is left as is."""
+    if low is None or high is None:
+        return low, high, None
+    if low <= 0 and high <= 0 and (low < 0 or high < 0):
+        lo, hi = sorted((abs(low), abs(high)))
+        return lo, hi, f"bounds {low}..{high} written as negative changes; taken as magnitudes {lo}..{hi}"
+    if low > high >= 0:
+        return high, low, f"bounds {low}..{high} were in reverse order; taken as {high}..{low}"
+    return low, high, None
+
+
 def bound_problems(store: Store, low: float | None, high: float | None, unit: str, calc_ids: list[str],
                    allowed_calc_ids: set[str] | None = None) -> list[str]:
     """Each bound must equal |result| of a referenced, complete calc record in the same unit."""

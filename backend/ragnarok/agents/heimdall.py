@@ -291,6 +291,9 @@ def run_sendback_research(env: AgentEnv, cf: CaseFile, sb: SendBack, earlier_que
     store = env.service.store
     system = load_prompt(AgentName.HEIMDALL)
     env.forbidden_queries |= earlier_queries
+    # new targeted searches look past what the case already has: paragraphs retrieved in earlier runs are left out
+    # of the candidates (rows are not paragraphs; they stay findable and the novelty check still decides)
+    env.exclude_seen = {r for r in seen_refs if "#P" in r}
     n_items = len(sb.missing)
     k = ctx.settings.max_sendback_queries_per_item
     context = (f"{render_case_file(cf)}\n\n{_render_sendback(sb)}\n\n<earlier_queries>\n"
@@ -395,6 +398,7 @@ def run_sendback_research(env: AgentEnv, cf: CaseFile, sb: SendBack, earlier_que
                                   validate=validate_findings, label="heimdall send-back findings", allow_residual=True)
     env.report_injections(findings.injection_reports)
 
+    env.exclude_seen = set()
     nov = Novelty(store, seen_refs)
     new_evidence: list[dict] = []
     new_tables: list[str] = []

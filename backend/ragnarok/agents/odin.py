@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 
 from ragnarok.agents.advocates import CrossExam, render_claims
 from ragnarok.agents.common import AgentEnv, load_prompt, log_memory_effect, research, wrap_document
-from ragnarok.agents.estimates import bound_problems, calc_row_refs, load_calcs, norm_unit
+from ragnarok.agents.estimates import bound_problems, calc_row_refs, load_calcs, normalise_bounds, norm_unit
 from ragnarok.agents.heimdall import render_case_file
 from ragnarok.agents.schemas import OdinAssessment, OdinJudgment, OdinRange, OdinRulings, OdinVerdict
 from ragnarok.llm.client import LLMError, LLMOutputError
@@ -246,7 +246,8 @@ def run_odin(env: AgentEnv, cf: CaseFile, claims: list[Claim], cx: CrossExam, no
     def range_probs(r: OdinRange) -> list[str]:
         if r.insufficient_evidence:
             return [] if r.missing_data else [f"range {r.country}/{r.sector}: insufficient ranges must list missing data"]
-        return [f"range {r.country}/{r.sector}: {p}" for p in bound_problems(store, r.low, r.high, r.unit, r.calc_ids)]
+        low, high, _ = normalise_bounds(r.low, r.high)
+        return [f"range {r.country}/{r.sector}: {p}" for p in bound_problems(store, low, high, r.unit, r.calc_ids)]
 
     def validate_rulings(j: OdinRulings) -> list[str]:
         p = []
@@ -357,6 +358,11 @@ def run_odin(env: AgentEnv, cf: CaseFile, claims: list[Claim], cx: CrossExam, no
 
     ranges, insufficient = [], []
     for r in j.ranges:
+        if not r.insufficient_evidence:
+            low, high, note = normalise_bounds(r.low, r.high)
+            if note:
+                guards.append(f"range {r.country}/{r.sector}: {note}")
+                r = r.model_copy(update={"low": low, "high": high})
         probs = range_probs(r)
         if r.insufficient_evidence or probs:
             if probs:

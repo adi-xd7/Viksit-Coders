@@ -23,7 +23,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ragnarok.agents.common import AgentEnv, load_prompt, research, run_requests
-from ragnarok.agents.estimates import bound_problems, calc_row_refs, load_calcs, norm_unit
+from ragnarok.agents.estimates import bound_problems, calc_row_refs, load_calcs, normalise_bounds, norm_unit
 from ragnarok.agents.schemas import AdvocateBrief, AdvocateRevision, AttackSet, ClaimDraft, ResponseSet, ToolRequest
 from ragnarok.memory.store import render_lessons
 from ragnarok.models import (
@@ -94,7 +94,8 @@ def _estimate(env: AgentEnv, d: ClaimDraft) -> tuple[ExposureEstimate | None, li
     if e is None:
         return None, []
     store = env.service.store
-    probs = bound_problems(store, e.low, e.high, e.unit, e.calc_ids, allowed_calc_ids=env.retrieved)
+    low, high, note = normalise_bounds(e.low, e.high)
+    probs = bound_problems(store, low, high, e.unit, e.calc_ids, allowed_calc_ids=env.retrieved)
     if probs:
         return None, probs
     unit = norm_unit(e.unit)
@@ -107,9 +108,10 @@ def _estimate(env: AgentEnv, d: ClaimDraft) -> tuple[ExposureEstimate | None, li
         est = ExposureEstimate(
             estimate_id=f"E-{env.agent.value}", agent=env.agent, country=e.country, sector=e.sector.lower(), metric=e.metric,
             metric_definition=e.metric_definition, unit=unit, currency="USD" if unit == "USD M" else None, period=e.period,
-            denominator=denom, low=e.low, high=e.high, trade_row_refs=calc_row_refs(store, e.calc_ids),
+            denominator=denom, low=low, high=high, trade_row_refs=calc_row_refs(store, e.calc_ids),
             calculation_ids=e.calc_ids, assumptions=e.assumptions, missing_data=e.missing_data,
-            confidence=Confidence(e.confidence), uncertainty_note=e.uncertainty_note,
+            confidence=Confidence(e.confidence),
+            uncertainty_note=(f"[code: {note}] " if note else "") + e.uncertainty_note,
         )
     except ValueError as exc:
         return None, [f"estimate invalid: {exc}"]
@@ -180,8 +182,11 @@ def run_brief(env: AgentEnv, case_text: str, seeds: list[dict] | None = None,
             p.append(f"at most {ctx.settings.max_claims_per_advocate} claims")
         return p + _claim_problems(env, b.claims)
 
-    def essential(b: AdvocateBrief) -> list[str]:  # the brief is usable if at least one claim survives the code checks
-        return [] if any(env.citations(c.citations)[0] for c in b.claims) else ["no claim has a valid citation"]
+    def essential(b: AdvocateBrief) -> list[str]:
+        # the brief needs at least one claim that survives the code checks, and every estimate must reproduce
+        # from the advocate's calc records (an estimate is the advocate's range: worth one repair, never dropped silently)
+        p = [] if any(env.citations(c.citations)[0] for c in b.claims) else ["no claim has a valid citation"]
+        return p + [f"claim {i} estimate: {x}" for i, c in enumerate(b.claims, 1) if c.estimate for x in _estimate(env, c)[1]]
 
     user = (f"{case_text}\n\n{render_lessons(lessons)}\n\n<task>\n{task}\nNow write your claims (at most "
             f"{ctx.settings.max_claims_per_advocate}). Cite only paragraphs/rows shown in your evidence; estimate bounds "
@@ -245,8 +250,12 @@ def run_revision(env: AgentEnv, case_text: str, previous: list[Claim], verdicts:
     user = (f"{context}\n\n{render_lessons(lessons)}\n\n<task>\n{task}\nNow write your run-{ctx.run_number} claims and "
             "withdrawals. Cite only paragraphs/rows shown in your evidence; estimate bounds must be calc results.\n"
             f"</task>\n\n<evidence>\n{env.evidence_text()}\n</evidence>")
+    def essential(b: AdvocateRevision) -> list[str]:
+        return [f"claim {i} estimate: {x}" for i, c in enumerate(b.claims, 1) if c.estimate for x in _estimate(env, c)[1]]
+
     rev = ctx.llm.structured(agent, system, user, AdvocateRevision, effort=ctx.settings.effort_advocate,
-                             validate=validate, label=f"{agent.value} run {ctx.run_number} revision", allow_residual=True)
+                             validate=validate, essential=essential, label=f"{agent.value} run {ctx.run_number} revision",
+                             allow_residual=True)
     if delta:
         keep = [c for c in rev.claims if _cites_new(c)]
         for c in rev.claims:

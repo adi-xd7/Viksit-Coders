@@ -149,6 +149,7 @@ class AgentEnv:
         self.searches = 0
         self.forbidden_queries: set[str] = set()  # normalised queries this agent may not send again (earlier runs)
         self._requests_seen: set[str] = set()  # search requests made in this attempt (resume replay detection)
+        self.exclude_seen: set[str] = set()  # send-back research: paragraphs from earlier runs left out of searches
         self.memory = AgentMemory(service.store, agent)  # this agent's own lessons only
 
     # ---------------------------------------------------------- logging ---
@@ -300,7 +301,8 @@ class AgentEnv:
         if not req.query:
             raise ValueError("search needs a query")
         f = SearchFilters(country=req.countries, sector=req.sectors, event_id=req.event_ids, source_type=req.source_types,
-                          max_reliability=req.max_reliability if 1 <= req.max_reliability <= 4 else None)
+                          max_reliability=req.max_reliability if 1 <= req.max_reliability <= 4 else None,
+                          exclude_chunks=sorted(self.exclude_seen) or None)
         res = self.service.search(req.query, self.ctx.as_of, self.agent, f, **self._cid())
         rkey = json.dumps([res.query_norm, f.model_dump(mode="json")], sort_keys=True)
         replay = (res.reused and rkey not in self._requests_seen and res.first_query_seq is not None
@@ -314,8 +316,10 @@ class AgentEnv:
             self.log(LogEventType.TRAP_INJECTION, f"{self.agent.value} retrieved flagged paragraph(s) {', '.join(flagged)}; "
                      "instruction text withheld from the agent", {"query": req.query}, flagged)
         blocks = [self._hit_block(h) for h in res.hits]
-        head = (f"search {req.query!r} filters={ {k: v for k, v in f.model_dump(mode='json').items() if v not in (None, False)} }"
-                f" -> {len(res.hits)} hit(s){' (reused identical earlier query)' if reused else ''}")
+        shown = {k: v for k, v in f.model_dump(mode="json").items() if v not in (None, False) and k != "exclude_chunks"}
+        head = (f"search {req.query!r} filters={shown}"
+                + (f" (leaving out {len(f.exclude_chunks)} paragraph(s) already retrieved in earlier runs)" if f.exclude_chunks else "")
+                + f" -> {len(res.hits)} hit(s){' (reused identical earlier query)' if reused else ''}")
         if not res.hits:
             head += "\n" + self._empty_search_hint(f)
         return ToolOutcome("search", True, head + "\n" + "\n".join(blocks), refs=[h.chunk_id for h in res.hits])
@@ -334,7 +338,8 @@ class AgentEnv:
         values that do exist (read from the evidence itself, so it works for any pack)."""
         from ragnarok.retrieval.index import passes
 
-        active = {k: v for k, v in f.model_dump().items() if v not in (None, False, []) and k != "include_duplicates"}
+        active = {k: v for k, v in f.model_dump().items() if v not in (None, False, [])
+                  and k not in ("include_duplicates", "exclude_chunks")}
         if not active:
             return "[no paragraph matched this query]"
         chunks = [c for c in self.service.index.chunks if passes(c, SearchFilters(), self.ctx.as_of)]

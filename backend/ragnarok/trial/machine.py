@@ -7,6 +7,7 @@
     THOR || LOKI -> ODIN           (one advocate failed, or nothing new to cross-examine)
     THOR || LOKI -> BRIEFING       (run n >= 2 only: both advocates failed; last rulings stand)
     any -> FAILED                  (unrecoverable error; completed work is kept and reported)
+    any -> PAUSED                  (every model's daily quota used up; resumable after the reset, nothing lost)
 
 Resume: a Trial created with the case ID of an earlier, unfinished attempt replays
 the finished steps from the case's own LLM response cache (no API requests); tool
@@ -44,7 +45,7 @@ from ragnarok.agents.heimdall import (
 from ragnarok.agents.odin import OdinResult, run_odin
 from ragnarok.briefing.build import build_briefing
 from ragnarok.config import Settings, get_settings
-from ragnarok.llm.client import Backend, LimitHit, LLMClient, LLMError, ResponseCache, TokenLedger
+from ragnarok.llm.client import Backend, LimitHit, LLMClient, LLMError, ModelPool, QuotaPause, ResponseCache, TokenLedger
 from ragnarok.memory.lessons import (
     Masker,
     advocate_lessons,
@@ -78,6 +79,7 @@ class Stage(StrEnum):
     DONE = "DONE"
     STOPPED = "STOPPED"
     FAILED = "FAILED"
+    PAUSED = "PAUSED"
 
 
 ALLOWED: dict[Stage, set[Stage]] = {
@@ -175,7 +177,9 @@ class Trial:
         cache = (ResponseCache(store.path, self.case_id, reading=self.attempt > 1)
                  if self.settings.llm_response_cache else None)
         self.llm = LLMClient(self.settings, self.ledger, backend, on_event=self._llm_event, cache=cache,
-                             context=lambda: {"stage": self.stage.value, "run": self.ctx.run_number})
+                             context=lambda: {"stage": self.stage.value, "run": self.ctx.run_number},
+                             pool=ModelPool(store.path, scope=self.settings.key_fingerprint))
+        self.paused_until: datetime | None = None
         self.ctx = CaseContext(case_id=self.case_id, question=question, as_of=as_of, settings=self.settings, llm=self.llm)
         self.stage = Stage.START
         self.case_dir = self.settings.cases_dir / self.case_id
@@ -196,7 +200,7 @@ class Trial:
                               "cached": len(self.ledger.records) - self.ledger.calls_used}}
 
     def _llm_event(self, kind: str, agent: AgentName, summary: str, payload: dict) -> None:
-        type_ = LogEventType.LLM_CACHE_HIT if kind == "cache_hit" else LogEventType.ERROR
+        type_ = {"cache_hit": LogEventType.LLM_CACHE_HIT, "model_switch": LogEventType.MODEL_SWITCH}.get(kind, LogEventType.ERROR)
         with Store(self.store.path) as s:  # own connection: may be called from an advocate thread
             s.append_event(LogEvent(case_id=self.case_id, run_number=self.ctx.run_number, agent=agent,
                                     type=type_, summary=summary[:500], payload={"llm": kind, **payload}))
@@ -267,6 +271,15 @@ class Trial:
             self._run(stop_after)
         except IllegalTransition:
             raise
+        except QuotaPause as exc:  # not a failure: everything done so far is kept and replays on resume
+            self.paused_until = exc.resume_after
+            self.note(f"paused: {exc}. Resume the case after that time; finished steps replay without API requests")
+            self.log(LogEventType.LIMIT_HIT, f"case paused at {self.stage.value}: {exc}",
+                     {"what": "daily model quota", "resume_after": exc.resume_after.isoformat(), "models": exc.models,
+                      "stage": self.stage.value})
+            self.stage = Stage.PAUSED
+            self.result.stage = Stage.PAUSED
+            self.result.history.append(Stage.PAUSED.value)
         except Exception as exc:  # noqa: BLE001 - never fabricate success; record and stop
             self.note(f"trial failed: {type(exc).__name__}: {exc}")
             self.log(LogEventType.ERROR, f"trial failed: {type(exc).__name__}: {exc}"[:500])
@@ -484,6 +497,13 @@ class Trial:
             self._parallel({a: (lambda a=a: run_responses(self.env(a), case_text, own[a], on[a], cx))
                             for a in (THOR, LOKI) if on[a]},
                            f"cross-examination responses (round {rnd})", default=lambda a, msg: cx.failures.append(msg))
+            # the two advocates answer in parallel threads: put their records in a fixed order (by attack ID) so the
+            # record, the saved files and Odin's prompt do not depend on thread timing (a resumed case must replay
+            # exactly the same prompts)
+            cx.defenses.sort(key=lambda d: d.attack_id)
+            cx.concessions.sort(key=lambda k: (k.attack_id or "", k.concession_id))
+            cx.invalid_defenses.sort(key=lambda i: i.attack_id)
+            cx.unanswered.sort()
             ids = {x.attack_id for x in round_attacks}
             defended = {d.claim_id for d in cx.defenses if d.attack_id in ids}
             targets = {a: [c for c in own[a] if c.claim_id in defended] for a in (THOR, LOKI)}
@@ -716,7 +736,8 @@ class Trial:
                                 "runs_completed": r.runs_completed, "max_runs": self.settings.max_runs,
                                 "stop_after": getattr(self, "stop_after", None),
                                 "briefing_status": r.briefing_status, "notes": r.notes, "stop_reason": r.stop_reason,
-                                "superseded": r.superseded, "usage": self._usage(), "attempt": self.attempt})
+                                "superseded": r.superseded, "usage": self._usage(), "attempt": self.attempt,
+                                "paused_until": self.paused_until.isoformat() if self.paused_until else None})
         dump(d / "llm_calls.json", {"summary": self.ledger.call_summary(), "calls": list(self.ledger.records)})
         if r.heimdall:
             dump(d / "case_file.json", (self.final.case_file if self.final else r.heimdall.case_file).model_dump(mode="json"))

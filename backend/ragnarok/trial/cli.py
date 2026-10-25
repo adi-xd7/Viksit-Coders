@@ -2,6 +2,7 @@
 
     python -m backend.trial "<question>" --as-of YYYY-MM-DD [--db PATH] [--stop-after HEIMDALL|THOR_LOKI] [--save-demo]
     python -m backend.trial --resume <case_id>   (finished steps replay from the case's own response cache)
+    add --wait to keep going through daily-quota pauses (waits for the reset, then resumes by itself)
 """
 
 from __future__ import annotations
@@ -11,7 +12,8 @@ import json
 import shutil
 import sys
 from collections import Counter
-from datetime import date
+import time
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from ragnarok.config import get_settings
@@ -29,6 +31,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--case-id")
     ap.add_argument("--stop-after", choices=[Stage.HEIMDALL.value, Stage.ADVOCATES.value, Stage.CROSS_EXAM.value])
     ap.add_argument("--save-demo", action="store_true", help="also copy the case folder to logs/demo/<case_id>")
+    ap.add_argument("--wait", action="store_true", help="if every model's daily quota is used up, wait for the reset "
+                    "and resume automatically until the case finishes")
     args = ap.parse_args(argv)
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -51,6 +55,14 @@ def main(argv: list[str] | None = None) -> int:
     print(f"case {case_id}: running (logs in {settings.cases_dir / case_id})", flush=True)
     r = run_case(args.question, args.as_of, settings, case_id=case_id,  # same core function as POST /cases
                  stop_after=Stage(args.stop_after) if args.stop_after else None)
+    while r.stage == Stage.PAUSED and args.wait:
+        state = json.loads((r.case_dir / "state.json").read_text(encoding="utf-8"))
+        until = datetime.fromisoformat(state["paused_until"]) if state.get("paused_until") else None
+        wait = max(5.0, (until - datetime.now(timezone.utc)).total_seconds() + 30) if until else 600.0
+        print(f"paused: every model's daily quota is used up; waiting {wait / 60:.0f} min "
+              f"(until {until.strftime('%Y-%m-%d %H:%M') if until else '?'} UTC), then resuming", flush=True)
+        time.sleep(wait)
+        r = run_case(args.question, args.as_of, settings, case_id=case_id)
     print(f"\nstage: {r.stage.value}   path: {' -> '.join(r.history)}")
     if r.heimdall:
         cf = r.heimdall.case_file
@@ -58,6 +70,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"countries {cf.countries}  sectors {cf.sectors}  trade tables {cf.trade_table_ids}")
     if r.stop_reason:
         print(f"STOPPED: {r.stop_reason}")
+    if r.stage == Stage.PAUSED:
+        print(f"PAUSED: every model's daily quota is used up. Resume with: python -m backend.trial --resume {r.case_id}"
+              " (or add --wait next time)")
     for a, s in r.submissions.items():
         print(f"{a}: {len(s.claims)} claim(s), {len(s.rejected)} rejected in code{' — FAILED: ' + s.failed if s.failed else ''}")
     if r.cross_exam:
@@ -98,4 +113,4 @@ def main(argv: list[str] | None = None) -> int:
         dest = settings.log_dir / "demo" / r.case_id
         shutil.copytree(r.case_dir, dest, dirs_exist_ok=True)
         print(f"saved demo copy: {dest}")
-    return 0 if r.stage in (Stage.DONE, Stage.STOPPED) or (args.stop_after and r.stage != Stage.FAILED) else 1
+    return 0 if r.stage in (Stage.DONE, Stage.STOPPED, Stage.PAUSED) or (args.stop_after and r.stage != Stage.FAILED) else 1

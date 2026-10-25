@@ -23,7 +23,7 @@ from ragnarok.store.db import Store
 from ragnarok.trial.machine import Stage, Trial, TrialResult, new_case_id
 
 CASE_ID = re.compile(r"^case-[A-Za-z0-9-]{1,80}$")
-TERMINAL = {Stage.DONE.value, Stage.STOPPED.value, Stage.FAILED.value}
+TERMINAL = {Stage.DONE.value, Stage.STOPPED.value, Stage.FAILED.value, Stage.PAUSED.value}
 
 
 def run_case(question: str, as_of: date, settings: Settings, *, service: RetrievalService | None = None,
@@ -69,6 +69,8 @@ def case_status(settings: Settings, case_id: str, running: bool = False) -> dict
         status = "partial"
     elif stage == Stage.FAILED.value:
         status = "failed"
+    elif stage == Stage.PAUSED.value:
+        status = "paused"  # every model's daily quota used up; resumable (POST /cases/{id}/resume)
     elif state.get("stop_after"):
         status = "partial"  # stopped early on request (CLI --stop-after): finished, but no briefing
     else:
@@ -79,6 +81,7 @@ def case_status(settings: Settings, case_id: str, running: bool = False) -> dict
            "stop_reason": state.get("stop_reason"), "usage": state.get("usage", {}), "attempt": state.get("attempt", 1)}
     llm = (state.get("usage") or {}).get("llm_calls") or {}
     out["calls_used"], out["calls_limit"] = llm.get("used"), llm.get("limit", settings.max_llm_calls_per_case)
+    out["paused_until"] = state.get("paused_until") if status == "paused" else None
     if status == "failed" and stage not in TERMINAL:
         out["notes"] = out["notes"] + ["case interrupted before it finished (process stopped)"]
     if (d / "limitations.md").exists():
@@ -104,6 +107,7 @@ class CaseRunner:
         self.service_getter = service_getter
         self.backend_factory = backend_factory
         self.threads: dict[str, threading.Thread] = {}
+        self.timers: dict[str, threading.Timer] = {}  # paused cases waiting for their quota reset
         self.lock = threading.Lock()
 
     def running(self) -> list[str]:
@@ -131,11 +135,38 @@ class CaseRunner:
 
     def _run(self, question, as_of, case_id, service, backend) -> None:
         try:
-            run_case(question, as_of, self.settings, service=service, backend=backend, case_id=case_id)
+            r = run_case(question, as_of, self.settings, service=service, backend=backend, case_id=case_id)
+            if r.stage == Stage.PAUSED and self.settings.auto_resume_paused:
+                self._schedule_resume(question, as_of, case_id, r.case_dir)
         except Exception as exc:  # noqa: BLE001 - recorded, never silent (Trial.run already records its own)
             with Store(self.settings.db_path) as s:
                 s.append_event(LogEvent(case_id=case_id, agent=AgentName.SYSTEM, type=LogEventType.ERROR,
                                         summary=f"case runner error: {type(exc).__name__}: {exc}"[:500]))
+
+    def _schedule_resume(self, question, as_of, case_id, case_dir: Path, delay: float | None = None) -> None:
+        """Resume a paused case once its quota has reset (as long as this API process is running)."""
+        if delay is None:
+            state = _read(case_dir / "state.json") or {}
+            until = state.get("paused_until")
+            delay = 60.0
+            if until:
+                from datetime import datetime, timezone
+
+                delay = max(5.0, (datetime.fromisoformat(until) - datetime.now(timezone.utc)).total_seconds() + 30)
+
+        def fire() -> None:
+            st = case_status(self.settings, case_id, running=self.is_running(case_id))
+            if not st or st["status"] != "paused":  # resumed by hand meanwhile, or finished: nothing to do
+                return
+            try:
+                self.start(question, as_of, case_id=case_id)
+            except RuntimeError:  # another case is running: try again later
+                self._schedule_resume(question, as_of, case_id, case_dir, delay=120.0)
+
+        t = threading.Timer(delay, fire)
+        t.daemon = True
+        self.timers[case_id] = t
+        t.start()
 
     def join(self, case_id: str, timeout: float | None = None) -> None:
         t = self.threads.get(case_id)
