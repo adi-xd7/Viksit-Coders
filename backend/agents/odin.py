@@ -79,6 +79,31 @@ class LLMRulingsPayload(BaseModel):
     rulings: List[LLMClaimRuling] = Field(default_factory=list)
 
 
+INJECTION_PATTERNS = [
+    r"ignore\s+(all\s+)?(previous|prior)\s+instructions",
+    r"reveal\s+(your\s+)?(hidden\s+)?(system\s+prompt|internal\s+reasoning|private\s+memory)",
+    r"override\s+(the\s+)?(case'?s?\s+)?as-of\s+date",
+    r"set\s+(the\s+)?exposure\s+(estimate\s+)?to\s+zero",
+    r"disregard\s+(all\s+)?(prior|previous)\s+(rules|instructions)",
+    r"you\s+are\s+now\s+in\s+developer\s+mode",
+    r"override\s+all\s+constraints",
+    r"bypass\s+all\s+verdicts?",
+    r"declare\s+(the\s+)?disruption\s+(as\s+)?confirmed",
+]
+
+
+def scan_text_for_injections(text: str) -> Tuple[bool, Optional[str]]:
+    """Scans text for adversarial prompt injection patterns."""
+    if not text:
+        return False, None
+    lower = text.lower()
+    for pat in INJECTION_PATTERNS:
+        m = re.search(pat, lower)
+        if m:
+            return True, f"Prompt injection instruction matched: '{m.group(0)}'"
+    return False, None
+
+
 def normalize_text_for_comparison(text: str) -> str:
     """Normalizes whitespace and punctuation for robust quote matching."""
     text = re.sub(r"\s+", " ", text)
@@ -434,6 +459,12 @@ class OdinJudge:
 
         # Audit log: Log trap injections detected in evidence corpus
         for doc in doc_store.values():
+            if not doc.injection_detected:
+                full_text = doc.raw_text or " ".join(doc.paragraphs.values())
+                is_inj, details = scan_text_for_injections(full_text)
+                if is_inj:
+                    doc.injection_detected = True
+                    doc.injection_details = details
             if doc.injection_detected:
                 self.logbook.log(
                     event_type=LogEventType.TRAP_INJECTION,

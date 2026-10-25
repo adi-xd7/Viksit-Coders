@@ -208,6 +208,34 @@ class Briefing(BaseModel):
     sources: List[Dict[str, Any]] = Field(default_factory=list)
     markdown_content: str = ""
 
+    @property
+    def section_b_established(self) -> List[Dict[str, Any]]:
+        return self.established_findings
+
+    @property
+    def section_c_contested(self) -> List[Dict[str, Any]]:
+        return self.contested_findings
+
+    @property
+    def section_d_conceded(self) -> List[Dict[str, Any]]:
+        return self.conceded_claims
+
+    @property
+    def section_e_rejected(self) -> List[Dict[str, Any]]:
+        return self.rejected_claims
+
+    @property
+    def section_f_table(self) -> List[ExposureRange]:
+        return self.exposure_table
+
+    @property
+    def section_i(self) -> Dict[str, Any]:
+        return self.traps_and_data_quality
+
+    @property
+    def section_j_markdown(self) -> str:
+        return self.markdown_content
+
 
 class LogEventType(str, Enum):
     QUERY = "QUERY"

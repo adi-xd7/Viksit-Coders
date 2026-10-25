@@ -33,6 +33,7 @@ from backend.models import (
     TradeRow,
     Verdict,
 )
+from backend.agents.odin import scan_text_for_injections
 
 logger = logging.getLogger("briefing")
 
@@ -67,8 +68,8 @@ def parse_citation(cit_str: str) -> Optional[Citation]:
         return None
 
     # Trade row: TAB-001#5 or TAB-001#5, 2027-01-20
-    if "#" in cleaned:
-        parts = [p.strip() for p in cleaned.split(",")]
+    if "#" in inner:
+        parts = [p.strip() for p in inner.split(",")]
         return Citation(
             doc_id="",
             trade_row_ref=parts[0],
@@ -76,7 +77,7 @@ def parse_citation(cit_str: str) -> Optional[Citation]:
         )
 
     # Document citation: DOC_ID Pn, YYYY-MM-DD or DOC_ID Pn
-    match = re.match(r"^([A-Za-z0-9_\-]+)(?:\s+P(\d+))?(?:,\s*(\d{4}-\d{2}-\d{2}))?$", cleaned)
+    match = re.match(r"^([A-Za-z0-9_\-]+)(?:\s+P(\d+))?(?:,\s*(\d{4}-\d{2}-\d{2}))?$", inner)
     if match:
         doc_id = match.group(1)
         p_num = int(match.group(2)) if match.group(2) else None
@@ -276,8 +277,8 @@ class BriefingGenerator:
         self,
         case_file: CaseFile,
         rulings: List[Ruling],
-        exposure_ranges: List[ExposureRange],
-        doc_store: Dict[str, Document],
+        exposure_ranges: Optional[List[ExposureRange]] = None,
+        doc_store: Optional[Dict[str, Document]] = None,
         trade_store: Optional[Dict[str, List[TradeRow]]] = None,
         claims: Optional[List[Claim]] = None,
         attacks: Optional[List[Attack]] = None,
@@ -295,8 +296,8 @@ class BriefingGenerator:
     ):
         self.case_file = case_file
         self.rulings = rulings
-        self.exposure_ranges = exposure_ranges
-        self.doc_store = doc_store
+        self.exposure_ranges = exposure_ranges or []
+        self.doc_store = doc_store or {}
         self.trade_store = trade_store or {}
         self.claims_map: Dict[str, Claim] = {c.claim_id: c for c in (claims or [])}
         self.attacks = attacks or []
@@ -669,6 +670,12 @@ class BriefingGenerator:
         }
 
         for doc_id, doc in self.doc_store.items():
+            if not doc.injection_detected:
+                full_text = doc.raw_text or " ".join(doc.paragraphs.values())
+                is_inj, details = scan_text_for_injections(full_text)
+                if is_inj:
+                    doc.injection_detected = True
+                    doc.injection_details = details
             if doc.injection_detected:
                 traps["prompt_injections_detected"].append({
                     "doc_id": doc_id,
@@ -920,8 +927,8 @@ class BriefingGenerator:
 def generate_briefing(
     case_file: CaseFile,
     rulings: List[Ruling],
-    exposure_ranges: List[ExposureRange],
-    doc_store: Dict[str, Document],
+    exposure_ranges: Optional[List[ExposureRange]] = None,
+    doc_store: Optional[Dict[str, Document]] = None,
     trade_store: Optional[Dict[str, List[TradeRow]]] = None,
     claims: Optional[List[Claim]] = None,
     attacks: Optional[List[Attack]] = None,

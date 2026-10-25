@@ -261,3 +261,41 @@ python -m pytest tests -v
 - **Authentication**: Unauthenticated by default for hackathon development. For production deployments, deploy behind an API gateway with OAuth2 / mTLS.
 - **Data Isolation**: Case and trial operations verify case-ID ownership (`/api/cases/{case_id}/trials/{trial_id}`), preventing cross-tenant data leakage.
 - **Execution Mode**: Default `background=false` executes synchronously for deterministic client inspection; `background=true` executes via asynchronous background tasks for polling architectures.
+
+---
+
+## Phase 7: Final Validation, Adversarial Evaluation & Demo Pack
+
+Phase 7 delivers a comprehensive, hardened evaluation suite, deterministic end-to-end demonstration, and presentation deliverables.
+
+### 1. Quick Start Commands
+
+```bash
+# 1. Run the complete test suite (139 tests across 12 test modules)
+python -m pytest
+
+# 2. Run the 19-scenario synthetic adversarial evaluation
+python demo/adversarial_runner.py
+
+# 3. Run the independent briefing provenance & consistency auditor
+python demo/briefing_audit.py
+
+# 4. Run runtime API smoke tests (exercises all 8 FastAPI endpoints)
+python demo/api_smoke_test.py
+
+# 5. Run the deterministic end-to-end trial demonstration
+python demo/run_demo.py
+```
+
+### 2. Demo Pack Deliverables (`demo/`)
+
+- **`demo/README.md`**: Master demo guide, architecture overview, security guarantees, and execution instructions.
+- **`demo/scenario.md`**: Full specification of the synthetic *Winter Sluice Disruption* scenario (`DEMO-CASE-2027-01`), including target country-sector pairs, evidence graph, and expected judicial outcomes.
+- **`demo/presentation.md`**: 10-slide final hackathon presentation deck with slide structures and complete speaker notes.
+- **`demo/live_demo_script.md`**: 3–5 minute live demonstration script with timestamped speaker narrative, terminal commands, and contingency pivot plans.
+- **`demo/qna_guide.md`**: Technical answers to 11 critical judge questions covering multi-agent mechanics, prompt injection defenses, deterministic math, and failure modes.
+- **`demo/adversarial_manifest.json`**: Machine-readable specification of 19 adversarial scenarios covering 12 threat vectors (A–L).
+- **`demo/adversarial_runner.py`**: Evaluation engine generating `demo/adversarial_report.json` and `demo/adversarial_report.md`.
+- **`demo/briefing_audit.py`**: Automated audit tool verifying citation existence, paragraph matching, date bounds, topic alignment, and ruling consistency.
+- **`demo/api_smoke_test.py`**: Test script verifying API endpoints, tenant isolation, concurrency locks, and error responses.
+- **`demo/fixtures/`**: Synthetic adversarial document catalog (`manifest.json`) and loader (`loader.py`).
