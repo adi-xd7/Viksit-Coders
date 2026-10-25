@@ -253,13 +253,25 @@ class ThorEvidenceRetriever:
                 "filters": {"sector": "Wheat"},
                 "is_counter_search": False,
             },
-            # Topic 3: Regional import shortfalls and dependency in Midgard & Tolan
+            # Topic 3: Regional Midgard wheat trade flows & receipts
             {
-                "query": "Midgard Tolan wheat maize import deficit shortfall",
+                "query": "Midgard wheat trade note receipts Orvan",
                 "filters": {},
                 "is_counter_search": False,
             },
-            # Topic 4: Conflicting/mitigating supply flows (substitution & rail volumes)
+            # Topic 4: Regional Tolan wheat trade flows & replacement
+            {
+                "query": "Tolan wheat trade note replacement Orvan",
+                "filters": {},
+                "is_counter_search": False,
+            },
+            # Topic 5: Regional Midgard maize trade flows & contract terms
+            {
+                "query": "Midgard maize trade note delayed terms Orvan",
+                "filters": {},
+                "is_counter_search": False,
+            },
+            # Topic 6: Conflicting/mitigating supply flows (substitution & rail volumes)
             # Explicitly searched so Thor does not ignore or hide counter-evidence
             {
                 "query": "Vanir wheat substitution buffer rail volume offset",
