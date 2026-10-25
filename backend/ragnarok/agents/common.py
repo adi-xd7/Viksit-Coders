@@ -250,7 +250,32 @@ class AgentEnv:
                                         date_=h.pub_date, source=h.source_name, source_type=h.source_type, flags=fl))
         head = (f"search {req.query!r} filters={ {k: v for k, v in f.model_dump(mode='json').items() if v not in (None, False)} }"
                 f" -> {len(res.hits)} hit(s){' (reused identical earlier query)' if res.reused else ''}")
+        if not res.hits:
+            head += "\n" + self._empty_search_hint(f)
         return ToolOutcome("search", True, head + "\n" + "\n".join(blocks), refs=[h.chunk_id for h in res.hits])
+
+    def _empty_search_hint(self, f: SearchFilters) -> str:
+        """Why a filtered search found nothing: which filter matches no in-window document, and the
+        values that do exist (read from the evidence itself, so it works for any pack)."""
+        from ragnarok.retrieval.index import passes
+
+        active = {k: v for k, v in f.model_dump().items() if v not in (None, False, []) and k != "include_duplicates"}
+        if not active:
+            return "[no paragraph matched this query]"
+        chunks = [c for c in self.service.index.chunks if passes(c, SearchFilters(), self.ctx.as_of)]
+        values = {"country": {(c.country or "").lower() for c in chunks if c.country},
+                  "sector": {(c.sector or "").lower() for c in chunks if c.sector} | {s for c in chunks for s in c.table_sectors},
+                  "event_id": {(c.event_id or "none").lower() for c in chunks},
+                  "source_type": {c.source_type.lower() for c in chunks if c.source_type}}
+        notes = []
+        for k, v in active.items():
+            if not any(passes(c, SearchFilters(**{k: v}), self.ctx.as_of) for c in chunks):
+                known = ", ".join(sorted(values[k])[:40]) if k in values else "?"
+                notes.append(f"filter {k}={v} matches no document available as of {self.ctx.as_of}"
+                             + (f" (values that exist: {known})" if k in values else ""))
+        if not notes:
+            notes.append("each filter matches some documents, but their combination matches none; drop or relax filters")
+        return "[no hits: " + "; ".join(notes) + "]"
 
     def _tool_read_doc(self, req: ToolRequest) -> ToolOutcome:
         if not req.doc_id:

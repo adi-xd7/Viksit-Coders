@@ -34,3 +34,4 @@ logs/cases/
 # OS / editor
 .DS_Store
 Thumbs.db
+*.tsbuildinfo
