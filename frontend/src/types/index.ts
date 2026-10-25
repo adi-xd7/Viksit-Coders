@@ -116,23 +116,31 @@ export interface ClaimRuling {
 }
 
 export interface PremiseVerification {
+  premise_id?: string;
   premise: string;
-  verified: boolean;
-  reasoning?: string;
-  supporting_evidence?: EvidenceReference[];
+  status?: 'verified' | 'contradicted' | 'unverified' | 'inadmissible';
+  confidence?: number;
+  reasoning: string;
+  citations?: EvidenceReference[];
+  contradicting_citations?: EvidenceReference[];
+  discrepancy_notes?: string | null;
 }
 
 export interface HeimdallVerificationResult {
   agent: 'heimdall';
   case_id: string;
   as_of_date: string;
-  is_verified: boolean;
-  confidence: number;
   event_id?: string | null;
+  is_event_real?: boolean;
+  verification_status?: 'verified' | 'contradicted' | 'unverified' | 'error';
+  premises?: PremiseVerification[];
+  unverified_premises?: string[];
+  contradicted_premises?: string[];
+  evidence_examined?: string[];
   summary: string;
-  premises_evaluated: PremiseVerification[];
-  admissible_evidence: EvidenceReference[];
-  rejected_evidence: string[];
+  error_message?: string | null;
+  is_verified?: boolean;
+  premises_evaluated?: PremiseVerification[];
 }
 
 export interface LokiResult {
@@ -199,8 +207,10 @@ export interface TrialRecord {
   thor_round2?: ThorResult | null;
   odin_adjudication?: OdinResult | null;
   is_evidence_sufficient: boolean;
-  evidence_gaps_identified: string[];
+  evidence_gaps_identified?: string[];
+  unresolved_disputes?: string[];
   loop_stop_reason?: string | null;
+  gap_resolution_summary?: string | null;
 }
 
 export interface DebateResult {

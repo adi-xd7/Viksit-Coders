@@ -85,13 +85,17 @@ export const TrialChronicle: React.FC<TrialChronicleProps> = ({
       {/* Sequential Trial Timeline */}
       <div className="chronicle-timeline">
         {trials.map((trial) => {
-          const isExpanded = expandedTrials[trial.trial_number] ?? false;
+          const isExpanded = expandedTrials[trial.trial_number] ?? true;
           const odin = trial.odin_adjudication;
           const heimdall = trial.heimdall_verification;
           const thorR1 = trial.thor_round1;
           const lokiR1 = trial.loki_round1;
           const thorR2 = trial.thor_round2;
           const lokiR2 = trial.loki_round2;
+          const gapsList = trial.evidence_gaps_identified || [];
+          const isRealEvent = heimdall?.is_event_real ?? heimdall?.is_verified ?? true;
+          const premises = heimdall?.premises || heimdall?.premises_evaluated || [];
+          const evidenceExamined = heimdall?.evidence_examined || [];
 
           return (
             <div key={trial.trial_number} className="chronicle-trial-card">
@@ -110,19 +114,19 @@ export const TrialChronicle: React.FC<TrialChronicleProps> = ({
                     </span>
                   </span>
                   <Badge variant={trial.status === 'success' ? 'verified' : 'danger'}>
-                    {trial.status.toUpperCase()}
+                    {(trial.status || 'SUCCESS').toUpperCase()}
                   </Badge>
                   {trial.is_evidence_sufficient ? (
                     <Badge variant="established">Evidence Sufficient</Badge>
                   ) : (
-                    <Badge variant="contested">Gaps Identified ({trial.evidence_gaps_identified.length})</Badge>
+                    <Badge variant="contested">Gaps Identified ({gapsList.length})</Badge>
                   )}
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {trial.loop_stop_reason && (
+                  {(trial.loop_stop_reason || trial.gap_resolution_summary) && (
                     <span className="text-xs font-mono bg-stone-100 text-stone-700 px-2 py-0.5 rounded border border-stone-200">
-                      {trial.loop_stop_reason}
+                      {trial.loop_stop_reason || trial.gap_resolution_summary}
                     </span>
                   )}
                   <button type="button" className="btn-stone btn-sm p-1" aria-label="Toggle trial details">
@@ -142,16 +146,19 @@ export const TrialChronicle: React.FC<TrialChronicleProps> = ({
                           <ShieldCheck size={14} className="text-green-700" />
                           <span>Heimdall Verification Gate</span>
                         </span>
-                        <Badge variant={heimdall.is_verified ? 'verified' : 'danger'}>
-                          {heimdall.is_verified ? 'Event Verified' : 'Gate Rejected'}
+                        <Badge variant={isRealEvent ? 'verified' : 'danger'}>
+                          {isRealEvent ? 'Event Verified' : 'Gate Rejected'}
                         </Badge>
                       </div>
-                      <div className="text-xs text-stone-700 font-serif mb-2">"{heimdall.summary}"</div>
-                      <div className="text-xs font-mono text-stone-500 flex gap-4">
-                        <span>Premises: {heimdall.premises_evaluated.length} verified</span>
-                        <span>Admissible Docs: {heimdall.admissible_evidence.length}</span>
-                        {heimdall.rejected_evidence.length > 0 && (
-                          <span className="text-red-600">Rejected: {heimdall.rejected_evidence.length}</span>
+                      <div className="text-xs text-stone-700 font-serif mb-2">"{heimdall.summary || ''}"</div>
+                      <div className="text-xs font-mono text-stone-500 flex gap-4 flex-wrap">
+                        <span>Premises: {premises.length} evaluated</span>
+                        <span>Evidence Examined: {evidenceExamined.length} docs</span>
+                        {(heimdall.unverified_premises || []).length > 0 && (
+                          <span className="text-amber-700">Unverified: {heimdall.unverified_premises?.length}</span>
+                        )}
+                        {(heimdall.contradicted_premises || []).length > 0 && (
+                          <span className="text-red-600">Contradicted: {heimdall.contradicted_premises?.length}</span>
                         )}
                       </div>
                     </div>
@@ -167,13 +174,13 @@ export const TrialChronicle: React.FC<TrialChronicleProps> = ({
                           <span>Thor — High-Exposure Advocacy</span>
                         </span>
                         <span className="font-mono text-xs font-normal">
-                          {thorR1?.claims.length || 0} claims
+                          {(thorR1?.claims || []).length} claims
                         </span>
                       </div>
                       <p className="text-xs text-amber-950 font-serif italic mb-2">
-                        {thorR1?.summary || 'Independent investigation of upper-bound disruption severity.'}
+                        Independent investigation of upper-bound disruption severity.
                       </p>
-                      {thorR1?.claims.slice(0, 2).map((c) => (
+                      {(thorR1?.claims || []).slice(0, 2).map((c) => (
                         <div key={c.claim_id} className="text-xs bg-white p-1.5 rounded border border-amber-200 mb-1">
                           <span className="font-mono font-bold text-amber-800">{c.claim_id}: </span>
                           <span className="text-stone-800">{c.statement}</span>
@@ -189,13 +196,13 @@ export const TrialChronicle: React.FC<TrialChronicleProps> = ({
                           <span>Loki — Low-Exposure Defense</span>
                         </span>
                         <span className="font-mono text-xs font-normal">
-                          {lokiR1?.claims.length || 0} claims
+                          {(lokiR1?.claims || []).length} claims
                         </span>
                       </div>
                       <p className="text-xs text-stone-800 font-serif italic mb-2">
-                        {lokiR1?.summary || 'Evaluating mitigating stocks, trade substitutions, and alternative corridors.'}
+                        Evaluating mitigating stocks, trade substitutions, and alternative corridors.
                       </p>
-                      {lokiR1?.claims.slice(0, 2).map((c) => (
+                      {(lokiR1?.claims || []).slice(0, 2).map((c) => (
                         <div key={c.claim_id} className="text-xs bg-white p-1.5 rounded border border-stone-200 mb-1">
                           <span className="font-mono font-bold text-stone-700">{c.claim_id}: </span>
                           <span className="text-stone-800">{c.statement}</span>
@@ -213,13 +220,13 @@ export const TrialChronicle: React.FC<TrialChronicleProps> = ({
                       <div>
                         <span className="font-semibold text-stone-800 block mb-1">Thor Cross-Exam & Concessions:</span>
                         <div className="font-mono text-stone-600">
-                          Attacks launched: {thorR2?.attacks.length || 0} | Concessions made: {thorR2?.concessions.length || 0}
+                          Attacks launched: {(thorR2?.attacks || []).length} | Concessions made: {(thorR2?.concessions || []).length}
                         </div>
                       </div>
                       <div>
                         <span className="font-semibold text-stone-800 block mb-1">Loki Cross-Exam & Concessions:</span>
                         <div className="font-mono text-stone-600">
-                          Attacks launched: {lokiR2?.attacks.length || 0} | Concessions made: {lokiR2?.concessions.length || 0}
+                          Attacks launched: {(lokiR2?.attacks || []).length} | Concessions made: {(lokiR2?.concessions || []).length}
                         </div>
                       </div>
                     </div>
@@ -228,32 +235,32 @@ export const TrialChronicle: React.FC<TrialChronicleProps> = ({
                   {/* Odin's Adjudication for this Trial */}
                   {odin && (
                     <div className="p-3 rounded border border-stone-300" style={{ backgroundColor: 'var(--color-warm-parchment)' }}>
-                      <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
                         <span className="text-xs font-semibold uppercase text-stone-800 flex items-center gap-1">
                           <Scale size={13} className="text-amber-800" />
                           <span>Odin's Trial Ruling</span>
                         </span>
                         <div className="flex gap-2">
                           <span className="text-xs font-mono text-green-900 font-bold">
-                            {odin.established_claims.length} Established
+                            {(odin.established_claims || []).length} Established
                           </span>
                           <span className="text-xs font-mono text-amber-800 font-bold">
-                            {odin.contested_claims.length} Contested
+                            {(odin.contested_claims || []).length} Contested
                           </span>
                           <span className="text-xs font-mono text-red-900 font-bold">
-                            {odin.conceded_claims.length} Conceded
+                            {(odin.conceded_claims || []).length} Conceded
                           </span>
                         </div>
                       </div>
-                      <div className="text-xs text-stone-800 font-serif">"{odin.summary}"</div>
+                      <div className="text-xs text-stone-800 font-serif">"{odin.summary || ''}"</div>
 
-                      {trial.evidence_gaps_identified.length > 0 && (
+                      {gapsList.length > 0 && (
                         <div className="mt-2 pt-2 border-t border-stone-200">
                           <span className="text-xs font-semibold text-amber-900 block mb-1">
                             Sufficiency Gaps Identified in this Trial:
                           </span>
                           <ul className="text-xs text-stone-700 list-disc list-inside space-y-0.5">
-                            {trial.evidence_gaps_identified.map((g, i) => (
+                            {gapsList.map((g, i) => (
                               <li key={i}>{g}</li>
                             ))}
                           </ul>

@@ -344,7 +344,7 @@ export const App: React.FC = () => {
 
         {activeSection === 'chronicle' && (
           <TrialChronicle
-            trials={selectedTrials}
+            trials={selectedTrials && selectedTrials.length > 0 ? selectedTrials : (selectedDebateResult?.trial_history || [])}
             loading={caseLoading}
             onRefresh={() => selectedCaseId && loadCaseDetails(selectedCaseId, cases)}
             onConveneDebate={() => setActiveSection('dossier')}

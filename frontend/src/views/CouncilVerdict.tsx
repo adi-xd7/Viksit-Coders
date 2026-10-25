@@ -56,7 +56,7 @@ export const CouncilVerdict: React.FC<CouncilVerdictProps> = ({
   const isSufficient = odin.is_evidence_sufficient;
 
   // Filter claim rulings
-  const filteredRulings = odin.claim_rulings.filter((r) => {
+  const filteredRulings = (odin.claim_rulings || []).filter((r) => {
     if (filterRuling !== 'all' && r.ruling !== filterRuling) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -114,33 +114,33 @@ export const CouncilVerdict: React.FC<CouncilVerdictProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
           <div className="p-3 rounded border border-stone-200 bg-white">
             <div className="text-xs uppercase font-semibold text-stone-500 mb-1">Established Claims</div>
-            <div className="font-serif text-2xl font-bold text-green-900">{odin.established_claims.length}</div>
+            <div className="font-serif text-2xl font-bold text-green-900">{(odin.established_claims || []).length}</div>
             <div className="text-xs text-stone-400 mt-1">Verified by admissible evidence</div>
           </div>
 
           <div className="p-3 rounded border border-stone-200 bg-white">
             <div className="text-xs uppercase font-semibold text-stone-500 mb-1">Contested Claims</div>
-            <div className="font-serif text-2xl font-bold text-amber-800">{odin.contested_claims.length}</div>
+            <div className="font-serif text-2xl font-bold text-amber-800">{(odin.contested_claims || []).length}</div>
             <div className="text-xs text-stone-400 mt-1">Unresolved evidentiary conflict</div>
           </div>
 
           <div className="p-3 rounded border border-stone-200 bg-white">
             <div className="text-xs uppercase font-semibold text-stone-500 mb-1">Conceded Claims</div>
-            <div className="font-serif text-2xl font-bold text-red-900">{odin.conceded_claims.length}</div>
+            <div className="font-serif text-2xl font-bold text-red-900">{(odin.conceded_claims || []).length}</div>
             <div className="text-xs text-stone-400 mt-1">Formally yielded in cross-exam</div>
           </div>
 
           <div className="p-3 rounded border border-stone-200 bg-white">
             <div className="text-xs uppercase font-semibold text-stone-500 mb-1">Evidence Examined</div>
-            <div className="font-serif text-2xl font-bold text-stone-900">{odin.evidence_examined.length}</div>
+            <div className="font-serif text-2xl font-bold text-stone-900">{(odin.evidence_examined || []).length}</div>
             <div className="text-xs text-stone-400 mt-1">Runemark corpus documents</div>
           </div>
         </div>
 
         {/* Unresolved Disputes & Evidence Limitations (if any) */}
-        {(odin.unresolved_disputes.length > 0 || odin.evidence_limitations.length > 0) && (
+        {((odin.unresolved_disputes || []).length > 0 || (odin.evidence_limitations || []).length > 0) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-            {odin.unresolved_disputes.length > 0 && (
+            {(odin.unresolved_disputes || []).length > 0 && (
               <div className="p-4 rounded border border-amber-200 bg-amber-50">
                 <div className="text-xs font-semibold uppercase text-amber-900 flex items-center gap-1 mb-2">
                   <AlertCircle size={14} />
