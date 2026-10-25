@@ -38,6 +38,10 @@ from backend.agents.adapters import (
     LokiAdapter,
     ThorAdapter,
 )
+from backend.agents.cross_exam import CrossExaminationOrchestrator
+from backend.agents.heimdall import HeimdallAgent
+from backend.agents.loki import LokiAgent
+from backend.agents.thor import ThorAgent
 from backend.agents.odin import OdinJudge
 from backend.briefing import generate_briefing
 from backend.llm import (
@@ -138,10 +142,25 @@ class TrialGraphBuilder:
         self.memory_store = memory_store or default_memory_store
         self.output_dir = output_dir
 
-        self.heimdall = heimdall or HeimdallAdapter(llm_client=self.llm_client)
-        self.thor = thor or ThorAdapter(llm_client=self.llm_client)
-        self.loki = loki or LokiAdapter(llm_client=self.llm_client)
-        self.cross_exam = cross_exam or CrossExamAdapter()
+        self.heimdall = heimdall or HeimdallAgent(
+            llm_client=self.llm_client,
+            logbook=self.logbook,
+            memory_store=self.memory_store,
+        )
+        self.thor = thor or ThorAgent(
+            llm_client=self.llm_client,
+            logbook=self.logbook,
+            memory_store=self.memory_store,
+        )
+        self.loki = loki or LokiAgent(
+            llm_client=self.llm_client,
+            logbook=self.logbook,
+            memory_store=self.memory_store,
+        )
+        self.cross_exam = cross_exam or CrossExaminationOrchestrator(
+            thor_agent=self.thor,
+            loki_agent=self.loki,
+        )
         self.odin = odin or OdinJudge(
             llm_client=self.llm_client,
             logbook=self.logbook,

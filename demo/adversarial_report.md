@@ -1,6 +1,6 @@
 # RAGNAROK Phase 7: Synthetic Adversarial Evaluation Report
 
-**Date Executed**: 2026-10-25T09:29:46.117920+00:00  
+**Date Executed**: 2026-10-25T10:20:28.650771+00:00  
 **Investigation As-Of Date**: 2027-01-25  
 **Test Corpus**: Synthetic Adversarial Pack (`demo/fixtures/`)  
 

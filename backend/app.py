@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from backend.api.routes import router
 from backend.api.service import TrialService, default_trial_service
@@ -95,6 +96,14 @@ def create_app(service: Optional[TrialService] = None) -> FastAPI:
 
     # Register API Routes
     application.include_router(router)
+
+    # Serve Dashboard UI
+    static_index = os.path.join(os.path.dirname(__file__), "static", "index.html")
+    if os.path.exists(static_index):
+        @application.get("/", include_in_schema=False)
+        @application.get("/dashboard", include_in_schema=False)
+        async def serve_dashboard():
+            return FileResponse(static_index, media_type="text/html")
 
     return application
 

@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAGNAROK — Trial of the Nine Realms: Courtroom Intelligence Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #111827;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --bg-card-hover: rgba(31, 41, 55, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-highlight: rgba(147, 197, 253, 0.3);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --accent-gold: #fbbf24;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --thor-crimson: #ef4444;
+      --thor-glow: rgba(239, 68, 68, 0.15);
+      --loki-emerald: #10b981;
+      --loki-glow: rgba(16, 185, 129, 0.15);
+      --odin-gold: #f59e0b;
+      --odin-glow: rgba(245, 158, 11, 0.15);
+      --heimdall-cyan: #06b6d4;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 60%);
+    }
+
+    /* Header */
+    header {
+      background: rgba(10, 14, 23, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .system-status {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      padding: 0.35rem 0.85rem;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 9999px;
+      color: #34d399;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    /* Sidebar / Setup Panel */
+    .panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .panel-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #fff;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    input, textarea, select {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      padding: 0.65rem 0.85rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: var(--transition);
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .btn {
+      background: var(--accent-blue);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1.25rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    }
+
+    .btn:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      box-shadow: none;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-odin {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-odin:hover {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    }
+
+    .preset-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .preset-btn {
+      text-align: left;
+      font-size: 0.8rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed var(--border-color);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .preset-btn:hover {
+      color: #fff;
+      border-color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    /* Main Stage */
+    .main-stage {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Stepper */
+    .stepper {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 0.75rem 1rem;
+      justify-content: space-between;
+      overflow-x: auto;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      padding: 0.4rem 0.75rem;
+      border-radius: 9999px;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .step-item.active {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-highlight);
+    }
+
+    .step-item.completed {
+      color: #34d399;
+    }
+
+    .step-circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+    }
+
+    .step-item.active .step-circle {
+      background: var(--accent-blue);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+
+    .step-item.completed .step-circle {
+      background: #10b981;
+      color: #fff;
+    }
+
+    /* Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 0.6rem 1rem;
+      color: var(--text-muted);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    /* Tab Content Cards */
+    .tab-pane {
+      display: none;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .tab-pane.active {
+      display: flex;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .chamber-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chamber-card.thor {
+      border-color: rgba(239, 68, 68, 0.3);
+      box-shadow: 0 4px 20px var(--thor-glow);
+    }
+
+    .chamber-card.loki {
+      border-color: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 4px 20px var(--loki-glow);
+    }
+
+    .chamber-card.odin {
+      border-color: rgba(245, 158, 11, 0.3);
+      box-shadow: 0 4px 20px var(--odin-glow);
+    }
+
+    .chamber-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .agent-tag {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-real { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-uncertain { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-notreal { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-established { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .badge-contested { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .badge-conceded { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .badge-rejected { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .citation-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #93c5fd;
+      background: rgba(59, 130, 246, 0.1);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      display: inline-block;
+      margin: 2px;
+    }
+
+    /* Markdown Report Box */
+    .report-box {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: #e5e7eb;
+      max-height: 600px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    /* Audit Log Stream */
+    .log-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .log-entry {
+      background: rgba(0, 0, 0, 0.3);
+      border-left: 3px solid var(--accent-blue);
+      border-radius: var(--radius-sm);
+      padding: 0.6rem 0.85rem;
+      font-size: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .empty-state {
+      padding: 3rem;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* Spinner */
+    .spinner {
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #fff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">R</div>
+      <div>
+        <div class="brand-title">Trial of the Nine Realms</div>
+        <div class="brand-subtitle">Supply Chain Disruption Impact Analyzer</div>
+      </div>
+    </div>
+    <div class="system-status">
+      <div class="status-dot"></div>
+      <span id="backend-status-text">Backend Connected (Odin Courtroom Engine)</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Left Column: Controls & Presets -->
+    <aside class="panel">
+      <div class="panel-title">
+        <span>⚔️ Investigation Setup</span>
+      </div>
+
+      <div class="form-group">
+        <label>Disruption Scenario Presets</label>
+        <div class="preset-buttons">
+          <button type="button" class="preset-btn" onclick="loadPreset('e5')">
+            🌾 <strong>E5: Orvan Grain Corridor Collapse</strong><br>
+            <span style="font-size:0.7rem;">Midgard & Tolan wheat/maize exposure (25 Jan 2027)</span>
+          </button>
+          <button type="button" class="preset-btn" onclick="loadPreset('demo')">
+            ❄️ <strong>Synthetic: Winter Sluice Collapse</strong><br>
+            <span style="font-size:0.7rem;">Vanaheim & Alfheim canal blockage (25 Jan 2027)</span>
+          </button>
+          <button type="button" class="preset-btn" onclick="loadPreset('hoax')">
+            🛑 <strong>Adversarial: Fabricated Decoy Event</strong><br>
+            <span style="font-size:0.7rem;">Tests Heimdall NOT_REAL early exit</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="caseQuery">Investigation Query</label>
+        <textarea id="caseQuery" placeholder="Describe the supply chain disruption event and target markets..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="asOfDate">As-Of Date (Clock Constraint)</label>
+        <input type="date" id="asOfDate" value="2027-01-25">
+      </div>
+
+      <div class="form-group">
+        <label for="caseId">Case ID</label>
+        <input type="text" id="caseId" value="CASE-ORVAN-202701">
+      </div>
+
+      <button id="btnRunTrial" class="btn btn-odin" onclick="startTrialExecution()">
+        <span id="btnSpinner" class="spinner" style="display:none;"></span>
+        <span>⚖️ Execute Courtroom Trial</span>
+      </button>
+
+      <div id="trialMetaBox" style="font-size:0.8rem; color:var(--text-muted); display:none;">
+        <hr style="border-color:var(--border-color); margin: 0.5rem 0;">
+        <div>Trial ID: <span id="currentTrialId" style="font-family:'JetBrains Mono'; color:#fff;"></span></div>
+        <div>Status: <span id="currentTrialStatus" class="badge badge-real"></span></div>
+      </div>
+    </aside>
+
+    <!-- Right Column: Courtroom Chamber Stage -->
+    <section class="main-stage">
+
+      <!-- Stepper Progress Bar -->
+      <div class="stepper" id="workflowStepper">
+        <div class="step-item active" id="step-heimdall"><div class="step-circle">1</div> Heimdall</div>
+        <div class="step-item" id="step-advocates"><div class="step-circle">2</div> Thor & Loki</div>
+        <div class="step-item" id="step-crossexam"><div class="step-circle">3</div> Cross-Exam</div>
+        <div class="step-item" id="step-odin"><div class="step-circle">4</div> Odin Judge</div>
+        <div class="step-item" id="step-briefing"><div class="step-circle">5</div> Briefing</div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('tab-overview')">🏛️ Overview</button>
+        <button class="tab-btn" onclick="switchTab('tab-heimdall')">👁️ Heimdall Vault</button>
+        <button class="tab-btn" onclick="switchTab('tab-advocates')">⚔️ Thor vs Loki</button>
+        <button class="tab-btn" onclick="switchTab('tab-crossexam')">🛡️ Cross-Exam</button>
+        <button class="tab-btn" onclick="switchTab('tab-odin')">⚖️ Odin Rulings</button>
+        <button class="tab-btn" onclick="switchTab('tab-exposure')">📊 Exposure Table</button>
+        <button class="tab-btn" onclick="switchTab('tab-briefing')">📜 Final Briefing</button>
+        <button class="tab-btn" onclick="switchTab('tab-audit')">🔍 Audit Log</button>
+      </nav>
+
+      <!-- TAB 1: Overview -->
+      <div id="tab-overview" class="tab-pane active">
+        <div class="chamber-card odin">
+          <div class="chamber-header">
+            <span class="agent-tag" style="color:var(--odin-gold);">⚖️ Courtroom Intelligence Summary</span>
+            <span id="overviewStatusBadge" class="badge badge-uncertain">No Trial Active</span>
+          </div>
+          <p id="overviewExecutiveText" style="color:var(--text-muted);">
+            Register a case or click a preset on the left to begin the autonomous four-agent investigation. Heimdall will verify event reality, Thor and Loki will debate commercial exposure, and Odin will issue binding rulings grounded in admissible evidence.
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <div class="chamber-card thor">
+            <div class="chamber-header">
+              <span class="agent-tag" style="color:var(--thor-crimson);">⚡ Thor's High-Exposure Thesis</span>
+              <span id="thorSummaryBadge" class="badge badge-contested">Pending</span>
+            </div>
+            <p id="thorSummaryText" style="font-size:0.85rem; color:var(--text-muted);">Awaiting advocate hearings...</p>
+          </div>
+
+          <div class="chamber-card loki">
+            <div class="chamber-header">
+              <span class="agent-tag" style="color:var(--loki-emerald);">🐍 Loki's Limited-Exposure Thesis</span>
+              <span id="lokiSummaryBadge" class="badge badge-conceded">Pending</span>
+            </div>
+            <p id="lokiSummaryText" style="font-size:0.85rem; color:var(--text-muted);">Awaiting advocate hearings...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Heimdall Evidence Vault -->
+      <div id="tab-heimdall" class="tab-pane">
+        <div class="chamber-card">
+          <div class="chamber-header">
+            <span class="agent-tag" style="color:var(--heimdall-cyan);">👁️ Heimdall Event Verification</span>
+            <span id="heimdallEventBadge" class="badge badge-uncertain">Pending</span>
+          </div>
+          <p id="heimdallEventReason" style="font-size:0.9rem; color:var(--text-main);">Event authenticity has not yet been adjudicated.</p>
+        </div>
+
+        <div class="chamber-card">
+          <div class="chamber-header">
+            <span class="agent-tag">📚 Admissible Ingested Evidence</span>
+            <span id="evidenceCountBadge" class="badge">0 Documents</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Doc ID</th>
+                  <th>Date</th>
+                  <th>Tier</th>
+                  <th>Source / Institution</th>
+                  <th>Sector</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="evidenceTableBody">
+                <tr><td colspan="6" style="text-align:center; color:var(--text-dim);">No documents retrieved yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Thor vs Loki -->
+      <div id="tab-advocates" class="tab-pane">
+        <div class="grid-2">
+          <div class="chamber-card thor">
+            <div class="chamber-header">
+              <span class="agent-tag" style="color:var(--thor-crimson);">⚡ Thor's Claims (High Exposure)</span>
+            </div>
+            <div id="thorClaimsList" style="display:flex; flex-direction:column; gap:0.75rem;">
+              <div class="empty-state">No Thor claims generated yet.</div>
+            </div>
+          </div>
+
+          <div class="chamber-card loki">
+            <div class="chamber-header">
+              <span class="agent-tag" style="color:var(--loki-emerald);">🐍 Loki's Claims (Limited Exposure)</span>
+            </div>
+            <div id="lokiClaimsList" style="display:flex; flex-direction:column; gap:0.75rem;">
+              <div class="empty-state">No Loki claims generated yet.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: Cross-Examination -->
+      <div id="tab-crossexam" class="tab-pane">
+        <div class="chamber-card">
+          <div class="chamber-header">
+            <span class="agent-tag">🛡️ Structured Cross-Examination Records</span>
+          </div>
+          <div id="crossExamList" style="display:flex; flex-direction:column; gap:1rem;">
+            <div class="empty-state">Cross-examination records will appear once advocates clash.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: Odin Rulings -->
+      <div id="tab-odin" class="tab-pane">
+        <div class="chamber-card odin">
+          <div class="chamber-header">
+            <span class="agent-tag" style="color:var(--odin-gold);">⚖️ Binding Judicial Rulings</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Claim ID</th>
+                  <th>Verdict</th>
+                  <th>Basis</th>
+                  <th>Rationale</th>
+                  <th>Admissible Citations</th>
+                </tr>
+              </thead>
+              <tbody id="rulingsTableBody">
+                <tr><td colspan="5" style="text-align:center; color:var(--text-dim);">No rulings issued yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: Exposure Analysis Table -->
+      <div id="tab-exposure" class="tab-pane">
+        <div class="chamber-card">
+          <div class="chamber-header">
+            <span class="agent-tag">📊 Deterministic Exposure Calculations</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Country</th>
+                  <th>Sector</th>
+                  <th>Thor Range (High)</th>
+                  <th>Loki Range (Limited)</th>
+                  <th>Odin Net Exposure</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="exposureTableBody">
+                <tr><td colspan="6" style="text-align:center; color:var(--text-dim);">Run trial to calculate deterministic exposure.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 7: Final Briefing -->
+      <div id="tab-briefing" class="tab-pane">
+        <div class="chamber-card">
+          <div class="chamber-header">
+            <span class="agent-tag">📜 Validated Executive Intelligence Briefing</span>
+            <button class="btn btn-secondary" onclick="downloadBriefingJson()">⬇️ Export JSON</button>
+          </div>
+          <div class="report-box" id="briefingMarkdownBox">The finalized executive briefing will be displayed here upon trial completion.</div>
+        </div>
+      </div>
+
+      <!-- TAB 8: Audit Log -->
+      <div id="tab-audit" class="tab-pane">
+        <div class="chamber-card">
+          <div class="chamber-header">
+            <span class="agent-tag">🔍 Append-Only Audit Logbook</span>
+          </div>
+          <div class="log-stream" id="logStreamBox">
+            <div class="empty-state">Audit events will stream here during execution.</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+    let activeTrialData = null;
+
+    function loadPreset(key) {
+      if (key === 'e5') {
+        document.getElementById('caseQuery').value = "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.";
+        document.getElementById('asOfDate').value = "2027-01-25";
+        document.getElementById('caseId').value = "CASE-ORVAN-202701";
+      } else if (key === 'demo') {
+        document.getElementById('caseQuery').value = "As of 25 January 2027, evaluate commercial exposure from the Winter Sluice Collapse across Vanaheim agriculture and Alfheim grain shipments.";
+        document.getElementById('asOfDate').value = "2027-01-25";
+        document.getElementById('caseId').value = "DEMO-CASE-2027-01";
+      } else if (key === 'hoax') {
+        document.getElementById('caseQuery').value = "Reported fabricated hoax disruption in Midgard wheat.";
+        document.getElementById('asOfDate').value = "2027-01-25";
+        document.getElementById('caseId').value = "CASE-HOAX-001";
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    async function checkHealth() {
+      try {
+        const res = await fetch('/health');
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('backend-status-text').innerText = `Odin Engine Online (${data.process})`;
+        }
+      } catch (err) {
+        document.getElementById('backend-status-text').innerText = 'Offline / Connecting...';
+      }
+    }
+
+    async function startTrialExecution() {
+      const btn = document.getElementById('btnRunTrial');
+      const spinner = document.getElementById('btnSpinner');
+      const query = document.getElementById('caseQuery').value.trim();
+      const asOf = document.getElementById('asOfDate').value.trim();
+      const caseId = document.getElementById('caseId').value.trim();
+
+      if (!query) {
+        alert('Please enter an investigation query.');
+        return;
+      }
+
+      btn.disabled = true;
+      spinner.style.display = 'inline-block';
+      document.getElementById('overviewStatusBadge').innerText = 'Trial In Progress...';
+
+      // 1. Create or ensure case
+      try {
+        await fetch('/api/cases', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ case_id: caseId, query: query, as_of: asOf, target_country_sector_pairs: [] })
+        });
+      } catch (e) {
+        console.log('Case registration note:', e);
+      }
+
+      // 2. Start trial execution
+      try {
+        const trialRes = await fetch(`/api/cases/${caseId}/trials`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ background: false, max_runs: 2 })
+        });
+
+        if (!trialRes.ok) {
+          const errData = await trialRes.json();
+          alert(`Trial execution error: ${errData.message || trialRes.statusText}`);
+          return;
+        }
+
+        const trialData = await trialRes.json();
+        activeTrialData = trialData;
+        document.getElementById('currentTrialId').innerText = trialData.trial_id;
+        document.getElementById('currentTrialStatus').innerText = trialData.status;
+        document.getElementById('trialMetaBox').style.display = 'block';
+
+        // 3. Fetch Rulings and Briefing
+        await loadTrialResults(caseId, trialData.trial_id);
+
+      } catch (err) {
+        alert(`Error: ${err.message}`);
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+      }
+    }
+
+    async function loadTrialResults(caseId, trialId) {
+      // Fetch status
+      const statusRes = await fetch(`/api/cases/${caseId}/trials/${trialId}`);
+      if (statusRes.ok) {
+        const sData = await statusRes.json();
+        document.getElementById('overviewStatusBadge').innerText = sData.status.toUpperCase();
+        document.getElementById('overviewStatusBadge').className = `badge badge-${sData.status === 'completed' ? 'real' : 'uncertain'}`;
+      }
+
+      // Fetch Rulings
+      const rulingsRes = await fetch(`/api/cases/${caseId}/trials/${trialId}/rulings`);
+      if (rulingsRes.ok) {
+        const rData = await rulingsRes.json();
+        renderRulings(rData.rulings || []);
+      }
+
+      // Fetch Briefing
+      const briefingRes = await fetch(`/api/cases/${caseId}/trials/${trialId}/briefing`);
+      if (briefingRes.ok) {
+        const bData = await briefingRes.json();
+        activeTrialData.briefing = bData;
+        renderBriefing(bData);
+      }
+
+      // Update Stepper to Completed
+      document.querySelectorAll('.step-item').forEach(st => st.classList.add('completed'));
+    }
+
+    function renderRulings(rulings) {
+      const tbody = document.getElementById('rulingsTableBody');
+      tbody.innerHTML = '';
+      if (!rulings.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No rulings found.</td></tr>';
+        return;
+      }
+
+      rulings.forEach(r => {
+        const tr = document.createElement('tr');
+        const badgeClass = `badge-${r.verdict.toLowerCase()}`;
+        const citsHtml = (r.admissible_citations || []).map(c => 
+          `<span class="citation-tag">[${c.doc_id || c.trade_row_ref} P${c.paragraph_num || ''}]</span>`
+        ).join(' ');
+
+        tr.innerHTML = `
+          <td><strong>${r.claim_id}</strong></td>
+          <td><span class="badge ${badgeClass}">${r.verdict}</span></td>
+          <td>${r.basis}</td>
+          <td>${r.rationale}</td>
+          <td>${citsHtml || '<span style="color:var(--text-dim);">None</span>'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderBriefing(briefing) {
+      document.getElementById('overviewExecutiveText').innerText = briefing.executive_summary || 'Trial completed.';
+      document.getElementById('briefingMarkdownBox').innerText = briefing.markdown_content || JSON.stringify(briefing, null, 2);
+
+      // Render Heimdall Event Verification
+      const vStatus = (briefing.event_verification && briefing.event_verification.status) || 'REAL';
+      const vReason = (briefing.event_verification && briefing.event_verification.reason) || 'Corroborated by official notices.';
+      document.getElementById('heimdallEventBadge').innerText = vStatus.toUpperCase();
+      document.getElementById('heimdallEventBadge').className = `badge badge-${vStatus.toLowerCase().replace('_', '')}`;
+      document.getElementById('heimdallEventReason').innerText = vReason;
+
+      // Render Sources Table
+      const srcTbody = document.getElementById('evidenceTableBody');
+      srcTbody.innerHTML = '';
+      (briefing.sources || []).forEach(s => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${s.doc_id}</strong></td>
+          <td>${s.pub_date || 'N/A'}</td>
+          <td><span class="badge">Tier ${s.reliability || 2}</span></td>
+          <td>${s.source_name || 'Official Outlet'}</td>
+          <td>${s.sector || 'general'}</td>
+          <td><span class="badge badge-real">Admissible</span></td>
+        `;
+        srcTbody.appendChild(tr);
+      });
+      document.getElementById('evidenceCountBadge').innerText = `${(briefing.sources || []).length} Sources`;
+
+      // Render Exposure Table
+      const expTbody = document.getElementById('exposureTableBody');
+      expTbody.innerHTML = '';
+      (briefing.exposure_table || []).forEach(e => {
+        const tr = document.createElement('tr');
+        const thorStr = e.thor_range ? `${e.thor_range[0]}% - ${e.thor_range[1]}%` : 'N/A';
+        const lokiStr = e.loki_range ? `${e.loki_range[0]}% - ${e.loki_range[1]}%` : 'N/A';
+        const odinStr = e.odin_range ? `${e.odin_range[0]}% - ${e.odin_range[1]}%` : (e.odin_net_loss ? `$${(e.odin_net_loss/1e6).toFixed(1)}M` : 'Unresolved');
+        const badgeClass = e.status === 'resolved' ? 'badge-real' : 'badge-uncertain';
+
+        tr.innerHTML = `
+          <td><strong>${e.country}</strong></td>
+          <td>${e.sector}</td>
+          <td style="color:var(--thor-crimson);">${thorStr}</td>
+          <td style="color:var(--loki-emerald);">${lokiStr}</td>
+          <td style="color:var(--odin-gold); font-weight:700;">${odinStr}</td>
+          <td><span class="badge ${badgeClass}">${e.status}</span></td>
+        `;
+        expTbody.appendChild(tr);
+      });
+
+      // Render Thor vs Loki Claims
+      const thorList = document.getElementById('thorClaimsList');
+      const lokiList = document.getElementById('lokiClaimsList');
+      thorList.innerHTML = '';
+      lokiList.innerHTML = '';
+
+      (briefing.established_findings || []).concat(briefing.contested_findings || []).forEach(f => {
+        const card = document.createElement('div');
+        card.className = 'log-entry';
+        const cits = (f.citations || []).map(c => `<span class="citation-tag">${c.display_str || c.doc_id}</span>`).join(' ');
+        card.innerHTML = `
+          <div class="log-header">
+            <span>${f.claim_id}</span>
+            <span class="badge badge-${(f.verdict||'established').toLowerCase()}">${f.verdict || 'Ruling'}</span>
+          </div>
+          <div>${f.statement || f.finding || ''}</div>
+          <div style="margin-top:4px;">${cits}</div>
+        `;
+
+        if (f.claim_id && f.claim_id.startsWith('THOR')) {
+          thorList.appendChild(card);
+        } else if (f.claim_id && f.claim_id.startsWith('LOKI')) {
+          lokiList.appendChild(card);
+        }
+      });
+    }
+
+    function downloadBriefingJson() {
+      if (!activeTrialData || !activeTrialData.briefing) {
+        alert('No briefing available for export.');
+        return;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activeTrialData.briefing, null, 2));
+      const a = document.createElement('a');
+      a.href = dataStr;
+      a.download = `briefing_${activeTrialData.trial_id || 'export'}.json`;
+      a.click();
+    }
+
+    // Initialize health on load
+    window.onload = () => {
+      checkHealth();
+      loadPreset('e5');
+    };
+  </script>
+</body>
+</html>

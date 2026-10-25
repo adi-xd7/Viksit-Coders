@@ -480,3 +480,68 @@ To maintain modularity and isolation:
   - *Multi-Layer Injection Containment*: Untrusted evidence is encapsulated in XML tags, regex-scanned for override directives, logged to `LogBook` under `TRAP_INJECTION`, and strictly barred from modifying system prompts or as-of dates.
   - *Zero Mental Arithmetic*: All exposure numbers and bounds are computed via deterministic Python math in `backend/trade_calc.py`, preventing LLM hallucination of numerical statistics.
   - *Truthful Termination*: Non-existent events (`not_real`), thin evidence, or exhausted budgets terminate with honest status disclosures rather than fabricated conclusions.
+
+---
+
+## Full Four-Agent System Implementation — Complete RAGNAROK Intelligence Suite
+
+- **Status**: Completed
+- **Objective**: Deliver a fully integrated, tested, demonstrable four-agent intelligence system—unifying multi-format document ingestion, hybrid evidence retrieval, Heimdall gatekeeper, Thor high-exposure advocate, Loki limited-exposure advocate, cross-examination orchestrator, Odin judicial arbiter, deterministic financial calculations, LangGraph workflow, FastAPI backend, and an interactive real-time dashboard UI.
+- **Components Created & Integrated**:
+  - `backend/ingestion.py`:
+    - Full multi-format document extraction for PDF (`pymupdf`/`pypdf`), DOCX (`python-docx`), and TXT with multi-encoding fallback (`utf-8`, `utf-16le`, `latin-1`).
+    - Structured paragraph segmentation `[P1]`, `[P2]`...
+    - Trade row synthesis: extracts structured monthly records into `TradeRow` objects with volumes and values.
+    - Content hashing with SHA-256 for deduplication.
+    - Automated prompt injection security scanning via `scan_text_for_injections()`.
+    - Safe handling of damaged documents (e.g. empty payloads like `ORV-0023.txt`).
+  - `backend/retrieval.py`:
+    - Hybrid retrieval engine combining BM25 lexical ranking (`BM25Okapi`) and dense vector similarity (`FastEmbed` + in-memory `QdrantClient`).
+    - Deterministic As-Of Date enforcement: sources published after `case_file.as_of` are strictly excluded from search candidate sets.
+    - Reciprocal Rank Fusion (RRF) with topical metadata weighting and reliability tier awareness.
+  - `backend/agents/heimdall.py` & `backend/agents/prompts/heimdall.md`:
+    - Full `HeimdallAgent` gatekeeper and chief investigator.
+    - Query parser extracting target country-sector pairs and normalized as-of dates.
+    - Event verification: evaluates disruption authenticity (`REAL`, `UNCERTAIN`, `NOT_REAL`) grounded in admissible records; isolates Tier 4 rumors; detects fabricated decoys.
+    - Send-back research loop: re-queries retrieval engine for specific missing commodities/routes and tracks novelty via SHA-256 hashes.
+  - `backend/agents/thor.py` & `backend/agents/prompts/thor.md`:
+    - Full `ThorAgent` high-exposure advocate.
+    - Claims generation with `posture="high"`, paragraph citations, and deterministic exposure bounds via `calculate_exposure_bounds()`.
+    - Cross-examination challenges attacking Loki's unproven substitution claims; evidence-backed defenses.
+  - `backend/agents/loki.py` & `backend/agents/prompts/loki.md`:
+    - Full `LokiAgent` limited-exposure advocate.
+    - Claims generation with `posture="limited"`, substitute rail route throughput credits, and deterministic offsets via `calculate_substitute_offset()`.
+    - Cross-examination challenges attacking Thor's gross-loss extrapolations; explicit concessions (`Concession`) when data is unequivocal.
+  - `backend/agents/cross_exam.py`:
+    - Dynamic `CrossExaminationOrchestrator` managing reciprocal clashes between Thor and Loki.
+    - Preserves degraded modes when an advocate fails (surviving claims stand unchallenged; zero automatic concessions on failure/timeout).
+  - `backend/trial.py`:
+    - Integrated real agents into `TrialGraphBuilder` by default while preserving adapter base classes for full backwards-compatibility.
+  - `backend/static/index.html` & `backend/app.py`:
+    - Interactive single-page dashboard UI served at `http://localhost:8000/` and `/dashboard`.
+    - Live trial execution with scenario presets (E5 Orvan Corridor, Synthetic Winter Sluice, Hoax Decoy).
+    - Stepper progress tracker, Heimdall evidence vault, Thor vs Loki advocate chamber, cross-examination viewer, Odin rulings table, deterministic exposure table, executive briefing markdown viewer, and audit log stream.
+- **Verification Results**:
+  - `python -m pytest`: **150 passed in 9.63s (100% pass rate across all 16 test suites)**.
+    - `test_adversarial.py`: 15 passed
+    - `test_advocates.py`: 4 passed (new)
+    - `test_api.py`: 22 passed
+    - `test_briefing.py`: 18 passed
+    - `test_financial_audit.py`: 8 passed
+    - `test_four_agents.py`: 2 passed (new)
+    - `test_heimdall.py`: 5 passed (new)
+    - `test_odin.py`: 9 passed
+    - `test_odin_budgets.py`: 6 passed
+    - `test_odin_evidence.py`: 11 passed
+    - `test_odin_logging.py`: 6 passed
+    - `test_odin_memory.py`: 8 passed
+    - `test_odin_sufficiency.py`: 12 passed
+    - `test_trade_calc.py`: 9 passed
+    - `test_trial_graph.py`: 8 passed
+    - `test_trial_limits.py`: 7 passed
+  - `python demo/adversarial_runner.py`: **19 / 19 passed (100.0%)**.
+  - `python demo/briefing_audit.py`: **0 violations detected (100% consistent)**.
+  - `python demo/api_smoke_test.py`: **21 / 21 checks passed (100.0%)**.
+  - `python demo/run_demo.py`: **All 7 stages succeeded with real integrated agents**.
+  - Dashboard routes (`GET /` and `GET /dashboard`): **200 OK (35KB UI payload)**.
+

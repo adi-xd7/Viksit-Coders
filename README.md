@@ -271,7 +271,7 @@ Phase 7 delivers a comprehensive, hardened evaluation suite, deterministic end-t
 ### 1. Quick Start Commands
 
 ```bash
-# 1. Run the complete test suite (139 tests across 12 test modules)
+# 1. Run the complete test suite (150 tests across 16 test modules)
 python -m pytest
 
 # 2. Run the 19-scenario synthetic adversarial evaluation
@@ -285,9 +285,75 @@ python demo/api_smoke_test.py
 
 # 5. Run the deterministic end-to-end trial demonstration
 python demo/run_demo.py
+
+# 6. Launch the FastAPI server & Interactive Dashboard UI
+python -m backend.app
+# Open http://localhost:8000/ or http://localhost:8000/dashboard in your browser!
 ```
 
-### 2. Demo Pack Deliverables (`demo/`)
+---
+
+## Complete Four-Agent Intelligence System Architecture
+
+The RAGNAROK system operates as an autonomous, adversarial multi-agent courtroom where four specialized agents collaborate and clash through typed, structured contracts:
+
+```text
+                    SOURCE DOCUMENTS (PDF, DOCX, TXT)
+                                   |
+                                   v
+                      DOCUMENT INGESTION ENGINE
+                   (Paragraphs [Pn], Trade Rows, Hashes)
+                                   |
+                                   v
+                        HYBRID RETRIEVAL ENGINE
+                   (BM25 Lexical + FastEmbed Vector)
+                                   |
+                                   v
+                               HEIMDALL
+                      Gatekeeper and Investigator
+                 (Event Verification: REAL/UNCERTAIN/NOT_REAL)
+                                   |
+                         +---------+---------+
+                         |                   |
+                         v                   v
+                       THOR                 LOKI
+                  High Exposure         Limited Exposure
+                     Advocate                Advocate
+                         |                   |
+                         +---------+---------+
+                                   |
+                          CROSS-EXAMINATION
+                     (Attacks, Defenses, Concessions)
+                                   |
+                                   v
+                                  ODIN
+                            Judicial Arbiter
+                   (Rulings, Exposure Table, Briefing)
+                                   |
+                                   v
+                      FASTAPI + INTERACTIVE DASHBOARD
+                   (REST API, SSE Audit Stream, Web UI)
+```
+
+### Agent Responsibilities
+
+| Agent | Module | Role & Core Responsibilities |
+| :--- | :--- | :--- |
+| **Heimdall** | `backend/agents/heimdall.py` | **Gatekeeper & Investigator**: Validates case parameters, normalizes as-of dates, verifies disruption event authenticity (`REAL`, `UNCERTAIN`, `NOT_REAL`), queries the hybrid retrieval engine, detects data traps (rumors, retractions, injections, duplicates), and conducts targeted re-search for Odin's send-back loop. |
+| **Thor** | `backend/agents/thor.py` | **High-Exposure Advocate**: Builds the strongest evidence-supported case for major supply chain disruption; produces structured claims citing admissible documents and trade rows; calculates exposure bounds using deterministic trade math; attacks Loki's unproven substitution claims. |
+| **Loki** | `backend/agents/loki.py` | **Limited-Exposure Advocate**: Builds the strongest evidence-supported case that disruption is limited, temporary, or mitigated by substitute rail routes (e.g. Ravik rail corridor) and inventory cushions; computes deterministic substitute offsets; explicitly concedes (`Concession`) when data is unequivocal. |
+| **Cross-Exam** | `backend/agents/cross_exam.py` | **Reciprocal Cross-Examination**: Orchestrates structured challenges and defenses between Thor and Loki; handles degraded modes honestly (advocate failure or timeout is never an automatic concession). |
+| **Odin** | `backend/agents/odin.py` | **Judicial Arbiter**: Evaluates admissible evidence against as-of clock constraints; produces binding rulings (`established`, `contested`, `conceded`, `rejected`); adjudicates commercial exposure ranges deterministically; conducts sufficiency assessment (`assess_sufficiency`); generates Phase 5 validated intelligence briefings. |
+
+### Interactive Web Dashboard
+
+Launch the backend with `python -m backend.app` and open `http://localhost:8000/`:
+- **Scenario Presets**: 1-click loading of E5 Orvan Grain Corridor Collapse, Synthetic Winter Sluice Collapse, and Hoax Decoy Event.
+- **Trial Controls**: Investigation query, as-of date constraint, and target country-sector selection.
+- **Workflow Stepper**: Live visual progress through Heimdall, Thor & Loki, Cross-Exam, Odin Judge, and Briefing.
+- **Chamber Views**: Heimdall evidence vault with reliability tier tags, Thor vs Loki advocate claims, cross-examination challenges, Odin rulings table, deterministic exposure table, executive markdown report viewer, and real-time audit log stream.
+
+### Demo Pack Deliverables (`demo/`)
 
 - **`demo/README.md`**: Master demo guide, architecture overview, security guarantees, and execution instructions.
 - **`demo/scenario.md`**: Full specification of the synthetic *Winter Sluice Disruption* scenario (`DEMO-CASE-2027-01`), including target country-sector pairs, evidence graph, and expected judicial outcomes.

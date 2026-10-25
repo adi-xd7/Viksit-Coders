@@ -299,6 +299,43 @@ class ThorAdapter:
 
         return claims
 
+    def generate_attacks(
+        self,
+        loki_claims: List[Claim],
+        doc_store: Dict[str, Document],
+        case_id: str = "CASE-DEFAULT",
+    ) -> List[Attack]:
+        """Default challenge against Loki claims."""
+        attacks = []
+        if loki_claims:
+            target = loki_claims[0]
+            attacks.append(
+                Attack(
+                    attack_id="ATT-THOR-1",
+                    attacker=AgentRole.THOR,
+                    target_claim_id=target.claim_id,
+                    argument="Loki underestimates impact: substitute routes are congested and lack sufficient rolling stock.",
+                    counter_citations=target.citations[:1],
+                )
+            )
+        return attacks
+
+    def defend(
+        self,
+        attack: Attack,
+        my_claim: Claim,
+        doc_store: Dict[str, Document],
+        case_id: str = "CASE-DEFAULT",
+    ) -> Defense:
+        """Default defense against an attack."""
+        return Defense(
+            defense_id=f"DEF-THOR-{attack.attack_id.replace('ATT-', '')}",
+            attack_id=attack.attack_id,
+            defender=AgentRole.THOR,
+            argument="Thor stands by claim: inventories are insufficient to prevent acute deficit.",
+            new_citations=my_claim.citations,
+        )
+
 
 class LokiAdapter:
     """Limited-exposure advocate adapter.
@@ -344,6 +381,43 @@ class LokiAdapter:
             claims.append(claim)
 
         return claims
+
+    def generate_attacks(
+        self,
+        thor_claims: List[Claim],
+        doc_store: Dict[str, Document],
+        case_id: str = "CASE-DEFAULT",
+    ) -> List[Attack]:
+        """Default challenge against Thor claims."""
+        attacks = []
+        if thor_claims:
+            target = thor_claims[0]
+            attacks.append(
+                Attack(
+                    attack_id="ATT-LOKI-1",
+                    attacker=AgentRole.LOKI,
+                    target_claim_id=target.claim_id,
+                    argument="Thor inflates gross disruption into net exposure, ignoring existing inventories.",
+                    counter_citations=target.citations[:1],
+                )
+            )
+        return attacks
+
+    def defend_or_concede(
+        self,
+        attack: Attack,
+        my_claim: Claim,
+        doc_store: Dict[str, Document],
+        case_id: str = "CASE-DEFAULT",
+    ) -> Tuple[Optional[Defense], Optional[Concession]]:
+        """Default defense or concession against an attack."""
+        return Defense(
+            defense_id=f"DEF-LOKI-{attack.attack_id.replace('ATT-', '')}",
+            attack_id=attack.attack_id,
+            defender=AgentRole.LOKI,
+            argument="Loki stands by claim: substitute capacity dampens net loss.",
+            new_citations=my_claim.citations,
+        ), None
 
 
 class CrossExamAdapter:
