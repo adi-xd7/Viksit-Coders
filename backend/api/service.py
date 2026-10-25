@@ -184,11 +184,16 @@ class TrialService:
 
             # Build graph using custom builder or standard factory
             llm = self.llm_client or default_llm_client
-            if not llm.api_key and llm._mock_handler is None:
-                import os
-                if not os.getenv("ANTHROPIC_API_KEY"):
-                    from backend.llm import deterministic_offline_adjudication
-                    llm.set_mock_handler(deterministic_offline_adjudication)
+            has_live_keys = bool(
+                llm.api_key
+                or getattr(llm, "gemini_api_key", "")
+                or os.getenv("ANTHROPIC_API_KEY")
+                or os.getenv("GEMINI_API_KEY")
+                or os.getenv("GOOGLE_API_KEY")
+            )
+            if not has_live_keys and llm._mock_handler is None:
+                from backend.llm import deterministic_offline_adjudication
+                llm.set_mock_handler(deterministic_offline_adjudication)
 
             if self.builder_factory:
                 builder = self.builder_factory()

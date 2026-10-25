@@ -58,14 +58,17 @@ def print_step(num: int, title: str):
 
 async def main():
     parser = argparse.ArgumentParser(description="RAGNAROK Odin Courtroom End-to-End Demonstration")
-    parser.add_argument("--live", action="store_true", help="Force live LLM calls (requires ANTHROPIC_API_KEY)")
+    parser.add_argument("--live", action="store_true", help="Force live LLM calls (requires ANTHROPIC_API_KEY or GEMINI_API_KEY)")
     parser.add_argument("--as-of", default="2027-01-25", help="Investigation as-of cutoff date (YYYY-MM-DD)")
     parser.add_argument("--case-id", default="DEMO-CASE-2027-01", help="Case identifier")
     args = parser.parse_args()
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    is_live = bool(args.live and api_key)
-    mode_label = "LIVE ANTHROPIC API MODE" if is_live else "OFFLINE DETERMINISTIC VERIFICATION MODE (Mock Adapter)"
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    has_key = bool(anthropic_key or gemini_key)
+    is_live = bool(args.live and has_key)
+    provider_str = "GOOGLE GEMINI" if (gemini_key and not anthropic_key) else "ANTHROPIC CLAUDE (with Gemini Backup)"
+    mode_label = f"LIVE {provider_str} API MODE" if is_live else "OFFLINE DETERMINISTIC VERIFICATION MODE (Mock Adapter)"
 
     print_banner(f"RAGNAROK: TRIAL OF THE NINE REALMS\n  SUPPLY CHAIN DISRUPTION IMPACT ANALYZER — ODIN COURTROOM\n  [{mode_label}]")
 

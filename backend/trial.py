@@ -691,7 +691,10 @@ def main():
     print(f"As-of Date: {args.as_of}")
     print("----------------------------------------------------------------------")
 
-    if not os.getenv("ANTHROPIC_API_KEY"):
+    has_live_keys = bool(
+        os.getenv("ANTHROPIC_API_KEY") or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    )
+    if not has_live_keys:
         from backend.llm import default_llm_client, deterministic_offline_adjudication
         default_llm_client.set_mock_handler(deterministic_offline_adjudication)
 

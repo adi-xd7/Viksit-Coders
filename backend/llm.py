@@ -93,6 +93,8 @@ class LLMClient:
 
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY", "")
+        self.gemini_api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY", "")
+        self._anthropic_exhausted: bool = False
         self._mock_handler: Optional[Callable[[str, str, Dict[str, Any]], str]] = None
         self.total_tokens_used: int = 0
         self.tool_call_counts: Dict[str, int] = {}
@@ -126,6 +128,52 @@ class LLMClient:
             )
         return self._client
 
+    def _call_gemini(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float = 0.0,
+        model: Optional[str] = None,
+    ) -> str:
+        """Calls Google Gemini API with system and user prompts."""
+        gemini_key = self.gemini_api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY", "")
+        if not gemini_key:
+            raise ValueError("GEMINI_API_KEY not configured.")
+
+        gemini_model = model if (model and "gemini" in model.lower()) else os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+
+        try:
+            from google import genai
+            from google.genai import types
+            client = genai.Client(api_key=gemini_key)
+            config = types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                temperature=temperature,
+            )
+            response = client.models.generate_content(
+                model=gemini_model,
+                contents=user_prompt,
+                config=config,
+            )
+            text = getattr(response, "text", str(response))
+            tokens = (len(system_prompt) + len(user_prompt) + len(text)) // 4
+            self.total_tokens_used += tokens
+            return text
+        except Exception as e:
+            logger.warning("google.genai call failed (%s), attempting google.generativeai fallback...", e)
+            import google.generativeai as legacy_genai
+            legacy_genai.configure(api_key=gemini_key)
+            g_model = legacy_genai.GenerativeModel(
+                model_name=gemini_model,
+                system_instruction=system_prompt,
+                generation_config={"temperature": temperature},
+            )
+            res = g_model.generate_content(user_prompt)
+            text = res.text
+            tokens = (len(system_prompt) + len(user_prompt) + len(text)) // 4
+            self.total_tokens_used += tokens
+            return text
+
     async def call_model(
         self,
         system_prompt: str,
@@ -144,7 +192,7 @@ class LLMClient:
                 f"Case token budget already exhausted prior to call: {self.total_tokens_used} >= {MAX_TOKENS_PER_CASE}"
             )
 
-        # If a mock handler is configured, use it directly (no API key required)
+        # 1. If a mock handler is configured, use it directly (no API key required)
         if self._mock_handler is not None:
             response_text = self._mock_handler(
                 system_prompt,
@@ -160,41 +208,91 @@ class LLMClient:
                 )
             return response_text
 
-        # Production Anthropic API call or deterministic offline evaluator
-        if not self.api_key:
-            if os.getenv("OFFLINE_MOCK_LLM", "").lower() in ("1", "true"):
-                logger.info("ANTHROPIC_API_KEY not configured. Using deterministic offline judicial evaluator.")
-                response_text = deterministic_offline_adjudication(system_prompt, user_prompt)
-                mock_tokens = (len(system_prompt) + len(user_prompt) + len(response_text)) // 4
-                self.total_tokens_used += mock_tokens
+        # 2. Check provider keys and routing
+        gemini_key = self.gemini_api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY", "")
+        anthropic_key = self.api_key or os.getenv("ANTHROPIC_API_KEY", "")
+
+        # If user specified Gemini provider, or Anthropic credit is already exhausted, use Gemini directly
+        use_gemini_directly = (
+            os.getenv("LLM_PROVIDER", "").lower() == "gemini"
+            or getattr(self, "_anthropic_exhausted", False)
+            or not anthropic_key
+        )
+
+        if use_gemini_directly and gemini_key:
+            logger.info("Routing call directly to Google Gemini provider.")
+            return self._call_gemini(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                temperature=temperature,
+                model=model,
+            )
+
+        # 3. Production Anthropic API call with automatic Gemini fallback on failure
+        if anthropic_key:
+            try:
+                client = self._get_anthropic_client()
+                message = client.messages.create(
+                    model=target_model,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    timeout=timeout,
+                    system=system_prompt,
+                    messages=[{"role": "user", "content": user_prompt}],
+                )
+
+                tokens = message.usage.input_tokens + message.usage.output_tokens
+                self.total_tokens_used += tokens
                 if self.total_tokens_used > MAX_TOKENS_PER_CASE:
                     raise BudgetExceededError(
                         f"Case token budget exceeded during call: {self.total_tokens_used} > {MAX_TOKENS_PER_CASE}"
                     )
-                return response_text
+                content_block = message.content[0]
+                return getattr(content_block, "text", str(content_block))
+            except Exception as anthropic_err:
+                err_msg = str(anthropic_err).lower()
+                if any(w in err_msg for w in ("credit", "balance", "quota", "exhausted", "rate_limit", "400", "402", "429")):
+                    self._anthropic_exhausted = True
+                if gemini_key:
+                    logger.warning(
+                        "Anthropic API call failed (%s). Seamlessly falling back to Google Gemini...", anthropic_err
+                    )
+                    return self._call_gemini(
+                        system_prompt=system_prompt,
+                        user_prompt=user_prompt,
+                        temperature=temperature,
+                        model=model,
+                    )
+                if os.getenv("OFFLINE_MOCK_LLM", "").lower() in ("1", "true"):
+                    logger.warning("Anthropic call failed (%s). Falling back to offline evaluator.", anthropic_err)
+                    return deterministic_offline_adjudication(system_prompt, user_prompt)
+                raise anthropic_err
 
-            raise ValueError(
-                "ANTHROPIC_API_KEY not configured. Set environment variable or use LLMClient.set_mock_handler() for tests."
+        # 4. If no Anthropic key configured, use Gemini directly if available
+        if gemini_key:
+            logger.info("Using Google Gemini provider.")
+            return self._call_gemini(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                temperature=temperature,
+                model=model,
             )
 
-        client = self._get_anthropic_client()
-        message = client.messages.create(
-            model=target_model,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            timeout=timeout,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_prompt}],
+        # 5. Deterministic offline evaluator if OFFLINE_MOCK_LLM configured
+        if os.getenv("OFFLINE_MOCK_LLM", "").lower() in ("1", "true"):
+            logger.info("No API key configured. Using deterministic offline judicial evaluator.")
+            response_text = deterministic_offline_adjudication(system_prompt, user_prompt)
+            mock_tokens = (len(system_prompt) + len(user_prompt) + len(response_text)) // 4
+            self.total_tokens_used += mock_tokens
+            if self.total_tokens_used > MAX_TOKENS_PER_CASE:
+                raise BudgetExceededError(
+                    f"Case token budget exceeded during call: {self.total_tokens_used} > {MAX_TOKENS_PER_CASE}"
+                )
+            return response_text
+
+        raise ValueError(
+            "Neither ANTHROPIC_API_KEY nor GEMINI_API_KEY configured. Set in .env or use LLMClient.set_mock_handler() for tests."
         )
-
-        tokens = message.usage.input_tokens + message.usage.output_tokens
-        self.total_tokens_used += tokens
-        if self.total_tokens_used > MAX_TOKENS_PER_CASE:
-            raise BudgetExceededError(
-                f"Case token budget exceeded during call: {self.total_tokens_used} > {MAX_TOKENS_PER_CASE}"
-            )
-        content_block = message.content[0]
-        return getattr(content_block, "text", str(content_block))
 
     async def call_structured(
         self,
@@ -222,12 +320,16 @@ class LLMClient:
                 augmented_system, current_user_prompt, model=model, timeout=timeout
             )
             try:
-                # Extract JSON if wrapped in markdown code fence
+                # Extract JSON if wrapped in markdown code fence or with surrounding text
                 clean_json = raw_response.strip()
                 if "```json" in clean_json:
                     clean_json = clean_json.split("```json")[1].split("```")[0].strip()
                 elif "```" in clean_json:
                     clean_json = clean_json.split("```")[1].split("```")[0].strip()
+                elif "{" in clean_json and "}" in clean_json:
+                    start_idx = clean_json.find("{")
+                    end_idx = clean_json.rfind("}") + 1
+                    clean_json = clean_json[start_idx:end_idx]
 
                 parsed_dict = json.loads(clean_json)
                 return response_model.model_validate(parsed_dict)

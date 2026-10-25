@@ -76,8 +76,12 @@ class LogBook:
     """Audit logbook persisting to SQLite and JSONL."""
 
     def __init__(self, db_path: Optional[str] = None, jsonl_path: Optional[str] = None):
-        self.db_path = db_path or os.getenv("LOGBOOK_DB_PATH", ":memory:")
-        self.jsonl_path = jsonl_path or os.getenv("LOGBOOK_JSONL_PATH", None)
+        if "PYTEST_CURRENT_TEST" in os.environ and db_path is None:
+            self.db_path = ":memory:"
+            self.jsonl_path = None
+        else:
+            self.db_path = db_path or os.getenv("LOGBOOK_DB_PATH", ":memory:")
+            self.jsonl_path = jsonl_path or os.getenv("LOGBOOK_JSONL_PATH", None)
         self._lock = threading.Lock()
         self._conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self._init_sqlite()

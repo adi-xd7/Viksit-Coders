@@ -303,3 +303,50 @@ async def test_case_budget_persists_across_multiple_runs(sample_case_and_doc):
 
     assert tokens_after_run2 > tokens_after_run1
     assert tool_calls_after_run2 == 2
+
+
+@pytest.mark.asyncio
+async def test_gemini_direct_routing_and_fallback(monkeypatch):
+    """Verifies that LLMClient properly routes to Gemini when requested or when Anthropic fails."""
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    client = LLMClient(api_key="sk-ant-test-exhausted")
+    client.gemini_api_key = "test-gemini-key"
+
+    gemini_called = []
+
+    def fake_call_gemini(system_prompt, user_prompt, temperature=0.0, model=None):
+        gemini_called.append({"system": system_prompt, "user": user_prompt})
+        return "gemini response"
+
+    monkeypatch.setattr(client, "_call_gemini", fake_call_gemini)
+
+    # 1. Test Anthropic failure triggers Gemini fallback
+    class MockAnthropicMessages:
+        def create(self, **kwargs):
+            raise RuntimeError("Your credit balance is too low to access the Anthropic API")
+
+    class MockAnthropicClient:
+        messages = MockAnthropicMessages()
+
+    monkeypatch.setattr(client, "_get_anthropic_client", lambda: MockAnthropicClient())
+
+    res = await client.call_model("system prompt", "user prompt")
+    assert res == "gemini response"
+    assert len(gemini_called) == 1
+    assert client._anthropic_exhausted is True
+
+    # 2. Subsequent call should route directly to Gemini without calling Anthropic again
+    res2 = await client.call_model("system prompt 2", "user prompt 2")
+    assert res2 == "gemini response"
+    assert len(gemini_called) == 2
+
+    # 3. Test LLM_PROVIDER=gemini routes directly
+    client2 = LLMClient(api_key="sk-ant-key")
+    client2.gemini_api_key = "test-gemini-key"
+    monkeypatch.setattr(client2, "_call_gemini", fake_call_gemini)
+    monkeypatch.setenv("LLM_PROVIDER", "gemini")
+
+    res3 = await client2.call_model("sys3", "usr3")
+    assert res3 == "gemini response"
+    assert len(gemini_called) == 3
+
