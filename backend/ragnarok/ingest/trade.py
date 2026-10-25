@@ -128,6 +128,21 @@ def _months_between(a: str, b: str) -> list[str]:
 
 
 def _parse_period_range(text: str) -> list[str] | None:
+    """One period or range ("2026-01..2026-06"), or several separated by ";" or ","
+    ("2025-07..2025-12; 2026-07..2026-12" = the same months of two years)."""
+    pieces = [x for x in re.split(r"\s*[;,]\s*", text.strip()) if x]
+    if len(pieces) > 1:
+        out: list[str] = []
+        for piece in pieces:
+            got = _parse_one_range(piece)
+            if got is None:
+                return None
+            out += [m for m in got if m not in out]
+        return sorted(out)
+    return _parse_one_range(text)
+
+
+def _parse_one_range(text: str) -> list[str] | None:
     parts = re.split(r"\s*(?:\.\.|–|—|\bto\b|/|\s-\s)\s*", text.strip(), maxsplit=1)
     if len(parts) == 2:
         a, b = parse_period(parts[0]), parse_period(parts[1])
@@ -135,6 +150,9 @@ def _parse_period_range(text: str) -> list[str] | None:
             return _months_between(a, b)
     one = parse_period(text)
     return [one] if one else None
+
+
+RATIO_OUTLIER = 20.0  # a row whose value/volume ratio is this many times off the median is not plausible
 
 
 def _clean_name(s: str) -> str:
@@ -229,6 +247,23 @@ def _finish_table(
         p = by_p.get(prev)
         if p and p.value == r.value and p.volume == r.volume:
             r.warnings.append(f"value and volume identical to {prev} ({p.row_id}); possible repeated row")
+
+    # Implausible rows: a value / volume ratio far from the table's other rows means a cut-off or
+    # garbled number (e.g. "65,300" cut to "65"). Such a row is reported and never used as valid.
+    ratios = [(i, r.value / r.volume) for i, r in enumerate(rows)
+              if r.status == RowStatus.VALID and r.value and r.volume and r.value > 0 and r.volume > 0]
+    if len(ratios) >= 4:
+        med = sorted(x for _, x in ratios)[len(ratios) // 2]
+        for i, ratio in ratios:
+            factor = max(ratio / med, med / ratio)
+            if factor >= RATIO_OUTLIER:
+                last = i == len(rows) - 1
+                why = (f"value/volume ratio is {factor:.0f}x off the table's other rows"
+                       + (" (last row: the table looks cut off inside it)" if last else " (a cut or garbled number)"))
+                rows[i] = rows[i].model_copy(update={"status": RowStatus.TRUNCATED if last else RowStatus.BAD_NUMBER,
+                                                     "damage_reason": why})
+                if last:
+                    flags.append(DamageFlag(kind=DamageKind.TRUNCATED, detail=f"{rows[i].row_id}: {why}"))
 
     # Period coverage.
     periods = sorted({r.period for r in rows if r.period})

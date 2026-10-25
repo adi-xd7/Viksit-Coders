@@ -93,6 +93,8 @@ def passes(c: Chunk, f: SearchFilters, as_of: date) -> bool:
         return False
     if f.doc_ids and c.doc_id not in f.doc_ids:
         return False
+    if f.exclude_chunks and c.chunk_id in f.exclude_chunks:
+        return False
     if f.country and (c.country or "").lower() not in f.country:
         return False
     if f.sector and not ({(c.sector or "").lower(), *c.table_sectors} & set(f.sector)):

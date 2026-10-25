@@ -34,13 +34,15 @@ class SearchFilters(_Model):
     date_to: date | None = None
     doc_ids: list[str] | None = None
     include_duplicates: bool = False  # exact duplicates are hidden by default
+    # paragraph IDs ("DOC#P3") left out of the candidates: a send-back search looks past evidence the case already has
+    exclude_chunks: list[str] | None = None
 
     @field_validator("country", "sector", "event_id", "source_type", mode="before")
     @classmethod
     def _norm(cls, v: object) -> list[str] | None:
         return _lower_list(v)
 
-    @field_validator("doc_ids", mode="before")
+    @field_validator("doc_ids", "exclude_chunks", mode="before")
     @classmethod
     def _ids(cls, v: object) -> list[str] | None:
         if v is None:

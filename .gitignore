@@ -25,6 +25,12 @@ data/processed/
 # Logs and databases (demo logs are kept)
 logs/*.db
 logs/*.db-*
+logs/**/*.db
+logs/**/*.db-*
+logs/dryrun/
+# packs uploaded through the API / dashboard, and dry-run zips (rebuild with scripts/build_dryrun_pack.py)
+data/runemark/uploads/
+data/dryrun/*.zip
 logs/*.sqlite
 logs/**/*.jsonl
 logs/cases/

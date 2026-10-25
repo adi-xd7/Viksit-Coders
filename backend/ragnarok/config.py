@@ -40,6 +40,14 @@ class Settings(BaseSettings):
     # Pacing for rate-limited keys: minimum seconds between request starts (all agents together),
     # and how many times a 429 / 503 is retried after waiting (bounded).
     llm_min_interval_s: float = Field(0.0, ge=0, le=120)
+    # Model chain: comma-separated models tried in order. Each model has its own daily quota; when one is used
+    # up (or keeps failing) the next one answers the same request. Empty = just the single model above.
+    gemini_model_chain: str = ""  # Heimdall, Thor, Loki
+    gemini_judge_chain: str = ""  # Odin (empty = GEMINI_MODEL_JUDGE, then the main chain)
+    llm_server_retries: int = Field(2, ge=0, le=6)  # retries of a 5xx / timeout on one model before moving on
+    model_cooldown_s: float = Field(300.0, ge=0, le=86_400)  # skip a model this long after it kept failing
+    quota_pause: bool = True  # every model's daily quota used up -> the case pauses (resumable), not fails
+    auto_resume_paused: bool = True  # the API resumes a paused case when the quota resets
     llm_rate_limit_retries: int = Field(6, ge=0, le=12)
     llm_rate_limit_max_wait_s: float = Field(90.0, ge=1, le=600)
     gemini_request_timeout_s: float = Field(120.0, gt=0, le=900)  # per Gemini request; a hung call fails fast and is retried
@@ -134,6 +142,13 @@ class Settings(BaseSettings):
         return k.get_secret_value().strip()
 
     @property
+    def key_fingerprint(self) -> str:
+        """Short non-reversible tag of the provider + key (never the key): quota records belong to one key's project."""
+        import hashlib
+
+        return hashlib.sha256(f"{self.llm_provider}:{self._key()}".encode()).hexdigest()[:12]
+
+    @property
     def has_api_key(self) -> bool:
         """True when the key for the selected provider is set."""
         return bool(self._key())
@@ -143,6 +158,22 @@ class Settings(BaseSettings):
         if not key:
             raise RuntimeError(f"{self.api_key_name} is not set in .env (LLM_PROVIDER={self.llm_provider})")
         return key
+
+    def model_chain(self, role: str) -> list[str]:
+        """Models for a role, in the order they are tried (first = model_for(role))."""
+        if role not in ("fast", "advocate", "judge"):
+            raise ValueError(f"unknown model role {role!r}")
+        if self.llm_provider != "gemini":
+            return [self.model_for(role)]
+        split = lambda v: [m.strip() for m in v.split(",") if m.strip()]  # noqa: E731
+        main = split(self.gemini_model_chain) or [self.gemini_model_advocate]
+        if role == "judge":
+            chain = split(self.gemini_judge_chain) or [self.gemini_model_judge] + main
+        elif role == "fast":
+            chain = [self.gemini_model_fast] + main
+        else:
+            chain = main
+        return list(dict.fromkeys(chain))
 
     def model_for(self, role: str) -> str:
         """Model ID for a role ("fast", "advocate", "judge") under the selected provider."""

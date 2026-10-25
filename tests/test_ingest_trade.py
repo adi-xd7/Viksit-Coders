@@ -157,6 +157,35 @@ def test_fixed_bad_number_repeated_row_and_cut_off():
     assert any("2030-04" in f.detail and f.kind.value == "truncated" for f in t.damage_flags)
 
 
+def test_fixed_last_row_cut_inside_a_number_is_not_valid():
+    # "27,000" cut to "27": every cell is there, but the row is not plausible
+    t, = parse_trade_tables(fixed(
+        "1    2030-01  12.5         30,000\n2    2030-02  12.0         29,000\n"
+        "3    2030-03  11.5         28,000\n4    2030-04  11.0         27"), {})
+    r = by_period(t)["2030-04"]
+    assert r.status == RowStatus.TRUNCATED and "cut off" in r.damage_reason
+    assert any(f.kind.value == "truncated" for f in t.damage_flags)
+
+
+def test_fixed_garbled_middle_row_is_bad_number_and_normal_tables_stay_valid():
+    t, = parse_trade_tables(fixed(
+        "1    2030-01  12.5         30,000\n2    2030-02  1250         29,000\n"
+        "3    2030-03  11.5         28,000\n4    2030-04  11.0         27,000\n"), {})
+    assert by_period(t)["2030-02"].status == RowStatus.BAD_NUMBER
+    ok, = parse_trade_tables(fixed(  # a real fall (value and volume move together) is not an outlier
+        "1    2030-01  12.5         30,000\n2    2030-02  4.0          9,500\n"
+        "3    2030-03  2.5          6,100\n4    2030-04  11.0         27,000\n"), {})
+    assert all(r.status == RowStatus.VALID for r in ok.rows)
+
+
+def test_declared_period_with_several_ranges():
+    text = FIXED.replace("PERIOD: 2030-01..2030-04", "PERIOD: 2029-01..2029-02; 2030-01..2030-02").format(rows=(
+        "1    2029-01  12.5         30,000\n2    2029-02  12.0         29,000\n3    2030-01  11.5         28,000\n"))
+    t, = parse_trade_tables(doc([], text=text, sector="fuel", doc_id="TST-0201"), {})
+    assert any("2030-02" in f.detail and f.kind.value == "truncated" for f in t.damage_flags)
+    assert not any(f.kind.value == "bad_metadata" for f in t.damage_flags)
+
+
 @pytest.mark.parametrize("sep", ["|", "\t", ","])
 def test_fixed_delimited_variants(sep):
     lines = [sep.join(["row", "period", "value", "volume"]),

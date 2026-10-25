@@ -141,6 +141,7 @@ class LogEventType(StrEnum):
     MEMORY_APPLIED = "MEMORY_APPLIED"  # a recalled lesson changed what an agent did (original vs changed action)
     LLM_USAGE = "LLM_USAGE"  # model requests of the case (by agent, stage, label; repairs; tokens)
     LLM_CACHE_HIT = "LLM_CACHE_HIT"  # a resumed case replayed a finished step from its own response cache
+    MODEL_SWITCH = "MODEL_SWITCH"  # a model's daily quota was used up (or it kept failing): the next model answered
 
 
 class _Model(BaseModel):

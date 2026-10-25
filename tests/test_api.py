@@ -274,6 +274,22 @@ def test_ingest_rejects_bad_paths_types_and_sizes(settings, service, tmp_path):
     assert up("pack.zip", _pack_zip({"docs/a.txt": "x"})).status_code == 400  # no manifest
 
 
+def test_ingest_loose_documents(settings, service):
+    c, _ = client(settings, service)
+    doc2 = header("NEW-0002", "Second late notice", date="2030-06-02", stype="news", tier=2) + "Second late notice\n\n[P1] Ships wait.\n"
+    r = c.post("/ingest", files=[("files", ("NEW-0001.txt", NEW_DOC, "text/plain")),
+                                 ("files", ("NEW-0002.txt", doc2, "text/plain"))])
+    assert r.status_code == 200 and r.json()["documents"] == 2, r.text
+    d = c.get("/docs/NEW-0002/P1", params={"as_of": AS_OF})
+    assert d.status_code == 200 and d.json()["paragraphs"][0]["text"] == "Ships wait."  # metadata from the header
+    assert c.post("/ingest", files=[("files", ("run.exe", b"x", "application/octet-stream"))]).status_code == 415
+    assert c.post("/ingest", files=[("files", ("a.txt", "x", "text/plain")), ("files", ("A.TXT", "y", "text/plain"))]).status_code == 400
+    both = c.post("/ingest", data={"pack_dir": "x"}, files=[("files", ("a.txt", "x", "text/plain"))])
+    assert both.status_code == 400  # exactly one kind of upload per request
+    big = c.post("/ingest", files=[("files", ("big.txt", "x" * (settings.max_upload_bytes + 1), "text/plain"))])
+    assert big.status_code == 413
+
+
 def test_ingest_approved_dir_and_upload(settings, service):
     c, _ = client(settings, service)
     shutil.copytree(SYNTH_PACK, settings.packs_dir / "synth_copy")

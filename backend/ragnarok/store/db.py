@@ -150,6 +150,12 @@ CREATE TABLE IF NOT EXISTS agent_memory (
     UNIQUE (agent, lesson_key)
 );
 CREATE INDEX IF NOT EXISTS ix_agent_memory_agent ON agent_memory(agent);
+CREATE TABLE IF NOT EXISTS model_quota (
+    model TEXT PRIMARY KEY,
+    unavailable_until TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS llm_cache (
     case_id TEXT NOT NULL,
     cache_key TEXT NOT NULL,
@@ -436,6 +442,18 @@ class Store:
             c.execute("INSERT OR REPLACE INTO llm_cache(case_id, cache_key, agent, label, schema_name, result_json, "
                       "input_tokens, output_tokens, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
                       (case_id, key, agent, label, schema_name, result_json, input_tokens, output_tokens, _now()))
+
+    # ------------------------------------------------- model availability ---
+    # A model whose daily quota is used up (or that keeps failing) is skipped until the given time.
+
+    def model_unavailable(self) -> dict[str, tuple[str, str]]:
+        return {r["model"]: (r["unavailable_until"], r["reason"])
+                for r in self.conn.execute("SELECT model, unavailable_until, reason FROM model_quota")}
+
+    def set_model_unavailable(self, model: str, until_iso: str, reason: str) -> None:
+        with self.tx() as c:
+            c.execute("INSERT OR REPLACE INTO model_quota(model, unavailable_until, reason, updated_at) VALUES (?,?,?,?)",
+                      (model, until_iso, reason[:500], _now()))
 
     # ------------------------------------------------------ calculations ---
 

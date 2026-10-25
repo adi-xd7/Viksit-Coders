@@ -99,13 +99,16 @@ class RetrievalService:
             self._blocked(case_id, run_number, agent, f"a publication date range beyond the as_of date "
                           f"({f.date_from or '-'}..{f.date_to or '-'})", [], as_of)
 
+        shown_filters = dict(request["filters"])  # the log shows how many refs were excluded, not the whole list
+        if f.exclude_chunks:
+            shown_filters["exclude_chunks"] = f"{len(f.exclude_chunks)} already-retrieved paragraph(s)"
         cached = self.store.cache_get(key)
         if cached is not None:
             result_json, first_seq = cached
             res = SearchResult.model_validate_json(result_json)
             seq = self._log(case_id, run_number, agent, LogEventType.QUERY,
                             f"{agent.value} query (reused from cache, identical request): {query}"[:500],
-                            {"query": query, "query_norm": qn, "filters": request["filters"], "as_of": request["as_of"],
+                            {"query": query, "query_norm": qn, "filters": shown_filters, "as_of": request["as_of"],
                              "limit": limit, "reused": True, "first_query_seq": first_seq, "cache_key": key})
             self._log(case_id, run_number, agent, LogEventType.RETRIEVED,
                       f"{len(res.hits)} paragraph(s) reused from cache", {"reused": True, "query_seq": seq},
@@ -113,8 +116,10 @@ class RetrievalService:
             return res.model_copy(update={"reused": True, "query_seq": seq, "first_query_seq": first_seq, "query": query})
 
         seq = self._log(case_id, run_number, agent, LogEventType.QUERY, f"{agent.value} query: {query}"[:500],
-                        {"query": query, "query_norm": qn, "filters": request["filters"], "as_of": request["as_of"],
+                        {"query": query, "query_norm": qn, "filters": shown_filters, "as_of": request["as_of"],
                          "limit": limit, "reused": False, "cache_key": key})
+        if f.exclude_chunks:  # set lookup, not a list scan per chunk
+            f = f.model_copy(update={"exclude_chunks": frozenset(f.exclude_chunks)})
         cands = [i for i, c in enumerate(self.index.chunks) if passes(c, f, as_of)]
         ranked = self.index.rank(query, cands, limit)
         hits = [self._hit(i, s, f, as_of) for i, s in ranked]

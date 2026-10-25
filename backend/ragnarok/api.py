@@ -5,11 +5,13 @@ Run: .venv/Scripts/python -m uvicorn ragnarok.api:app --app-dir backend --port 8
 Endpoints (the API's whole surface):
     POST /cases                      {question, as_of} -> {case_id}
     GET  /cases/{case_id}            status (running | complete | partial | failed) + results, calls_used/calls_limit
-    POST /cases/{case_id}/resume     resume a failed or partial case (finished steps replay from its own cache)
+    POST /cases/{case_id}/resume     resume a failed, partial or paused case (finished steps replay from its own cache);
+                                     a case paused by the daily model quota also resumes by itself after the reset
     GET  /cases/{case_id}/events     Server-Sent Events of the real audit log (?after=seq&follow=true)
     GET  /docs/{doc_id}[/{para}]     a document / one paragraph, as_of-gated (?as_of= or ?case_id=)
     GET  /trade/{table_id}[/{row}]   a trade table / one row, as_of-gated (?as_of= or ?case_id=)
-    POST /ingest                     form: pack_dir (inside PACKS_DIR) or file (pack .zip)
+    POST /ingest                     form: pack_dir (inside PACKS_DIR), file (pack .zip), or files (loose
+                                     PDF / TXT / DOCX documents; their metadata comes from each document's header)
     GET  /feed?as_of=                evidence feed by publication date with badges
     GET  /api/health                 config check (no secrets)
 OpenAPI docs are served at /api/docs (so /docs/{doc_id} stays free for documents).
@@ -292,11 +294,49 @@ def create_app(settings: Settings | None = None, backend_factory: Callable[[], B
             raise HTTPException(400, "the zip must contain exactly one manifest.json")
         return roots[0]
 
+    DOC_EXTENSIONS = {".pdf", ".txt", ".docx"}
+
+    def _save_documents(uploads: list[UploadFile]) -> Path:
+        """Loose documents (no manifest): validated, stored under PACKS_DIR/uploads/docs-<time>/ and ingested
+        like a pack folder; each document is flagged not_in_manifest (its header supplies the metadata)."""
+        if not uploads or len(uploads) > settings.max_upload_files:
+            raise HTTPException(400, f"send 1-{settings.max_upload_files} documents")
+        limit = settings.max_upload_bytes
+        names, blobs, total = set(), [], 0
+        for up in uploads:
+            name = Path(up.filename or "").name
+            if Path(name).suffix.lower() not in DOC_EXTENSIONS:
+                raise HTTPException(415, f"only PDF, TXT and DOCX documents can be uploaded: {name or '(no name)'}")
+            safe = re.sub(r"[^A-Za-z0-9_.-]", "_", name)[:120]
+            if not safe or safe.startswith(".") or safe.lower() in names:
+                raise HTTPException(400, f"invalid or repeated file name: {name}")
+            data = up.file.read(limit + 1)
+            if len(data) > limit:
+                raise HTTPException(413, f"{name} exceeds {limit} bytes")
+            total += len(data)
+            if total > 10 * limit:
+                raise HTTPException(413, "upload is too large")
+            names.add(safe.lower())
+            blobs.append((safe, data))
+        dest = (settings.packs_dir / "uploads" / f"docs-{datetime.now(timezone.utc):%Y%m%d%H%M%S%f}").resolve()
+        dest.mkdir(parents=True, exist_ok=False)
+        for safe, data in blobs:
+            target = (dest / safe).resolve()
+            if not target.is_relative_to(dest):
+                shutil.rmtree(dest, ignore_errors=True)
+                raise HTTPException(400, f"unsafe file name: {safe}")
+            target.write_bytes(data)
+        return dest
+
     @app.post("/ingest")
-    def ingest(pack_dir: str | None = Form(None), file: UploadFile | None = File(None)) -> dict:
-        if (pack_dir is None) == (file is None):
-            raise HTTPException(400, "send either pack_dir (a folder inside PACKS_DIR) or file (a pack .zip)")
-        if pack_dir is not None:
+    def ingest(pack_dir: str | None = Form(None), file: UploadFile | None = File(None),
+               files: list[UploadFile] | None = File(None)) -> dict:
+        if sum(x is not None and x != [] for x in (pack_dir, file, files)) != 1:
+            raise HTTPException(400, "send exactly one of: pack_dir (a folder inside PACKS_DIR), file (a pack .zip), "
+                                "files (PDF / TXT / DOCX documents)")
+        if files:
+            target = _save_documents(files)
+        elif pack_dir is not None:
             root = settings.packs_dir.resolve()
             p = Path(pack_dir)
             target = (p if p.is_absolute() else root / p).resolve()
