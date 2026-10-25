@@ -91,6 +91,11 @@ class Settings(BaseSettings):
     memory_baseline: bool = True  # plan once without memory, so a memory-driven change is observable
     cases_dir: Path = Path("logs/cases")
 
+    # API
+    cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]  # local Vite dev server
+    max_concurrent_cases: int = Field(1, ge=1, le=4)  # rate-limited LLM keys: one trial at a time by default
+    max_upload_files: int = Field(2000, ge=1)  # files per uploaded pack zip
+
     @model_validator(mode="after")
     def _resolve_and_check(self) -> "Settings":
         for name in ("data_dir", "packs_dir", "index_dir", "processed_dir", "log_dir", "db_path", "cases_dir"):

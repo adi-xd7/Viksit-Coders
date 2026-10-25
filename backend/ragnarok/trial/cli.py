@@ -14,7 +14,8 @@ from pathlib import Path
 
 from ragnarok.config import get_settings
 from ragnarok.store.db import Store
-from ragnarok.trial.machine import Stage, Trial
+from ragnarok.trial.machine import Stage, new_case_id
+from ragnarok.trial.runner import run_case
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -32,10 +33,12 @@ def main(argv: list[str] | None = None) -> int:
     if not settings.has_api_key:
         print(f"error: {settings.api_key_name} is not set in .env (LLM_PROVIDER={settings.llm_provider})", file=sys.stderr)
         return 2
-    with Store(args.db or settings.db_path) as store:
-        trial = Trial(args.question, args.as_of, store, settings, case_id=args.case_id)
-        print(f"case {trial.case_id}: running (logs in {trial.case_dir})", flush=True)
-        r = trial.run(Stage(args.stop_after) if args.stop_after else None)
+    if args.db:
+        settings = settings.model_copy(update={"db_path": args.db.resolve()})
+    case_id = args.case_id or new_case_id(args.question, args.as_of)
+    print(f"case {case_id}: running (logs in {settings.cases_dir / case_id})", flush=True)
+    r = run_case(args.question, args.as_of, settings, case_id=case_id,  # same core function as POST /cases
+                 stop_after=Stage(args.stop_after) if args.stop_after else None)
     print(f"\nstage: {r.stage.value}   path: {' -> '.join(r.history)}")
     if r.heimdall:
         cf = r.heimdall.case_file
@@ -63,7 +66,7 @@ def main(argv: list[str] | None = None) -> int:
               + (f"; sent back for {len(run.sendback.missing)} missing item(s)" if run.sendback else ""))
     if r.superseded:
         print(f"superseded: {r.superseded}")
-    with Store(args.db or settings.db_path) as store:
+    with Store(settings.db_path) as store:
         evs = store.events(r.case_id)
     kinds = Counter(e.type.value for e in evs)
     print(f"memory: {kinds.get('MEMORY_READ', 0)} read(s), {kinds.get('MEMORY_WRITE', 0)} write(s), "

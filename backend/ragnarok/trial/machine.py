@@ -232,6 +232,7 @@ class Trial:
     # ---------------------------------------------------------------- run ---
 
     def run(self, stop_after: Stage | None = None) -> TrialResult:
+        self.stop_after = stop_after
         self.case_dir.mkdir(parents=True, exist_ok=True)
         self.service.index.refresh(store=self.store)
         self.log(LogEventType.RUN_START, f"trial started: {self.ctx.question} (as of {self.ctx.as_of})",
@@ -571,9 +572,13 @@ class Trial:
                 new_evidence=[e["ref"] for e in r.research.new_evidence] if r.research else [],
                 note=" | ".join(r.notes)[:1000]))
         superseded = [f"{k}: {v}" for k, v in self.result.superseded.items() if k not in ids]
-        briefing, md = build_briefing(self.store, fin.case_file, claims, odin, concessions, self.result.notes,
-                                      sorted(set(traps)), runs_completed=self.result.runs_completed, runs=runs,
-                                      superseded=superseded, final_run=fin.run_number)
+        briefing, md, dropped = build_briefing(
+            self.store, fin.case_file, claims, odin, concessions, self.result.notes, sorted(set(traps)),
+            runs_completed=self.result.runs_completed, runs=runs, superseded=superseded, final_run=fin.run_number,
+            calc=self.service.calculator(self.ctx.as_of))
+        for d in dropped:
+            self.log(LogEventType.ERROR, f"briefing check dropped {d['where']}: {d['ref']} ({'; '.join(d['issues'])})"[:500],
+                     {"briefing_check": d}, [d["ref"]], agent=AgentName.ODIN)
         self.result.odin = odin
         self.result.briefing_md = md
         self.result.briefing_status = briefing.status
@@ -649,6 +654,7 @@ class Trial:
         dump(d / "state.json", {"case_id": r.case_id, "question": self.ctx.question, "as_of": self.ctx.as_of,
                                 "stage": r.stage.value, "history": r.history, "run_number": self.ctx.run_number,
                                 "runs_completed": r.runs_completed, "max_runs": self.settings.max_runs,
+                                "stop_after": getattr(self, "stop_after", None),
                                 "briefing_status": r.briefing_status, "notes": r.notes, "stop_reason": r.stop_reason,
                                 "superseded": r.superseded, "usage": r.usage})
         if r.heimdall:

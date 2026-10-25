@@ -686,6 +686,7 @@ class ExposureRow(_Model):
     thor: ExposureEstimate | None = None
     loki: ExposureEstimate | None = None
     odin: ExposureEstimate | None = None
+    unavailable: dict[str, str] = Field(default_factory=dict)  # agent -> why no (justifiable) estimate is shown
     note: str = ""
 
 
@@ -734,6 +735,9 @@ class Briefing(_Model):
     missing_data_notes: list[str] = Field(default_factory=list)
     evidence_quality_notes: list[str] = Field(default_factory=list)
     traps_and_failures: list[str] = Field(default_factory=list)
+    assumptions: list[str] = Field(default_factory=list)  # claim and estimate assumptions behind the findings
+    uncertainty: list[str] = Field(default_factory=list)  # estimate uncertainty notes and confidence
+    dropped_citations: list[str] = Field(default_factory=list)  # failed the build-time citation/provenance check
     runs: list[RunSummary] = Field(default_factory=list)
     superseded: list[str] = Field(default_factory=list)  # earlier claims replaced or withdrawn in a later run
     generated_at: datetime = Field(default_factory=_utcnow)
