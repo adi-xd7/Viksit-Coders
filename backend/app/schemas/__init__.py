@@ -9,6 +9,7 @@ from backend.app.schemas.thor_result import ThorResult
 from backend.app.schemas.debate_result import DebateResult
 from backend.app.schemas.heimdall_result import PremiseVerification, HeimdallVerificationResult
 from backend.app.schemas.odin_result import ClaimRuling, OdinResult
+from backend.app.schemas.feedback_loop import TargetedRetrievalTask, TrialRecord, LoopStopReason
 
 __all__ = [
     "EvidenceReference",
@@ -25,4 +26,7 @@ __all__ = [
     "HeimdallVerificationResult",
     "ClaimRuling",
     "OdinResult",
+    "TargetedRetrievalTask",
+    "TrialRecord",
+    "LoopStopReason",
 ]

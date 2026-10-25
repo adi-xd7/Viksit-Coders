@@ -9,6 +9,7 @@ from backend.app.schemas.heimdall_result import HeimdallVerificationResult
 from backend.app.schemas.odin_result import OdinResult
 from backend.app.schemas.claim import Claim
 from backend.app.schemas.debate import CrossExamination, Concession
+from backend.app.schemas.feedback_loop import TrialRecord
 
 
 class DebateResult(BaseModel):
@@ -59,6 +60,28 @@ class DebateResult(BaseModel):
     stages_executed: list[str] = Field(
         default_factory=list,
         description="Ordered audit log of orchestration stages completed"
+    )
+
+    # --- Multi-Trial Sufficiency Feedback Loop Fields (Part 6B) ---
+    total_trials: int = Field(
+        default=1,
+        description="Total number of trials executed (1 initial trial + additional retries)"
+    )
+    retries_attempted: int = Field(
+        default=0,
+        description="Number of additional retries attempted beyond initial trial"
+    )
+    max_retries: int = Field(
+        default=2,
+        description="Configured maximum number of additional retries permitted"
+    )
+    loop_stop_reason: Optional[str] = Field(
+        default=None,
+        description="Explicit stop reason for multi-trial loop (e.g. 'evidence_sufficient', 'max_retries_exhausted')"
+    )
+    trial_history: list[TrialRecord] = Field(
+        default_factory=list,
+        description="Complete audit log of all trial deliverables in execution order"
     )
 
     @property
