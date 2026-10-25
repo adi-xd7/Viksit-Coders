@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest & testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local data & corpus
+data/
+indices/
+logs/
+heimdall_memory/
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
