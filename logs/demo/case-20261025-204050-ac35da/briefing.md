@@ -8,7 +8,7 @@
 
 ## Executive summary
 
-Following the expiration of the Orvan corridor agreement on 10 September 2026, grain imports from Orvan to Midgard and Tolan experienced substantial declines. Midgard's wheat import value loss from Orvan post-expiration ranges between USD 156.5M and USD 216.2M. Midgard's maize import loss was temporarily buffered in October by delayed delivery terms but contracted sharply in late Q4, resulting in a loss of USD 105.7M to USD 126.4M. Tolan's wheat import loss ranges from USD 69.6M to USD 96.0M. Tolan's maize exposure cannot be quantified due to missing trade data. While alternative supply via rail and Vanir shipments increased, official reports confirm these volumes are small compared to Orvan's sea trade and cannot close the supply deficit.
+As of 25 January 2027, the expiration of the Orvan Grain Corridor Agreement on 10 September 2026 has resulted in significant trade exposure for Midgard and Tolan. Midgard wheat imports from Orvan fell by USD 156.5M to USD 216.2M YoY in the months following expiration. Midgard's maize imports saw a delayed impact due to contractual terms, eventually dropping by over USD 100M YoY in late Q4. Tolan's wheat imports were similarly impacted, showing a deficit of USD 69.6M to USD 96.0M. In all cases, while alternative shipments from Vanir and rail routes provided some relief, they remained small in scale compared to the lost maritime volumes from Orvan and were often more expensive to handle.
 
 ## Event verification
 
@@ -20,25 +20,25 @@ Following the expiration of the Orvan corridor agreement on 10 September 2026, g
 ## Established findings
 
 - **T1-1** (inference) Midgard wheat imports from Orvan experienced severe declines post-corridor expiration, demonstrating high trade exposure. [ORV-0009#R3, 2027-01-19] [ORV-0009#R9, 2027-01-19]
-  - *Odin:* Official trade data in ORV-0009 confirms a steep reduction in Midgard wheat imports from Orvan following the expiration of the corridor agreement. Thor successfully defended against counter-arguments regarding Vanir substitution by citing evidence (ORV-0024/P6) establishing that alternative supplies remain small relative to sea trade.
+  - *Odin:* Official trade data from the Realm Trade Ministry confirms a significant year-over-year reduction in wheat import value from Orvan to Midgard following the corridor's expiration on 10 September 2026. The high bound includes the full transition month of September, while the low bound covers the subsequent fully disrupted months.
 - **T1-2** (inference) Midgard maize imports dropped substantially following the expiration of delayed delivery terms, leading to high exposure. [ORV-0030#R5, 2027-01-21] [ORV-0030#R11, 2027-01-21]
-  - *Odin:* Supported by official trade records in ORV-0030 showing sharp declines in November and December 2026 after delayed delivery terms ended. Loki formally conceded (C-A1-T3) that delayed delivery terms provided only temporary buffering in October 2026.
+  - *Odin:* Midgard maize imports showed a delayed contraction due to existing delivery terms in October, but trade data for November and December 2026 confirms a steep decline (over USD 100M YoY) once those terms expired. The proponent's range is supported by CALC-c4d8aa36b4090272 and CALC-8b68f9523d386676.
 - **T1-3** (inference) Tolan wheat imports suffered immediate and persistent losses following the end of the Orvan corridor agreement. [ORV-0046#R3, 2027-01-20] [ORV-0046#R9, 2027-01-20]
-  - *Odin:* Trade notes in ORV-0046 demonstrate immediate and persistent YoY drops in Tolan wheat imports from Orvan. Loki conceded (C-A1-T1) that alternative shipments from Vanir were smaller than the trade gap and could not offset the exposure.
+  - *Odin:* Trade notes from Harbour Review demonstrate immediate and substantial YoY losses in wheat imports for Tolan. While alternative supplies exist, they were explicitly identified as insufficient to bridge the gap (ORV-0046/P14).
 - **L1-4** (fact) Tolan's maize exposure cannot be quantified directly from official trade tables due to absent trade records, representing a major data gap. [ORV-0024 P3, 2026-09-12]
-  - *Odin:* Directly stated and confirmed by the record: official trade tables for Tolan maize imports are absent from the case evidence, making direct empirical quantification of Tolan maize exposure impossible.
+  - *Odin:* No specific trade table for Tolan maize imports (comparable to ORV-0009 or ORV-0030) was provided in the evidence, preventing a quantitative calculation for this specific pair.
 
 ## Contested findings
 
 - **L1-1** (inference) Midgard's post-expiration wheat import decline from Orvan was limited to a net YoY reduction of USD 156.5M to USD 216.2M across the late 2026 months, buffered partly by alternative Vanir exports. [ORV-0009#R3, 2027-01-19] [ORV-0024 P6, 2026-09-12]
-  - *Odin:* Loki argues that Vanir exports significantly buffered Midgard's wheat exposure, but provides no quantitative net trade calculations, while evidence (ORV-0024/P6) explicitly states that Vanir amounts are small compared to Orvan sea trade.
+  - *Odin:* The numerical range for the bilateral drop is valid, but the claim that Vanir exports significantly 'buffered' the loss is undermined by evidence stating Vanir's supply is 'small' (ORV-0024/P6) and 'more expensive to handle' (ORV-0022/P5).
 
 ## Conceded findings
 
 - **L1-2** (inference) Midgard's maize import exposure following the Orvan corridor expiration was delayed and limited to between USD 126.4M and USD 128.7M in YoY import reductions due to delayed delivery terms. — revised after partial concession: Midgard's maize import exposure following the Orvan corridor expiration was delayed into October 2026 by existing delivery terms, after which imports contracted sharply in November and December 2026. [ORV-0030 P14, 2027-01-21] [ORV-0030#R4, 2027-01-21]
-  - *Odin:* Loki conceded (C-A1-T3) that delayed delivery terms provided only temporary buffering in October 2026, and that Midgard maize imports contracted sharply in November and December 2026.
+  - *Odin:* The proponent conceded that the buffer provided by delayed delivery terms was only temporary and that imports contracted sharply in late Q4 2026.
 - **L1-3** (fact) Tolan wheat imports saw moderate post-expiration declines from Orvan, but exposure is mitigated by alternative shipments from Vanir. — revised after partial concession: Tolan wheat imports saw post-expiration declines from Orvan, and while alternative shipments from Vanir provided partial substitution, they were insufficient to fully offset the import gap. [ORV-0035 P4, 2027-01-14] [ORV-0046#R3, 2027-01-20]
-  - *Odin:* Loki conceded (C-A1-T1) that while alternative Vanir wheat shipments existed, they were smaller than the lost Orvan sea trade and insufficient to eliminate Tolan's exposure gap.
+  - *Odin:* The proponent conceded that Vanir shipments were insufficient to fully offset the import gap created by the corridor expiration.
 
 ## Rejected claims
 
@@ -50,17 +50,17 @@ Separate ranges from each side and from Odin's ruling; Odin's range is not an av
 
 | Country | Sector | Metric (unit, period, denominator) | Thor (high case) | Loki (limited case) | Odin (ruling) | Notes |
 |---|---|---|---|---|---|---|
-| Midgard | maize | YoY import value loss (USD M, Oct 2026 - Dec 2026, per Prior year (2025) corresponding monthly import values) | 105.7 – 126.4 USD M | unavailable (estimate removed by code: numbers not reproducible from calc records) | 105.7 – 126.4 USD M | Thor T1-2: established |
-| Midgard | wheat | YoY import value loss (USD M, Sep 2026 - Dec 2026, per Prior year (2025) corresponding monthly import values) | 156.5 – 216.2 USD M | unavailable (estimate removed by code: numbers not reproducible from calc records) | 156.5 – 216.2 USD M | Thor T1-1: established |
-| Tolan | maize | — | unavailable (no estimate submitted by thor for this pair) | unavailable (no estimate submitted by loki for this pair) | unavailable (insufficient evidence: Complete trade table series for Tolan maize imports from Orvan) |  |
-| Tolan | wheat | YoY import value loss (USD M, Sep 2026 - Dec 2026, per Prior year (2025) corresponding monthly import values) | 69.6 – 96.0 USD M | unavailable (no estimate submitted by loki for this pair) | 69.6 – 96.0 USD M | Thor T1-3: established |
+| Midgard | maize | YoY import value loss (USD M, Oct-Dec 2026 vs Oct-Dec 2025, per None) | 105.7 – 126.4 USD M | unavailable (estimate removed by code: numbers not reproducible from calc records) | 105.7 – 126.4 USD M | Thor T1-2: established |
+| Midgard | wheat | YoY import value loss (USD M, Sept-Dec 2026 vs Sept-Dec 2025, per None) | 156.5 – 216.2 USD M | unavailable (estimate removed by code: numbers not reproducible from calc records) | 156.5 – 216.2 USD M | Thor T1-1: established |
+| Tolan | maize | — | unavailable (no estimate submitted by thor for this pair) | unavailable (no estimate submitted by loki for this pair) | unavailable (insufficient evidence: Trade table detailing Orvan-to-Tolan maize exports for 2025 and 2026.) |  |
+| Tolan | wheat | YoY import value loss (USD M, Sept-Dec 2026 vs Sept-Dec 2025, per None) | 69.6 – 96.0 USD M | unavailable (no estimate submitted by loki for this pair) | 69.6 – 96.0 USD M | Thor T1-3: established |
 
 - **Thor — Midgard/maize:** YoY import value loss: Year-over-year reduction in maize import value from Orvan post-expiration. Unit USD M, period Post-expiration 2026 vs 2025, denominator N/A. Calculations: CALC-c4d8aa36b4090272, CALC-8b68f9523d386676 (rows ORV-0030#R10, ORV-0030#R11, ORV-0030#R12, ORV-0030#R4, ORV-0030#R5, ORV-0030#R6). Confidence: high. Missing: Exact baseline substitution levels..
-- **Odin — Midgard/maize:** YoY import value loss: Year-over-year reduction in maize import value from Orvan post-expiration. Unit USD M, period Oct 2026 - Dec 2026, denominator Prior year (2025) corresponding monthly import values. Calculations: CALC-c4d8aa36b4090272, CALC-8b68f9523d386676 (rows ORV-0030#R10, ORV-0030#R11, ORV-0030#R12, ORV-0030#R4, ORV-0030#R5, ORV-0030#R6). Confidence: high.
+- **Odin — Midgard/maize:** YoY import value loss: Year-over-year reduction in maize import value from Orvan post-expiration. Unit USD M, period Oct-Dec 2026 vs Oct-Dec 2025, denominator None. Calculations: CALC-c4d8aa36b4090272, CALC-8b68f9523d386676 (rows ORV-0030#R10, ORV-0030#R11, ORV-0030#R12, ORV-0030#R4, ORV-0030#R5, ORV-0030#R6). Confidence: medium.
 - **Thor — Midgard/wheat:** YoY import value loss: Year-over-year reduction in wheat import value from Orvan following corridor expiration. Unit USD M, period Post-expiration 2026 vs 2025, denominator N/A. Calculations: CALC-cb98e8e7d6f3bbe6, CALC-2471c1be02c2601c (rows ORV-0009#R10, ORV-0009#R11, ORV-0009#R12, ORV-0009#R3, ORV-0009#R4, ORV-0009#R5, ORV-0009#R6, ORV-0009#R9). Confidence: high. Missing: Alternative rail imports not fully captured..
-- **Odin — Midgard/wheat:** YoY import value loss: Year-over-year reduction in wheat import value from Orvan post-expiration. Unit USD M, period Sep 2026 - Dec 2026, denominator Prior year (2025) corresponding monthly import values. Calculations: CALC-cb98e8e7d6f3bbe6, CALC-2471c1be02c2601c (rows ORV-0009#R10, ORV-0009#R11, ORV-0009#R12, ORV-0009#R3, ORV-0009#R4, ORV-0009#R5, ORV-0009#R6, ORV-0009#R9). Confidence: high.
+- **Odin — Midgard/wheat:** YoY import value loss: Year-over-year reduction in wheat import value from Orvan following the corridor expiration on 10 Sept 2026. Unit USD M, period Sept-Dec 2026 vs Sept-Dec 2025, denominator None. Calculations: CALC-cb98e8e7d6f3bbe6, CALC-2471c1be02c2601c (rows ORV-0009#R10, ORV-0009#R11, ORV-0009#R12, ORV-0009#R3, ORV-0009#R4, ORV-0009#R5, ORV-0009#R6, ORV-0009#R9). Confidence: high.
 - **Thor — Tolan/wheat:** YoY import value loss: Year-over-year reduction in wheat import value from Orvan. Unit USD M, period Post-expiration 2026 vs 2025, denominator N/A. Calculations: CALC-d0e20968679cf6e7, CALC-c1d6da086b7f9f04 (rows ORV-0046#R10, ORV-0046#R11, ORV-0046#R12, ORV-0046#R3, ORV-0046#R4, ORV-0046#R5, ORV-0046#R6, ORV-0046#R9). Confidence: high. Missing: Exact Vanir offset numbers not fully itemized..
-- **Odin — Tolan/wheat:** YoY import value loss: Year-over-year reduction in wheat import value from Orvan post-expiration. Unit USD M, period Sep 2026 - Dec 2026, denominator Prior year (2025) corresponding monthly import values. Calculations: CALC-d0e20968679cf6e7, CALC-c1d6da086b7f9f04 (rows ORV-0046#R10, ORV-0046#R11, ORV-0046#R12, ORV-0046#R3, ORV-0046#R4, ORV-0046#R5, ORV-0046#R6, ORV-0046#R9). Confidence: medium.
+- **Odin — Tolan/wheat:** YoY import value loss: Year-over-year reduction in wheat import value from Orvan following the corridor expiration. Unit USD M, period Sept-Dec 2026 vs Sept-Dec 2025, denominator None. Calculations: CALC-d0e20968679cf6e7, CALC-c1d6da086b7f9f04 (rows ORV-0046#R10, ORV-0046#R11, ORV-0046#R12, ORV-0046#R3, ORV-0046#R4, ORV-0046#R5, ORV-0046#R6, ORV-0046#R9). Confidence: high.
 
 ## Assumptions and uncertainty
 
@@ -72,46 +72,43 @@ Separate ranges from each side and from Odin's ruling; Odin's range is not an av
 - L1-2 (inference): Delayed delivery terms provided a buffer against immediate post-expiration supply drops in October 2026.
 - L1-3 (fact): Vanir wheat shipments buffer Tolan's import gap.
 - Thor Midgard/maize estimate: November-December drop demonstrates full effect after delayed contracts cleared.
-- Odin Midgard/maize estimate: Low bound captures Nov-Dec 2026 post delayed contract clearance; high bound captures Oct-Dec 2026.
+- Odin Midgard/maize estimate: Low bound (Nov-Dec) reflects the period after delayed delivery terms expired; High bound (Oct-Dec) includes the initial impact month.
 - Thor Midgard/wheat estimate: Corridor expiration drove the monthly YoY deficit.
-- Odin Midgard/wheat estimate: Low bound reflects post-expiration loss across October-December 2026; high bound includes September 2026.
+- Odin Midgard/wheat estimate: Low bound excludes the transition month (September) to show full disruption impact; High bound includes the transition month.
 - Thor Tolan/wheat estimate: Corridor expiration is primary driver of import fall.
-- Odin Tolan/wheat estimate: Low bound covers Oct-Dec 2026; high bound includes Sep 2026.
+- Odin Tolan/wheat estimate: Range reflects 3-month vs 4-month YoY deficit to account for the expiration timing.
 - Uncertainty: Thor Midgard/maize: confidence high — Lower bound uses Nov-Dec post-expiration window; upper bound includes October transition.
-- Uncertainty: Odin Midgard/maize: confidence high — Calculated directly from Tier-1 official trade tables (ORV-0030). Delayed delivery terms cushioned October volume, making Nov-Dec the post-clearance core deficit.
+- Uncertainty: Odin Midgard/maize: confidence medium — Exposure was obscured in October by contractual delivery lags but became severe in November and December.
 - Uncertainty: Thor Midgard/wheat: confidence high — Range depends on whether September 2026 transition month is included.
-- Uncertainty: Odin Midgard/wheat: confidence high — Calculated directly from Tier-1 official trade tables (ORV-0009). The lower bound excludes September 2026 while the upper bound includes it.
+- Uncertainty: Odin Midgard/wheat: confidence high — Calculations based on Ministry of Trade records show significant losses. While substitution exists, it is documented as small compared to the bilateral deficit.
 - Uncertainty: Thor Tolan/wheat: confidence high — Depends on inclusion of September 2026 transition month.
-- Uncertainty: Odin Tolan/wheat: confidence medium — Calculated from Tier-2 trade notes (ORV-0046). Vanir replacement supply occurred but was confirmed to be smaller than the import gap.
+- Uncertainty: Odin Tolan/wheat: confidence high — Tolan suffered immediate losses as evidenced by Harbour Review trade notes; Vanir substitution was confirmed to be insufficient to close the gap.
 
 ## Investigation runs
 
-- **Run 1:** 7 claim(s) ruled (conceded 2, contested 1, established 4); Odin: insufficient. Sent back for: Complete monthly trade volume and value series for Tolan maize imports from Orvan.; Quantitative monthly data for alternative Vanir exports and Ravik rail loadings to Midgard and Tolan.. 
-- **Run 2:** no rulings; Notes: Heimdall's run 2 research failed; the briefing uses the run 1 rulings and is incomplete
+- **Run 1:** 7 claim(s) ruled (conceded 2, contested 1, established 4); Odin: insufficient. Sent back for: Monthly trade volume and value for Tolan maize imports from Orvan (2025-2026).. 
+- **Run 2:** no rulings; Notes: run 2: Heimdall's targeted searches found no genuinely new relevant evidence (code check: no cited ref outside run 1-1 evidence and its duplicates); advocates and Odin were not re-run and the briefing (from the run 1 rulings) is labelled incomplete
 
 ## Next-quarter outlook
 
-In Q1 2027, import deficits across wheat and maize routes from Orvan are expected to persist at elevated levels in the absence of a renewed maritime agreement. Importers in Midgard and Tolan will continue relying on higher-cost rail routes through Ravik and short-term contracts with Vanir. However, capacity constraints and elevated handling costs will maintain upward pressure on grain prices and limit full volume recovery.
+The outlook for Q1 2027 remains constrained. Without a renewal of the corridor agreement or a massive scale-up in alternative logistics (rail or Vanir supply), import volumes for wheat and maize are expected to remain at these depressed levels. High handling costs for substitute supplies will likely continue to pressure grain millers and industrial buyers in Midgard and Tolan.
 
 Assumptions:
-- No replacement Orvan corridor agreement will be negotiated during Q1 2027.
-- Rail transport capacity through Ravik remains near current operational ceilings.
-- Vanir exportable grain surplus remains insufficient to offset lost Orvan maritime volumes.
+- No new maritime corridor agreement is reached in early 2027.
+- Vanir supply remains stable but limited by current logistical capacity.
+- Rail routes continue to operate at high capacity but cannot fully replace lost sea volumes.
 
 ## Missing data and evidence quality
 
-- Odin judged the evidence insufficient: Official trade tables for Tolan maize imports are missing completely from the record, preventing direct numerical estimation for that pair. Additionally, quantitative baseline and post-expiration series for alternative rail routes and Vanir grain shipments are incomplete.
-- Complete monthly trade volume and value series for Tolan maize imports from Orvan. (why: Required to calculate trade exposure range for Tolan maize imports following corridor expiration.)
-- Quantitative monthly data for alternative Vanir exports and Ravik rail loadings to Midgard and Tolan. (why: Required to calculate net economic loss by accounting for substitution effects.)
-- Tolan/maize: Complete trade table series for Tolan maize imports from Orvan
-- Tier-1 official trade notes (ORV-0009, ORV-0030) provide high-reliability data for Midgard wheat and maize imports.
-- Tier-2 trade reviews (ORV-0046, ORV-0024) provide reliable supporting data for Tolan wheat imports and corridor operational dynamics.
-- Tolan maize import data is completely absent from the evidence file.
+- Odin judged the evidence insufficient: We lack specific quantitative trade data for Tolan's maize imports from Orvan, which prevents a full assessment of total exposure for both requested countries.
+- Monthly trade volume and value for Tolan maize imports from Orvan (2025-2026). (why: Necessary to calculate the year-over-year deficit for maize following the corridor expiration.)
+- Tolan/maize: Trade table detailing Orvan-to-Tolan maize exports for 2025 and 2026.
+- Trade data from the Realm Trade Ministry (Tier 1) and Harbour Review (Tier 2) are consistent and provide a clear picture of bilateral declines.
+- The absence of a specific trade table for Tolan maize is the primary data deficiency.
 
 ## Traps, corrections and failures
 
-- heimdall failed during send-back research (run 2): rate limited after 7 attempt(s): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/d
-- Heimdall's run 2 research failed; the briefing uses the run 1 rulings and is incomplete
+- run 2: Heimdall's targeted searches found no genuinely new relevant evidence (code check: no cited ref outside run 1-1 evidence and its duplicates); advocates and Odin were not re-run and the briefing (from the run 1 rulings) is labelled incomplete
 
 ## Sources
 

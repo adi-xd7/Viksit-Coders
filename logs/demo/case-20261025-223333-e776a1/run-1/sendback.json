@@ -1,0 +1,35 @@
+{
+  "sendback_id": "SB-1",
+  "run_number": 1,
+  "reason": "While the Orvan sea route disruption is well-quantified for Midgard and Tolan wheat, and Midgard maize, there is a total lack of monthly trade data for Tolan maize imports. Additionally, the quantitative impact of rail and Vanir substitution is only partially available, limiting net exposure estimates.",
+  "missing": [
+    {
+      "description": "Monthly trade volume and value for Orvan to Tolan maize imports.",
+      "why_needed": "To quantify the trade gap and economic exposure for the maize sector in Tolan.",
+      "countries": [
+        "Tolan"
+      ],
+      "sectors": [
+        "maize"
+      ],
+      "source_types": [
+        "trade_note"
+      ]
+    },
+    {
+      "description": "Aggregate quarterly volume/value for rail shipments through Ravik and total Vanir exports.",
+      "why_needed": "To calculate a precise net exposure range that accounts for all alternative routes.",
+      "countries": [
+        "Midgard",
+        "Tolan"
+      ],
+      "sectors": [
+        "wheat",
+        "maize"
+      ],
+      "source_types": [
+        "trade_note"
+      ]
+    }
+  ]
+}

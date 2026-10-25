@@ -1,0 +1,19 @@
+DOC_ID: CAN-0002
+EVENT_ID: E7
+TITLE: LNG carriers turn south as Ymir Canal shuts
+SOURCE_NAME: Raven Wire
+SOURCE_TYPE: news
+RELIABILITY: 2
+PUB_DATE: 2027-03-05
+PUB_TIME: 07:45
+COUNTRY: Solvar
+SECTOR: LNG
+LANGUAGE: en
+---
+LNG carriers turn south as Ymir Canal shuts
+
+[P1] Brightwave Shipping said on Thursday that six of its LNG carriers bound for Midgard and Ketra had turned south to sail around the cape.
+
+[P2] The detour adds about nine days to a one-way voyage from Solvar, the company said, and some March cargoes will arrive in April.
+
+[P3] Solen Energy said its liquefaction plants in Solvar keep running at normal rates.

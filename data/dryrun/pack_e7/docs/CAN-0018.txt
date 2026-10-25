@@ -1,0 +1,29 @@
+DOC_ID: CAN-0018
+EVENT_ID: E7
+TITLE: Trade table: Solvar to Ketra, LNG
+SOURCE_NAME: Realm Trade Ministry
+SOURCE_TYPE: trade_table
+RELIABILITY: 1
+PUB_DATE: 2027-04-28
+PUB_TIME: 12:00
+COUNTRY: Ketra
+SECTOR: LNG
+LANGUAGE: en
+---
+TABLE_ID: TT-E7-02
+COUNTRY_PAIR: Solvar -> Ketra
+SECTOR: LNG
+UNIT: USD M; tonnes
+PERIOD: 2026-01..2026-04; 2027-01..2027-04
+EVENT_ID: E7
+
+ROW  PERIOD   VALUE_USD_M  VOLUME_TONNES
+1    2026-01  48.2         87,600
+2    2026-02  47.0         85,500
+3    2026-03  49.5         90,000
+4    2026-04  47.9         87,100
+4    2026-04  47.9         87,100
+5    2027-01  50.1         89,500
+6    2027-02               88,900
+7    2027-03  12.4O        22,100
+8    2027-04  18.7         33,400

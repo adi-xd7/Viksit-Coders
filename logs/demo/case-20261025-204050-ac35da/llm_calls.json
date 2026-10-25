@@ -1,35 +1,28 @@
 {
   "summary": {
-    "calls_used": 11,
+    "calls_used": 4,
     "calls_limit": 30,
-    "cached_replays": 0,
+    "cached_replays": 10,
     "repairs": 0,
-    "input_tokens": 136504,
-    "output_tokens": 29550,
+    "failed_requests": 1,
+    "by_model": {
+      "gemini-3-flash-preview": 3,
+      "gemini-3.5-flash": 1
+    },
+    "input_tokens": 17391,
+    "output_tokens": 5713,
     "by_agent": {
       "heimdall": 2,
-      "loki": 4,
-      "odin": 1,
-      "thor": 4
+      "odin": 2
     },
     "by_stage": {
-      "run 1 CROSS_EXAMINATION": 4,
-      "run 1 HEIMDALL": 2,
-      "run 1 ODIN": 1,
-      "run 1 THOR_LOKI": 4
+      "run 1 ODIN": 2,
+      "run 2 HEIMDALL_RESEARCH": 2
     },
     "by_label": {
-      "heimdall report": 1,
-      "heimdall research round 1 with memory (+ no-memory plan)": 1,
-      "loki attacks": 1,
-      "loki brief": 1,
-      "loki research round 1": 1,
-      "loki responses": 1,
-      "odin verdict": 1,
-      "thor attacks": 1,
-      "thor brief": 1,
-      "thor research round 1": 1,
-      "thor responses": 1
+      "heimdall send-back findings": 1,
+      "heimdall send-back plan with memory (+ no-memory plan)": 1,
+      "odin verdict": 2
     }
   },
   "calls": [
@@ -42,11 +35,12 @@
       "stage": "HEIMDALL",
       "run": 1,
       "model": "gemini-3.5-flash",
-      "cached": false,
-      "input_tokens": 6123,
-      "output_tokens": 929,
+      "cached": true,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 7052,
       "stop_reason": "end_turn",
-      "ms": 7250
+      "ms": 0
     },
     {
       "n": 2,
@@ -57,11 +51,12 @@
       "stage": "HEIMDALL",
       "run": 1,
       "model": "gemini-3.5-flash",
-      "cached": false,
-      "input_tokens": 6658,
-      "output_tokens": 595,
+      "cached": true,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 7253,
       "stop_reason": "end_turn",
-      "ms": 10500
+      "ms": 0
     },
     {
       "n": 3,
@@ -72,11 +67,12 @@
       "stage": "THOR_LOKI",
       "run": 1,
       "model": "gemini-3.5-flash",
-      "cached": false,
-      "input_tokens": 10071,
-      "output_tokens": 2719,
+      "cached": true,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 12790,
       "stop_reason": "end_turn",
-      "ms": 98657
+      "ms": 0
     },
     {
       "n": 4,
@@ -87,11 +83,12 @@
       "stage": "THOR_LOKI",
       "run": 1,
       "model": "gemini-3.5-flash",
-      "cached": false,
-      "input_tokens": 10089,
-      "output_tokens": 1527,
+      "cached": true,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 11616,
       "stop_reason": "end_turn",
-      "ms": 106795
+      "ms": 0
     },
     {
       "n": 5,
@@ -102,11 +99,12 @@
       "stage": "THOR_LOKI",
       "run": 1,
       "model": "gemini-3.5-flash",
-      "cached": false,
-      "input_tokens": 11185,
-      "output_tokens": 1863,
+      "cached": true,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 13048,
       "stop_reason": "end_turn",
-      "ms": 30500
+      "ms": 0
     },
     {
       "n": 6,
@@ -117,29 +115,15 @@
       "stage": "THOR_LOKI",
       "run": 1,
       "model": "gemini-3.5-flash",
-      "cached": false,
-      "input_tokens": 10940,
-      "output_tokens": 3770,
+      "cached": true,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 14710,
       "stop_reason": "end_turn",
-      "ms": 69016
+      "ms": 0
     },
     {
       "n": 7,
-      "agent": "loki",
-      "label": "loki attacks",
-      "schema": "AttackSet",
-      "repair": false,
-      "stage": "CROSS_EXAMINATION",
-      "run": 1,
-      "model": "gemini-3.5-flash",
-      "cached": false,
-      "input_tokens": 16325,
-      "output_tokens": 571,
-      "stop_reason": "end_turn",
-      "ms": 7952
-    },
-    {
-      "n": 8,
       "agent": "thor",
       "label": "thor attacks",
       "schema": "AttackSet",
@@ -147,29 +131,31 @@
       "stage": "CROSS_EXAMINATION",
       "run": 1,
       "model": "gemini-3.5-flash",
-      "cached": false,
-      "input_tokens": 16265,
-      "output_tokens": 1759,
+      "cached": true,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 18024,
       "stop_reason": "end_turn",
-      "ms": 39484
+      "ms": 0
     },
     {
-      "n": 9,
+      "n": 8,
       "agent": "loki",
-      "label": "loki responses",
-      "schema": "ResponseSet",
+      "label": "loki attacks",
+      "schema": "AttackSet",
       "repair": false,
       "stage": "CROSS_EXAMINATION",
       "run": 1,
       "model": "gemini-3.5-flash",
-      "cached": false,
-      "input_tokens": 21783,
-      "output_tokens": 2136,
+      "cached": true,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 16896,
       "stop_reason": "end_turn",
-      "ms": 11797
+      "ms": 0
     },
     {
-      "n": 10,
+      "n": 9,
       "agent": "thor",
       "label": "thor responses",
       "schema": "ResponseSet",
@@ -177,11 +163,28 @@
       "stage": "CROSS_EXAMINATION",
       "run": 1,
       "model": "gemini-3.5-flash",
-      "cached": false,
-      "input_tokens": 19972,
-      "output_tokens": 1783,
+      "cached": true,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 21755,
       "stop_reason": "end_turn",
-      "ms": 25765
+      "ms": 0
+    },
+    {
+      "n": 10,
+      "agent": "loki",
+      "label": "loki responses",
+      "schema": "ResponseSet",
+      "repair": false,
+      "stage": "CROSS_EXAMINATION",
+      "run": 1,
+      "model": "gemini-3.5-flash",
+      "cached": true,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 23919,
+      "stop_reason": "end_turn",
+      "ms": 0
     },
     {
       "n": 11,
@@ -193,10 +196,56 @@
       "run": 1,
       "model": "gemini-3.5-flash",
       "cached": false,
+      "failed": "quota",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "stop_reason": "error",
+      "ms": 671
+    },
+    {
+      "n": 12,
+      "agent": "odin",
+      "label": "odin verdict",
+      "schema": "OdinVerdict",
+      "repair": false,
+      "stage": "ODIN",
+      "run": 1,
+      "model": "gemini-3-flash-preview",
+      "cached": false,
       "input_tokens": 7093,
-      "output_tokens": 11898,
+      "output_tokens": 4591,
       "stop_reason": "end_turn",
-      "ms": 79813
+      "ms": 31282
+    },
+    {
+      "n": 13,
+      "agent": "heimdall",
+      "label": "heimdall send-back plan with memory (+ no-memory plan)",
+      "schema": "DualSendBackPlan",
+      "repair": false,
+      "stage": "HEIMDALL_RESEARCH",
+      "run": 2,
+      "model": "gemini-3-flash-preview",
+      "cached": false,
+      "input_tokens": 2350,
+      "output_tokens": 686,
+      "stop_reason": "end_turn",
+      "ms": 3625
+    },
+    {
+      "n": 14,
+      "agent": "heimdall",
+      "label": "heimdall send-back findings",
+      "schema": "ResearchFindings",
+      "repair": false,
+      "stage": "HEIMDALL_RESEARCH",
+      "run": 2,
+      "model": "gemini-3-flash-preview",
+      "cached": false,
+      "input_tokens": 7948,
+      "output_tokens": 436,
+      "stop_reason": "end_turn",
+      "ms": 13359
     }
   ]
 }

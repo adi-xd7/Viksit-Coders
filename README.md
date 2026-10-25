@@ -1,90 +1,155 @@
-# Trial of the Nine Realms — Supply Chain Disruption Intelligence Challenge
+# Ragnarok — Trial of the Nine Realms
 
-## The Mission
+An adversarial multi-agent system that treats a supply-chain disruption as a court case. The user asks a question
+with an as-of date; **Heimdall** builds and checks the Case File from the Runemark documents and trade tables,
+**Thor** argues that exposure is high, **Loki** that it is limited, they cross-examine each other, and **Odin**
+rules on every claim, sends the case back when evidence is missing, and writes the briefing from his rulings only.
+Everything the dashboard shows is a recorded event or a stored document; nothing is simulated.
 
-A supply chain disruption has been reported across the Runemark trade network. Most AI tools only summarize the news — sourced facts and speculation get blended together, and decision-makers cannot tell what is certain and what is disputed.
+![Architecture](assets/architecture.svg)
 
-Your task is to build an adversarial multi-agent courtroom system that treats every disruption as a court case. The system must ingest the document corpus, verify the event is real, debate the commercial exposure from two opposing sides, and deliver a structured intelligence briefing with every claim graded by nature and confidence.
+## How it works
 
-There is no spoon-fed answer. You and your team must design the architecture, retrieve the right evidence, challenge each other's claims, and prove your system's reasoning from the raw documents.
-
----
-
-## Commercial Value vs. Physical Disruption
-
-Alarming news or transit drops do not automatically mean a large trade value collapse. Alternative routing, carrier consolidation, and price/freight adjustments often cushion commercial exposure. Your courtroom agents must evaluate actual net value impact, not assume all crises cause massive drops.
-
----
-
-## Folder Layout
-
-```text
-dev_pack_E5/
-├── README.md                  ← You are here
-├── manifest.json              ← Document catalog (IDs, dates, formats, sectors)
-├── hashes.sha256              ← File integrity checksums
-├── sample_question.txt        ← The target query in plain text
-└── docs/                      ← The document pool (76 files: TXT, PDF, DOCX)
-    ├── ATL-0001 to ATL-0016   # Runemark Atlas — geography, country profiles, trade routes & outlet credibility tiers
-    ├── ORV-0001 to ORV-0050   # Regional agricultural notices, customs filings, port bulletins & industry reports
-    └── WLD-0021 to WLD-0030   # General newswire: public affairs, cultural dispatches & civic reporting
+```mermaid
+flowchart LR
+  U[User: question + as-of] --> H[Heimdall<br/>Case File, event check]
+  H --> T[Thor<br/>high exposure]
+  H --> L[Loki<br/>limited exposure]
+  T --> X[Cross-examination<br/>attack · defend with new evidence · concede]
+  L --> X
+  X --> O[Odin<br/>rules on every claim · own range · sufficiency]
+  O -->|sufficient| B[Briefing<br/>from rulings only]
+  O -->|send-back: missing evidence| H
 ```
 
----
+- **No planner.** An explicit state machine (`backend/ragnarok/trial/machine.py`) runs
+  USER → HEIMDALL → THOR ∥ LOKI → CROSS_EXAMINATION → ODIN → BRIEFING or HEIMDALL_RESEARCH (run 2). Transitions are
+  checked in code; agent output never chooses the next step. Odin judges and names missing evidence; he never assigns work.
+- **Each agent has its own prompt and tools** (`agents/prompts/`, `agents/common.py`): Heimdall search / read / trade
+  rows; Thor and Loki also `trade_calc`; Odin read / calc / validate citations (no search). Permissions are enforced in code.
+- **Evidence first.** Hybrid search (BM25 + one local vector index, fused with Reciprocal Rank Fusion) with metadata
+  filters (country, sector, event, source type, reliability tier, dates). Every path enforces
+  publication date ≤ as-of; blocked requests are logged as `CLOCK_VIOLATION_BLOCKED`.
+- **Numbers by code, not by the model.** All sums, year-on-year changes and shares are deterministic calculations on
+  trade row IDs (`calc/trade_calc.py`); every estimate bound must equal a calculation result, and every calculation replays.
+  Invalid or missing rows are excluded with a reason, never treated as zero.
+- **Debate rules in code.** At least one attack each way (target + specific objection + counter-evidence or an evidence
+  gap). A defense must cite evidence the claim did not already use, or concede. Odin's verdicts:
+  established / contested / conceded / rejected; "established" is impossible for claims with hard pre-check failures
+  (invalid or post-as-of citations, tier-4-only support, only corrected sources, unreproducible numbers).
+- **Second run.** If Odin judges the evidence insufficient he lists what is missing; Heimdall runs new targeted
+  searches (repeats refused); a novelty check accepts only genuinely new evidence (not seen in run 1, not a duplicate).
+  Thor and Loki then revise only affected claims; Odin re-rules the changed ones. No new evidence → the briefing says
+  *incomplete*. Runs, rounds, tool calls, tokens, model requests and retries all have hard limits.
+- **Private memory.** Each agent has its own lasting memory (SQLite, owner-bound). General lessons are written after
+  Odin's rulings (case names, IDs and numbers masked) and recalled by stage; `MEMORY_APPLIED` logs the plan without
+  memory, the plan with it, and the lesson used.
+- **Documents are untrusted data.** They reach the models only inside escaped `<document id tier date>` wrappers;
+  an injection scanner flags embedded instructions (stored, withheld from prompts, logged as `TRAP_INJECTION`). Flow,
+  dates, tools and budgets are decided in code, so no document can skip cross-examination, change the question or force
+  a ruling (tested).
+- **Honest failures.** Damaged, empty or badly encoded documents and broken trade rows are flagged, reported and never
+  used silently. If one advocate fails, the other is reported as unchallenged; if Odin cannot rule, there is no
+  briefing. A case is never labelled complete when it is not.
 
-## What Your System Must Uncover
+## Requirements and setup
 
-A successful system must autonomously solve challenges across the document pool:
+- Python 3.11+ (tested on 3.12.4), Node 20+ (tested on 25), Windows / macOS / Linux.
+- An LLM key: Google AI Studio (Gemini, default) or Anthropic.
 
-* **Event Verification:** Heimdall must confirm the disruption event is real and active as of the as-of date (**25 January 2027**). Fake decoys, retracted notices, and planted injections exist in the corpus and must be caught before the trial begins.
-* **Opposing Exposure Cases:** Thor and Loki must each build a document-grounded case on opposite sides — high exposure vs. limited exposure — covering the specified commercial trade flows. Vague positions are not valid claims.
-* **Cross-Examination & Concessions:** Each side must attack the other's weakest claims with counter-evidence. Agents must either defend with new documents or concede. A system where no one ever concedes has not genuinely debated.
-* **Judicial Classification:** Odin must distinguish between sourced facts (directly stated in a document) and inferences (derived by reasoning). Every claim must receive a ruling and be classified as Established, Contested, or Conceded.
-* **Sufficiency Loop:** If the evidence base is thin after the first trial run, Odin returns it for a second round of retrieval. A minimum of two trial runs must be demonstrated.
-* **Final Intelligence Briefing & Human-Readable Deliverable:** Odin authors the final briefing from his rulings only — not from Thor or Loki's raw arguments. The briefing must include an exposure table (with separate Thor, Loki, and Odin ranges), inline paragraph-level citations, and a next-quarter outlook. In your user interface (UI), this briefing must be rendered cleanly for human decision-makers.
-* **Source Hygiene:** The corpus contains documents from four outlet credibility tiers (see `ATL-0012`). Your system must not treat a tabloid rumour or a retracted notice as established fact. The as-of date is **25 January 2027** — citing anything published after this date is a clock violation.
+```bash
+python -m venv .venv
+.venv/Scripts/python -m pip install -r requirements.txt      # macOS/Linux: .venv/bin/python
+cp .env.example .env                                         # then set GEMINI_API_KEY (or LLM_PROVIDER=anthropic + ANTHROPIC_API_KEY)
+.venv/Scripts/python scripts/fetch_dev_pack.py               # Runemark dev pack -> data/runemark/ (checksums verified)
+.venv/Scripts/python -m backend.ingest data/runemark/dev_pack_E5   # build the store and index (logs/ragnarok.db)
+cd frontend && npm install && cd ..
+```
 
----
+The local embedding model (`BAAI/bge-small-en-v1.5`, fastembed / ONNX) downloads on first use into `data/index/models`.
 
-## Submission Deliverables
+## Run
 
-Submit a final output and an execution trace, in any format. Label each item with the question it answers.
+```bash
+# API (from the project root)
+.venv/Scripts/python -m uvicorn ragnarok.api:app --app-dir backend --port 8000
+# Dashboard (from frontend/) -> http://localhost:5173
+npm run dev
+```
 
-**Final output**
-- Event Verification
-- Exposure Ranges
-- Odin's Executive Briefing
+In the dashboard: **Ask a question** (question + as-of date) or open a saved case; **Add documents** ingests a new
+event pack (`.zip` with its `manifest.json`) or loose PDF / TXT / DOCX documents into the live index, with no code or
+index edits. Views: **Trial** (Case File, Thor vs Loki, cross-examination, Odin's rulings), **Exposure** (Thor / Loki /
+Odin ranges on one scale), **Evidence** (live feed, timeline, document viewer with the cited paragraph or trade row
+highlighted), **Briefing** (findings, exposure table, outlook, citations with timestamps, sources; PDF / Markdown / JSON
+export), **Run trace** (send-back, memory before/after, run 1 vs run 2, every recorded event).
 
-**Execution trace**
-- Agent queries and retrieved document IDs
-- Cross-examination challenges and counter-arguments
-- Memory updates and claim concessions
-- Judicial rulings per round
+Command line (same core as the API):
 
-**This is the bare minimum, not the full goal.** Go further: add more results, add more detail to your execution trace, and show your creativity. But every finding must come from the document pool and be retrieved by your agent at run time. Missing any item above is a serious penalty that extras cannot cancel.
+```bash
+.venv/Scripts/python -m backend.trial "<question>" --as-of 2027-01-25 [--save-demo] [--wait]
+.venv/Scripts/python -m backend.trial --resume <case_id>      # finished steps replay without new API requests
+.venv/Scripts/python -m backend.search "<query>" --as-of 2027-01-25 --country Tolan --max-reliability 2
+.venv/Scripts/python -m backend.ingest <pack_dir>
+```
 
----
+### API
 
-## Evaluation
+| Endpoint | Purpose |
+|---|---|
+| `POST /cases` `{question, as_of}` | start a case (one at a time) |
+| `GET /cases/{id}` | status (running / complete / partial / failed / paused) and results |
+| `GET /cases/{id}/events` | Server-Sent Events of the recorded audit log |
+| `POST /cases/{id}/resume` | resume a failed, partial or paused case |
+| `GET /docs/{id}[/{para}]`, `GET /trade/{table}[/{row}]` | documents and trade rows, as-of gated (`?case_id=` or `?as_of=`) |
+| `GET /feed?as_of=` | documents on or before the as-of date, with tier / correction / damage / injection badges |
+| `POST /ingest` | a pack folder, a pack `.zip`, or loose PDF / TXT / DOCX files |
 
-Submissions are evaluated on:
-* **Citation Validity** — Grounded evidence from verified documents.
-* **Range Accuracy** — Precise commercial exposure bounds.
-* **Calibration** — Well-calibrated confidence intervals.
-* **Trap Handling** — Robustness against adversarial noise.
-* **Quality of Debate** — Genuine cross-examination and concessions.
-* **Pipeline Reliability** — Stable end-to-end execution.
-* **Reproducibility** — Consistent multi-round trial results.
-* **Briefing & UI Presentation** — Executive briefing and interface.
+OpenAPI docs: `http://localhost:8000/api/docs`.
 
----
+## Model requests and limits
 
-## Attribution
+A two-run case needs about 22 model requests (one planning turn per agent, code-derived cross-examination searches,
+one merged Odin call). Free-tier keys allow about 20 requests per model per day, so `.env` can list a **model chain**
+(`GEMINI_MODEL_CHAIN`): when one model's daily quota is used up, the next model answers the same request. If every
+model is used up the case **pauses** and resumes after the reset (automatically while the API runs, or with `--wait`);
+finished steps replay from the case's own reply cache. All limits are in `.env.example`.
 
-The Runemark world, nations, trade routes, and document corpus are entirely fictional and created for this challenge. All companies, trade figures, and events are simulated.
+## Outputs and logs
 
-The outlet credibility tier model in `ATL-0012` is inspired by standard source reliability frameworks used in intelligence and investigative journalism contexts.
+Every case writes `logs/cases/<case_id>/`: `state.json`, `case_file.json`, `claims.json`, `cross_exam.json`,
+`rulings.json`, `briefing.md` / `briefing.json`, `run-N/` (per-run Case File, claims, rulings, send-back, research,
+effect of new evidence), `memory.json`, `llm_calls.json` and `events.jsonl` (the complete audit log). Saved demo
+cases are in `logs/demo/` (see [Demo](#demo)).
 
-*This dataset is for educational and competition use only.*
+## Tests
 
----
+```bash
+.venv/Scripts/python -m pytest          # backend: scripted model, no API calls
+cd frontend && npm run build            # type-check + production build
+```
+
+The tests cover ingestion (all formats, damaged files and rows, injections, duplicates, corrections), retrieval and
+the as-of gate, calculations and citation checks, the trial rules (permissions, attacks, defenses, rulings, guards),
+send-back and novelty, memory privacy and influence, limits and failures, prompt-injection resistance, the API, and
+the model chain / pause / resume.
+
+## Demo
+
+*(filled in below with the saved two-run case and the unseen-pack dry run)*
+
+## Repository layout
+
+```
+backend/ragnarok/   agents/ (prompts, Heimdall, Thor/Loki, Odin, schemas) · trial/ (state machine, runner, CLI)
+                    retrieval/ (hybrid index, as-of gated service, citations) · calc/ · ingest/ · memory/ · llm/
+                    briefing/ · store/ (SQLite) · api.py · config.py · models.py (Pydantic contracts)
+frontend/           React + Vite + TypeScript + Tailwind dashboard (see frontend/README.md)
+tests/              pytest suite and synthetic fixture packs
+scripts/            dev-pack fetch and verification
+data/runemark/      the Runemark dev pack (organizer data; its own README describes the challenge)
+assets/             architecture diagram
+logs/demo/          saved demo cases
+```
+
+The Runemark world, documents and events are fictional and provided by the organizers.

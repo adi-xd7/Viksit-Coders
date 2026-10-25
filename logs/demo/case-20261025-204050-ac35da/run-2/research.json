@@ -1,0 +1,70 @@
+{
+  "items": [
+    {
+      "number": 1,
+      "description": "Monthly trade volume and value for Tolan maize imports from Orvan (2025-2026).",
+      "queries": [
+        {
+          "query": "Tolan official monthly customs data maize imports Orvan 2025 2026",
+          "filters": {
+            "countries": [
+              "Tolan",
+              "Orvan"
+            ],
+            "sectors": [
+              "maize"
+            ],
+            "event_ids": [
+              "ORV-CORRIDOR-EXPIRATION"
+            ],
+            "source_types": [
+              "official_trade_table",
+              "customs_data"
+            ],
+            "max_reliability": 2
+          }
+        },
+        {
+          "query": "Tolan maize import volume value monthly series Orvan 2026",
+          "filters": {
+            "countries": [
+              "Tolan",
+              "Orvan"
+            ],
+            "sectors": [
+              "maize"
+            ],
+            "event_ids": [
+              "ORV-CORRIDOR-EXPIRATION"
+            ],
+            "source_types": [
+              "trade_note"
+            ],
+            "max_reliability": 0
+          }
+        }
+      ],
+      "status": "not_found",
+      "summary": "The research conducted failed to locate the requested monthly trade volume and value series for Tolan's maize imports from Orvan for the 2025-2026 period. While specific trade notes exist for Midgard's maize imports (ORV-0030) and Tolan's wheat imports (ORV-0046), a corresponding trade note or dataset for Tolan's maize route from Orvan is absent in the current evidence. Previous searches specifically targeting Tolan maize import volume and value series within the 2026 timeframe returned no results. The evidence does establish that the Orvan corridor agreement covered both wheat and maize (ORV-0002 / P2), but quantitative data for the Tolan maize component remains missing.",
+      "new_refs": [],
+      "new_doc_ids": [],
+      "not_new": [
+        {
+          "ref": "ORV-0002#P2",
+          "reason": "already retrieved in an earlier run"
+        },
+        {
+          "ref": "ORV-0046#P1",
+          "reason": "already retrieved in an earlier run"
+        }
+      ]
+    }
+  ],
+  "new_evidence": [],
+  "refused_queries": [],
+  "still_missing": [
+    "Monthly trade volume and value for Tolan maize imports from Orvan (2025-2026).",
+    "Complete baseline and post-expiration trade data for Vanir alternative grain supply to Tolan and Midgard.",
+    "Specific elasticity and trade diversion parameters for calculating exact low and high range bounds for Tolan maize exposure."
+  ]
+}

@@ -30,6 +30,11 @@ Read-only git is allowed: status, log, diff, show, ls-files, rev-parse,
 ls-remote, fetch. Read-only git (status, log, diff, show, ls-files) is
 allowed. The user commits manually. End every phase with a
 "READY TO COMMIT" block and stop. Never work around a blocked git command.
+LOCAL-ONLY FILES (user decision 2026-10-25): CLAUDE.md, PROGRESS.md, .claude/,
+data/TRAPS_FOUND.md and any plans/prompts/AI-process notes stay on this machine
+and are never committed or pushed. They are excluded via .git/info/exclude
+(set by the user). Never list them in a READY TO COMMIT block, and never
+reference them from committed code, comments, tests or README.
 
 ## 3. Session and phase discipline
 Phases may run back to back in the same session or in new sessions.
@@ -56,7 +61,9 @@ deleting data, git reset) — ask the user instead.
 Backend: Python 3.11+, FastAPI, Pydantic v2, LangGraph for the trial
 state machine if it integrates cleanly (a simple explicit state machine
 is acceptable if it lowers risk and keeps all required behaviour),
-Anthropic SDK, SQLite (cases, rulings, memories, audit logs).
+LLM provider selectable by LLM_PROVIDER (user decision 2026-10-25: Google AI Studio /
+Gemini via google-genai is the default; the Anthropic SDK backend is kept as an option),
+SQLite (cases, rulings, memories, audit logs).
 Documents: pypdf for PDF, python-docx for DOCX, Python decoding with
 encoding detection for TXT, pytest. Only the fallbacks the real dataset
 needs; no OCR unless the dataset requires it.
@@ -281,23 +288,41 @@ workflow and real or properly generated test data.
 
 ## 17. Acceptance checklist (tick only with evidence; note the evidence)
 - [ ] Heimdall ingests PDF/TXT/DOCX (incl. live-added packs) and reads trade data
-- [ ] Hybrid retrieval works with ≥2 metadata filters
-- [ ] as_of enforced on every retrieval path
-- [ ] Thor and Loki search independently and submit evidence-backed claims
-- [ ] Each advocate makes a meaningful cross-exam attack
-- [ ] Defenses bring new evidence or explicitly concede
-- [ ] Odin rules on every claim
-- [ ] Established / Contested / Conceded / Rejected used consistently
-- [ ] Briefing separates facts, inferences, assumptions, uncertainty
-- [ ] Exposure estimates have metrics, units, periods, evidence refs
+  (Phase 1: ingest pipeline + second-pack test done; open: Heimdall agent use, POST /packs)
+- [x] Hybrid retrieval works with ≥2 metadata filters
+  (Phase 2: tests/test_retrieval.py::test_two_filters_combine_as_intersection; CLI demo)
+- [x] as_of enforced on every retrieval path
+  (Phase 2: search, read_doc, get_trade_rows, calc row resolution, citation validator — tests in test_retrieval.py / test_calc_citations.py)
+- [x] Thor and Loki search independently and submit evidence-backed claims
+  (Phase 3: logs/demo/case-20261025-084715-fa6fe3: own QUERY events per advocate; 11 claims, 53 citations all valid)
+- [x] Each advocate makes a meaningful cross-exam attack
+  (Phase 3: logs/demo/case-20261025-084715-fa6fe3: 3 attacks each way; code requires target + counter-evidence or gap)
+- [x] Defenses bring new evidence or explicitly concede
+  (Phase 3: logs/demo/case-20261025-084715-fa6fe3: 2 defenses with new refs, 4 concessions; test_defense_without_new_evidence_is_invalid)
+- [x] Odin rules on every claim
+  (Phase 3: logs/demo/case-20261025-084715-fa6fe3: 11/11 ruled; unruled claims reported by code)
+- [x] Established / Contested / Conceded / Rejected used consistently
+  (Phase 3: one Verdict enum; conceded <=> concession and established guards in code; tests in test_trial.py)
+- [x] Briefing separates facts, inferences, assumptions, uncertainty
+  (Phase 5: fact/inference per finding, sections Assumptions and uncertainty / outlook assumptions; build-time citation + provenance checks; tests/test_api.py)
+- [x] Exposure estimates have metrics, units, periods, evidence refs
+  (Phase 3: logs/demo/case-20261025-084715-fa6fe3 briefing.json: metric definition, unit, period, calc IDs, row refs; 9/9 calcs replay)
 - [ ] Second run with new relevant evidence
-- [ ] Each agent has private persistent memory
+  (Phase 4: implemented + scripted test test_sendback_second_run_with_new_evidence; REAL demo pending, API limit)
+- [x] Each agent has private persistent memory
+  (Phase 4: agent_memory table + AgentMemory owner-bound; tests test_memory_is_private_per_agent, test_agent_env_cannot_write_or_read_another_agents_memory, test_memory_persists_into_a_later_case)
 - [ ] Logs show memory changing an agent's action
-- [ ] Dashboard click-through + only real events shown
-- [ ] Damaged files/rows handled without crash or silent corruption
-- [ ] Prompt injection cannot change roles, tools or flow
-- [ ] Tool, run, retry and token budgets enforced
-- [ ] Failures and incomplete investigations reported honestly
+  (Phase 4: MEMORY_APPLIED with original vs changed action; scripted test test_memory_read_changes_a_query; REAL demo pending)
+- [x] Dashboard click-through + only real events shown
+  (Phase 6: frontend/ built from API data and recorded events only; Edge check on case-20261025-084715-fa6fe3: UI counts = API counts, citation -> paragraph highlighted; live SSE on real cases. Full real case through the UI still pending: Gemini free quota)
+- [x] Damaged files/rows handled without crash or silent corruption
+  (Phase 1: tests/test_ingest_pipeline.py + test_ingest_trade.py; dev pack ingest 0 errors)
+- [x] Prompt injection cannot change roles, tools or flow
+  (Phase 3: test_injected_document_cannot_skip_cross_exam_or_force_established, test_injection_cannot_change_the_question_or_as_of, permission tests; scripted model)
+- [x] Tool, run, retry and token budgets enforced
+  (Phase 4: tests test_run_limit_stops_the_loop, test_token_budget_hit_in_run2_finishes_gracefully, test_tool_and_evidence_budgets_finish_gracefully, test_cross_exam_rounds_are_bounded; Phase 3 test_token_budgets_enforced, test_tool_call_budget_hits_limit, test_one_repair_attempt_then_controlled_error; SDK max_retries/timeout from config)
+- [x] Failures and incomplete investigations reported honestly
+  (Phase 3: case-20261025-085334 API limit -> FAILED, no briefing; demo briefing status 'partial'; test_agent_failure_reported_honestly)
 - [ ] README, .env.example, architecture diagram, reproducible demo logs
 - [ ] No dev-pack answers or trap IDs hard-coded
 
@@ -393,7 +418,8 @@ hard-code them into app logic.
   `SECTOR: Wheat` in header and manifest; the commodity must also be read from
   the Route line / title. Only 2 docs are tagged Maize.
 - Damaged inputs present: one 0-byte TXT; one TXT whose ASCII header is followed
-  by a UTF-16-LE (BOM) body truncated by one byte (needs segment-wise decoding);
+  by a UTF-16-LE (BOM) body (needs segment-wise decoding; the body is complete,
+  verified in Phase 1: even length, 0 replacement chars);
   one document cut off mid-sentence (truncated near-duplicate of another).
 - Duplicates: exact body duplicates under different IDs; same-title docs with
   different content (near-duplicates, truncated copies). Do not auto-merge

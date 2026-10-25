@@ -1,0 +1,17 @@
+DOC_ID: CAN-0016
+EVENT_ID: E7
+TITLE: Asgard Port busy with LNG transfers
+SOURCE_NAME: Asgard Herald
+SOURCE_TYPE: news
+RELIABILITY: 3
+PUB_DATE: 2027-04-08
+PUB_TIME: 12:30
+COUNTRY: Asgard
+SECTOR: LNG
+LANGUAGE: en
+---
+Asgard Port busy with LNG transfers
+
+[P1] Asgard Port handled more LNG transfers in March than in any month last year, as carriers that sailed around the cape unloaded for Midgard.
+
+[P2] Port officials said the extra work would continue until the canal reopens fully, and that the transfer berths were close to

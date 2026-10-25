@@ -1,0 +1,133 @@
+{
+  "items": [
+    {
+      "number": 1,
+      "description": "Monthly trade volume and value for Orvan to Tolan maize imports.",
+      "queries": [
+        {
+          "query": "Tolan monthly maize import volume value Orvan source:trade_note 2025 2026",
+          "filters": {
+            "countries": [
+              "Tolan",
+              "Orvan"
+            ],
+            "sectors": [
+              "maize"
+            ],
+            "event_ids": [
+              "e5"
+            ],
+            "source_types": [
+              "trade_note"
+            ],
+            "max_reliability": 0
+          }
+        },
+        {
+          "query": "\"Tolan maize\" Orvan trade-note monthly data 2026",
+          "filters": {
+            "countries": [
+              "Tolan",
+              "Orvan"
+            ],
+            "sectors": [
+              "maize"
+            ],
+            "event_ids": [
+              "e5"
+            ],
+            "source_types": [
+              "trade_note"
+            ],
+            "max_reliability": 0
+          }
+        }
+      ],
+      "status": "not_found",
+      "summary": "No official trade notes or tables were found containing monthly volume or value data for maize imports from Orvan to Tolan for the 2025-2026 period. While similar data exists for Midgard (ORV-0030) and for Tolan's wheat imports (ORV-0046), the maize-specific data for Tolan remains absent from the available records as of 25 January 2027.",
+      "new_refs": [],
+      "new_doc_ids": [],
+      "not_new": []
+    },
+    {
+      "number": 2,
+      "description": "Aggregate quarterly volume/value for rail shipments through Ravik and total Vanir exports.",
+      "queries": [
+        {
+          "query": "aggregate quarterly volume value Ravik rail loadings Vanir grain exports Midgard Tolan",
+          "filters": {
+            "countries": [
+              "Midgard",
+              "Tolan",
+              "Vanir"
+            ],
+            "sectors": [
+              "wheat",
+              "maize"
+            ],
+            "event_ids": [
+              "none",
+              "e5"
+            ],
+            "source_types": [
+              "trade_note",
+              "official_trade_table"
+            ],
+            "max_reliability": 0
+          }
+        },
+        {
+          "query": "Ravik rail shipment data wheat maize Midgard Tolan 2026 quarterly",
+          "filters": {
+            "countries": [
+              "Midgard",
+              "Tolan"
+            ],
+            "sectors": [
+              "wheat",
+              "maize"
+            ],
+            "event_ids": [
+              "e5"
+            ],
+            "source_types": [
+              "trade_note",
+              "customs_data"
+            ],
+            "max_reliability": 2
+          }
+        }
+      ],
+      "status": "partial",
+      "summary": "New evidence provides monthly wheat export data from Vanir to Midgard (ORV-0027), which shows a rise in volume towards the end of 2026. Analyst notes suggest Vanir wheat volumes to Tolan and Midgard may increase by 14% to 18% (ORV-0018) or 'between a seventh and a fifth' (ORV-0007) from a small base. While rail loadings through the Ravik route are described as 'high' and 'rising' (ORV-0009, ORV-0035), specific aggregate quarterly volumes for rail and for Tolan's share of Vanir exports are still not available in quantitative form.",
+      "new_refs": [],
+      "new_doc_ids": [],
+      "not_new": [
+        {
+          "ref": "ORV-0027#P6",
+          "reason": "already retrieved in an earlier run"
+        },
+        {
+          "ref": "ORV-0018#P4",
+          "reason": "already retrieved in an earlier run"
+        },
+        {
+          "ref": "ORV-0035#P4",
+          "reason": "already retrieved in an earlier run"
+        },
+        {
+          "ref": "ORV-0009#P14",
+          "reason": "already retrieved in an earlier run"
+        }
+      ]
+    }
+  ],
+  "new_evidence": [],
+  "refused_queries": [],
+  "still_missing": [
+    "Monthly trade volume and value for Orvan to Tolan maize imports (2025-2026).",
+    "Quantitative monthly or quarterly trade data for Vanir wheat and maize exports to Tolan.",
+    "Quantitative monthly or quarterly data for Ravik rail grain loadings (wheat and maize) to Midgard and Tolan.",
+    "As-of date grain stock levels for Midgard and Tolan."
+  ]
+}

@@ -1,6 +1,40 @@
 {
   "heimdall": [
     {
+      "memory_id": "M-heimdall-1cf4ecbc8d",
+      "agent": "heimdall",
+      "lesson": "Targeted searches for a gap like \"Monthly trade volume and value for <place> maize imports from <place> (<n>-<n>).\" found nothing new before the as-of date. Report such a gap plainly instead of repeating similar searches.",
+      "context": "case case-20261025-204050-ac35da run 2: Monthly trade volume and value for Tolan maize imports from Orvan (2025-2026). queries ['Tolan official monthly customs data maize imports Orvan 2025 2026', 'Tolan maize import volume value monthly series Orvan 2026']",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T21:40:02.531739Z",
+      "kind": "dead_end",
+      "stages": [
+        "sendback"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 2,
+      "updated_at": "2026-10-25T21:40:02.531739Z"
+    },
+    {
+      "memory_id": "M-heimdall-f89dc09442",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Monthly trade volume and value for <place> maize imports from <place> (<n>-<n>).\" (source types: trade_note). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-204050-ac35da run 1: Monthly trade volume and value for Tolan maize imports from Orvan (2025-2026). | why: Necessary to calculate the year-over-year deficit for maize following the corridor expiration.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T21:39:45.442544Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T21:39:45.442544Z"
+    },
+    {
       "memory_id": "M-heimdall-4acb6828ab",
       "agent": "heimdall",
       "lesson": "Odin sent a case back because this was missing after the first investigation: \"Quantitative monthly data for alternative <place> exports and <place> rail loadings to <place> and <place>.\" (source types: official_trade_table, customs_data). Search for this kind of evidence in the first investigation and list it in the Case File.",
@@ -128,5 +162,23 @@
       "updated_at": "2026-10-25T20:46:23.579045Z"
     }
   ],
-  "odin": []
+  "odin": [
+    {
+      "memory_id": "M-odin-f393217281",
+      "agent": "odin",
+      "lesson": "A send-back found no new evidence before the as-of date. When the missing data probably does not exist in the evidence, report it as a gap in the briefing instead of relying on another run.",
+      "context": "case case-20261025-204050-ac35da run 2: {'new_evidence': 0}",
+      "case_scope": null,
+      "confidence": 0.55,
+      "created_at": "2026-10-25T21:40:02.540741Z",
+      "kind": "sendback_no_new_evidence",
+      "stages": [
+        "ruling"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 2,
+      "updated_at": "2026-10-25T21:40:02.540741Z"
+    }
+  ]
 }

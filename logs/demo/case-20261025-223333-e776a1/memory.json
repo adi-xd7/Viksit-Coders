@@ -1,0 +1,405 @@
+{
+  "heimdall": [
+    {
+      "memory_id": "M-heimdall-40cbc913a9",
+      "agent": "heimdall",
+      "lesson": "Targeted searches for a gap like \"Aggregate quarterly volume/value for rail shipments through <place> and total <place> exports.\" found nothing new before the as-of date. Report such a gap plainly instead of repeating similar searches.",
+      "context": "case case-20261025-223333-e776a1 run 2: Aggregate quarterly volume/value for rail shipments through Ravik and total Vanir exports. queries ['aggregate quarterly volume value Ravik rail loadings Vanir grain exports Midgard Tolan', 'Ravik rail shipment data wheat maize Midgard Tolan 2026 quarterly']",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T22:36:51.753597Z",
+      "kind": "dead_end",
+      "stages": [
+        "sendback"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 2,
+      "updated_at": "2026-10-25T22:36:51.753597Z"
+    },
+    {
+      "memory_id": "M-heimdall-6eb3227d37",
+      "agent": "heimdall",
+      "lesson": "Targeted searches for a gap like \"Monthly trade volume and value for <place> to <place> maize imports.\" found nothing new before the as-of date. Report such a gap plainly instead of repeating similar searches.",
+      "context": "case case-20261025-223333-e776a1 run 2: Monthly trade volume and value for Orvan to Tolan maize imports. queries ['Tolan monthly maize import volume value Orvan source:trade_note 2025 2026', '\"Tolan maize\" Orvan trade-note monthly data 2026']",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T22:36:51.750066Z",
+      "kind": "dead_end",
+      "stages": [
+        "sendback"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 2,
+      "updated_at": "2026-10-25T22:36:51.750066Z"
+    },
+    {
+      "memory_id": "M-heimdall-15ea35880b",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Aggregate quarterly volume/value for rail shipments through <place> and total <place> exports.\" (source types: trade_note). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-223333-e776a1 run 1: Aggregate quarterly volume/value for rail shipments through Ravik and total Vanir exports. | why: To calculate a precise net exposure range that accounts for all alternative routes.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T22:36:34.072022Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.072022Z"
+    },
+    {
+      "memory_id": "M-heimdall-4466ff43b0",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Monthly trade volume and value for <place> to <place> maize imports.\" (source types: trade_note). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-223333-e776a1 run 1: Monthly trade volume and value for Orvan to Tolan maize imports. | why: To quantify the trade gap and economic exposure for the maize sector in Tolan.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T22:36:34.067478Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.067478Z"
+    },
+    {
+      "memory_id": "M-heimdall-290d689b03",
+      "agent": "heimdall",
+      "lesson": "Corrections, retractions or contradicting reports changed the record of the event. Search for correction and retraction notices and official notices before setting the event status.",
+      "context": "case case-20261025-223333-e776a1: 1 correction note(s)",
+      "case_scope": null,
+      "confidence": 0.7,
+      "created_at": "2026-10-25T10:22:03.401088Z",
+      "kind": "corrections_matter",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 4,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:34:05.179090Z"
+    },
+    {
+      "memory_id": "M-heimdall-1cf4ecbc8d",
+      "agent": "heimdall",
+      "lesson": "Targeted searches for a gap like \"Monthly trade volume and value for <place> maize imports from <place> (<n>-<n>).\" found nothing new before the as-of date. Report such a gap plainly instead of repeating similar searches.",
+      "context": "case case-20261025-204050-ac35da run 2: Monthly trade volume and value for Tolan maize imports from Orvan (2025-2026). queries ['Tolan official monthly customs data maize imports Orvan 2025 2026', 'Tolan maize import volume value monthly series Orvan 2026']",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T21:40:02.531739Z",
+      "kind": "dead_end",
+      "stages": [
+        "sendback"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 2,
+      "updated_at": "2026-10-25T21:40:02.531739Z"
+    },
+    {
+      "memory_id": "M-heimdall-f89dc09442",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Monthly trade volume and value for <place> maize imports from <place> (<n>-<n>).\" (source types: trade_note). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-204050-ac35da run 1: Monthly trade volume and value for Tolan maize imports from Orvan (2025-2026). | why: Necessary to calculate the year-over-year deficit for maize following the corridor expiration.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T21:39:45.442544Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T21:39:45.442544Z"
+    },
+    {
+      "memory_id": "M-heimdall-4acb6828ab",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Quantitative monthly data for alternative <place> exports and <place> rail loadings to <place> and <place>.\" (source types: official_trade_table, customs_data). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-204050-ac35da run 1: Quantitative monthly data for alternative Vanir exports and Ravik rail loadings to Midgard and Tolan. | why: Required to calculate net economic loss by accounting for substitution effects.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T20:46:23.612330Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T20:46:23.612330Z"
+    },
+    {
+      "memory_id": "M-heimdall-45565cfd51",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Complete monthly trade volume and value series for <place> maize imports from <place>.\" (source types: official_trade_table, trade_note). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-204050-ac35da run 1: Complete monthly trade volume and value series for Tolan maize imports from Orvan. | why: Required to calculate trade exposure range for Tolan maize imports following corridor expiration.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T20:46:23.608050Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T20:46:23.608050Z"
+    }
+  ],
+  "thor": [
+    {
+      "memory_id": "M-thor-3e66aa15dd",
+      "agent": "thor",
+      "lesson": "A search like \"The claim fails to account for the role of substitute supply from <place> and ra...\" (filters: country=<given>) found evidence for a claim Odin established.",
+      "context": "case case-20261025-223333-e776a1 run 1: query #1261 The claim fails to account for the role of substitute supply from Vanir and rail in mitigating the sharp decline in maize imports from Orvan. The opponent lacks net trade data for maize that includes alternative routes, which ORV-0022 identifies",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T22:36:34.024660Z",
+      "kind": "useful_query",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.024660Z"
+    },
+    {
+      "memory_id": "M-thor-5a51cd57e0",
+      "agent": "thor",
+      "lesson": "A search like \"<place>'s maize imports from <place> showed high resilience immediately followin...\" (filters: country=<given>) found evidence for a claim Odin established.",
+      "context": "case case-20261025-223333-e776a1 run 1: query #1238 Midgard's maize imports from Orvan showed high resilience immediately following the corridor expiration due to delayed delivery terms, which buffered the initial shock. shortfall disruption no substitute limited capacity delay",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T22:36:34.020621Z",
+      "kind": "useful_query",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.020621Z"
+    },
+    {
+      "memory_id": "M-thor-ba9cf48443",
+      "agent": "thor",
+      "lesson": "A search like \"<place>'s exposure to the expiration of the <place> corridor for wheat was mitig...\" (filters: country=<given>) found evidence for a claim Odin established.",
+      "context": "case case-20261025-223333-e776a1 run 1: query #1231 Midgard's exposure to the expiration of the Orvan corridor for wheat was mitigated by a significant increase in shipments from Vanir, which reached Midgard in larger volumes starting in November shortfall disruption no substitute limited capacity delay",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T22:36:34.015604Z",
+      "kind": "useful_query",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.015604Z"
+    },
+    {
+      "memory_id": "M-thor-c562b4cc41",
+      "agent": "thor",
+      "lesson": "An estimate of the metric \"YoY import value loss\" (USD M) computed with trade_calc from trade_note evidence (tier 2) was established; this metric definition held up.",
+      "context": "case case-20261025-223333-e776a1 run 1: T1-3 established - Harbour Review data (Tier 2) confirms Tolan's wheat import value from Orvan dropped by roughly 60% in December 2026 compared to the previous year. The total value loss for the quarter is calculated at USD 69.6M.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T20:46:23.583045Z",
+      "kind": "established_estimate",
+      "stages": [
+        "brief"
+      ],
+      "times_seen": 2,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.011602Z"
+    },
+    {
+      "memory_id": "M-thor-bab01c73da",
+      "agent": "thor",
+      "lesson": "An estimate of the metric \"YoY import value loss\" (USD M) computed with trade_calc from trade_note evidence (tier 1) was established; this metric definition held up.",
+      "context": "case case-20261025-223333-e776a1 run 1: T1-2 established - Ministry data confirms that Midgard's maize imports from Orvan remained resilient in October due to delayed delivery terms (ORV-0030/P14) before experiencing a sharp decline by December, resulting in a quarterly YoY loss of USD 126.4M.",
+      "case_scope": null,
+      "confidence": 0.7,
+      "created_at": "2026-10-25T20:46:23.574051Z",
+      "kind": "established_estimate",
+      "stages": [
+        "brief"
+      ],
+      "times_seen": 4,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.006600Z"
+    }
+  ],
+  "loki": [
+    {
+      "memory_id": "M-loki-57796f3e1f",
+      "agent": "loki",
+      "lesson": "A search like \"<place>'s maize imports from <place> saw a delayed but sharp decline, with value...\" (filters: country=<given>) found evidence for a claim Odin established.",
+      "context": "case case-20261025-223333-e776a1 run 1: query #1236 Midgard's maize imports from Orvan saw a delayed but sharp decline, with value in the final quarter of 2026 falling significantly below 2025 levels. alternative supplier substitute route rerouted stocks inventory",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T22:36:34.054457Z",
+      "kind": "useful_query",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.054457Z"
+    },
+    {
+      "memory_id": "M-loki-ed3e7d03ef",
+      "agent": "loki",
+      "lesson": "A search like \"<place> faces a substantial loss in wheat import value from <place> following th...\" (filters: country=<given>) found evidence for a claim Odin established.",
+      "context": "case case-20261025-223333-e776a1 run 1: query #1234 Midgard faces a substantial loss in wheat import value from Orvan following the expiration of the corridor agreement, with monthly values dropping by more than half since the deal ended. alternative supplier substitute route rerouted stocks inventory",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T22:36:34.050459Z",
+      "kind": "useful_query",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.050459Z"
+    },
+    {
+      "memory_id": "M-loki-c6eb2259a2",
+      "agent": "loki",
+      "lesson": "A search like \"alternative grain suppliers <place> wheat maize rail routes stocks\" (filters: country=<given>; event_id=e<n>; sector=maize,wheat; source_type=analyst_note,gov_notice,shipping_update,trade_note) found evidence for a claim Odin established.",
+      "context": "case case-20261025-223333-e776a1 run 1: query #1209 alternative grain suppliers Midgard Tolan Vanir wheat maize rail routes stocks",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T22:36:34.045844Z",
+      "kind": "useful_query",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.045844Z"
+    },
+    {
+      "memory_id": "M-loki-11955f882a",
+      "agent": "loki",
+      "lesson": "An estimate of the metric \"Gross value at risk\" (USD M) computed with trade_calc from shipping_update, trade_note evidence (tier 2) was established; this metric definition held up.",
+      "context": "case case-20261025-223333-e776a1 run 1: L1-3 established - Shipping updates confirm that Tolan partially offset Orvan wheat losses with Vanir shipments, which increased berth activity and replaced a portion of the volume, though the replacement remained smaller than the total gap.",
+      "case_scope": null,
+      "confidence": 0.55,
+      "created_at": "2026-10-25T22:36:34.041302Z",
+      "kind": "established_estimate",
+      "stages": [
+        "brief"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.041302Z"
+    },
+    {
+      "memory_id": "M-loki-2fe7ea67b8",
+      "agent": "loki",
+      "lesson": "An estimate of the metric \"Gross value at risk\" (USD M) computed with trade_calc from trade_note evidence (tier 1) was established; this metric definition held up.",
+      "context": "case case-20261025-223333-e776a1 run 1: L1-2 established - The initial resilience in maize imports is a documented fact, with October 2026 values (USD 62.1M) remaining closer to 2025 levels than later months, supported by contract-specific delayed delivery terms.",
+      "case_scope": null,
+      "confidence": 0.55,
+      "created_at": "2026-10-25T22:36:34.036321Z",
+      "kind": "established_estimate",
+      "stages": [
+        "brief"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.036321Z"
+    },
+    {
+      "memory_id": "M-loki-14bb3f5e19",
+      "agent": "loki",
+      "lesson": "An estimate of the metric \"Net value at risk\" (USD M) computed with trade_calc from analyst_note, trade_note evidence (tier 1, 3) was established; this metric definition held up.",
+      "context": "case case-20261025-223333-e776a1 run 1: L1-1 established - While partial and insufficient to fully close the gap, official trade notes (ORV-0027) and analyst reports confirm that increased volumes from Vanir beginning in November 2026 provided a mitigation buffer for Midgard's wheat supply.",
+      "case_scope": null,
+      "confidence": 0.55,
+      "created_at": "2026-10-25T22:36:34.032892Z",
+      "kind": "established_estimate",
+      "stages": [
+        "brief"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.032892Z"
+    },
+    {
+      "memory_id": "M-loki-773fa80751",
+      "agent": "loki",
+      "lesson": "I conceded a claim (citing shipping_update, trade_note) after the opponent showed counter-evidence from trade_note: \"Loki provides no net import data or quantitative evidence showing <place> wheat shipments fully offset or substantially reduced <place>'s di...\". Before making this kind of claim, look for that evidence myself and state the limitation.",
+      "context": "case case-20261025-204050-ac35da run 1: L1-3 conceded - Loki conceded (C-A1-T1) that while alternative Vanir wheat shipments existed, they were smaller than the lost Orvan sea trade and insufficient to eliminate Tolan's exposure gap.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T20:46:23.595051Z",
+      "kind": "conceded_after_attack",
+      "stages": [
+        "brief",
+        "cross_exam",
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T20:46:23.595051Z"
+    },
+    {
+      "memory_id": "M-loki-3de412ab03",
+      "agent": "loki",
+      "lesson": "I conceded a claim (citing trade_note) after the opponent showed counter-evidence from trade_note: \"Loki provides no evidence that delayed delivery terms offered structural buffering rather than merely postponing the onset of a major import...\". Before making this kind of claim, look for that evidence myself and state the limitation.",
+      "context": "case case-20261025-204050-ac35da run 1: L1-2 conceded - Loki conceded (C-A1-T3) that delayed delivery terms provided only temporary buffering in October 2026, and that Midgard maize imports contracted sharply in November and December 2026.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T20:46:23.591052Z",
+      "kind": "conceded_after_attack",
+      "stages": [
+        "brief",
+        "cross_exam",
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T20:46:23.591052Z"
+    }
+  ],
+  "odin": [
+    {
+      "memory_id": "M-odin-f393217281",
+      "agent": "odin",
+      "lesson": "A send-back found no new evidence before the as-of date. When the missing data probably does not exist in the evidence, report it as a gap in the briefing instead of relying on another run.",
+      "context": "case case-20261025-223333-e776a1 run 2: {'new_evidence': 0}",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T21:40:02.540741Z",
+      "kind": "sendback_no_new_evidence",
+      "stages": [
+        "ruling"
+      ],
+      "times_seen": 2,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 2,
+      "updated_at": "2026-10-25T22:36:51.759614Z"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+DOC_ID: CAN-0014
+EVENT_ID: E8
+TITLE: Solvar Port dock workers vote on pay
+SOURCE_NAME: Harbour Review
+SOURCE_TYPE: news
+RELIABILITY: 2
+PUB_DATE: 2027-03-29
+PUB_TIME: 15:20
+COUNTRY: Solvar
+SECTOR: LNG
+LANGUAGE: en
+---
+Solvar Port dock workers vote on pay
+
+[P1] Dock workers at Solvar Port will vote next week on a pay offer. Union leaders said LNG loading would not be affected by the vote.
+
+[P2] The port handles general cargo and some LNG bunkering.

@@ -1,0 +1,28 @@
+DOC_ID: CAN-0017
+EVENT_ID: E7
+TITLE: Trade table: Solvar to Midgard, LNG
+SOURCE_NAME: Realm Trade Ministry
+SOURCE_TYPE: trade_table
+RELIABILITY: 1
+PUB_DATE: 2027-04-28
+PUB_TIME: 12:00
+COUNTRY: Midgard
+SECTOR: LNG
+LANGUAGE: en
+---
+TABLE_ID: TT-E7-01
+COUNTRY_PAIR: Solvar -> Midgard
+SECTOR: LNG
+UNIT: USD M; tonnes
+PERIOD: 2026-01..2026-04; 2027-01..2027-04
+EVENT_ID: E7
+
+ROW  PERIOD   VALUE_USD_M  VOLUME_TONNES
+1    2026-01  96.0         174,500
+2    2026-02  92.5         168,200
+3    2026-03  98.4         178,900
+4    2026-04  95.1         172,900
+5    2027-01  101.2        180,700
+6    2027-02  99.8         178,200
+7    2027-03  41.3         73,800
+8    2027-04  52.6         93,900

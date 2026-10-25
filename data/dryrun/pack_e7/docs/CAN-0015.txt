@@ -1,0 +1,17 @@
+DOC_ID: CAN-0015
+EVENT_ID: E7
+TITLE: Ketra power utility asks factories to cut use
+SOURCE_NAME: Asgard Herald
+SOURCE_TYPE: news
+RELIABILITY: 3
+PUB_DATE: 2027-04-02
+PUB_TIME: 17:00
+COUNTRY: Ketra
+SECTOR: LNG
+LANGUAGE: en
+---
+Ketra power utility asks factories to cut use
+
+[P1] Ketra's power utility asked large factories, including Nexor Chips, to cut electricity use by a tenth during peak hours.
+
+[P2] The utility said the request was a precaution while LNG deliveries were delayed – no blackouts were planned.

@@ -1,0 +1,17 @@
+DOC_ID: CAN-0008
+EVENT_ID: E7
+TITLE: Correction: Ymir Canal reopening
+SOURCE_NAME: Raven Wire
+SOURCE_TYPE: correction
+RELIABILITY: 2
+PUB_DATE: 2027-03-10
+PUB_TIME: 11:00
+COUNTRY: Ymir
+SECTOR: LNG
+LANGUAGE: en
+---
+Correction: Ymir Canal reopening
+
+[P1] On 8 March we reported that the Ymir Canal could reopen within a week. That was wrong.
+
+[P2] The Ymir Canal Authority says repairs will take at least five weeks. We apologise for the error.

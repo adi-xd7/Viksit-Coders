@@ -144,30 +144,6 @@
   ],
   "defenses": [
     {
-      "defense_id": "D-A1-T2",
-      "run_number": 1,
-      "defender": "loki",
-      "attack_id": "A1-T2",
-      "claim_id": "L1-1",
-      "argument": "New evidence confirms that Vanir wheat shipments to Midgard increased in volume in late 2026 via short-term contracts, actively filling part of the import gap alongside rail routes and providing reliable substitute supply.",
-      "new_evidence": [
-        {
-          "doc_id": "ORV-0022",
-          "paragraph_ref": "P5",
-          "row_id": null,
-          "pub_date": "2027-01-12",
-          "quote": "Orvan's share of Midgard's grain imports has fallen, while Vanir and rail deliveries have taken part of the gap."
-        },
-        {
-          "doc_id": "ORV-0027",
-          "paragraph_ref": "P14",
-          "row_id": null,
-          "pub_date": "2027-01-22",
-          "quote": "Vanir wheat reached Midgard in larger volumes from November, mostly on short-term contracts."
-        }
-      ]
-    },
-    {
       "defense_id": "D-A1-L1",
       "run_number": 1,
       "defender": "thor",
@@ -215,6 +191,30 @@
           "row_id": null,
           "pub_date": "2027-01-20",
           "quote": "Tolan buyers replaced part of the lost volume with wheat from Vanir, but the replacement was smaller than the gap."
+        }
+      ]
+    },
+    {
+      "defense_id": "D-A1-T2",
+      "run_number": 1,
+      "defender": "loki",
+      "attack_id": "A1-T2",
+      "claim_id": "L1-1",
+      "argument": "New evidence confirms that Vanir wheat shipments to Midgard increased in volume in late 2026 via short-term contracts, actively filling part of the import gap alongside rail routes and providing reliable substitute supply.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Orvan's share of Midgard's grain imports has fallen, while Vanir and rail deliveries have taken part of the gap."
+        },
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-22",
+          "quote": "Vanir wheat reached Midgard in larger volumes from November, mostly on short-term contracts."
         }
       ]
     }

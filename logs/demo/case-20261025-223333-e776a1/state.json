@@ -1,0 +1,63 @@
+{
+  "case_id": "case-20261025-223333-e776a1",
+  "question": "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.",
+  "as_of": "2027-01-25",
+  "stage": "DONE",
+  "history": [
+    "HEIMDALL",
+    "THOR_LOKI",
+    "CROSS_EXAMINATION",
+    "ODIN",
+    "HEIMDALL_RESEARCH",
+    "BRIEFING",
+    "DONE"
+  ],
+  "run_number": 2,
+  "runs_completed": 1,
+  "max_runs": 2,
+  "stop_after": null,
+  "briefing_status": "incomplete",
+  "notes": [
+    "run 2: Heimdall's targeted searches found no genuinely new relevant evidence (code check: no cited ref outside run 1-1 evidence and its duplicates); advocates and Odin were not re-run and the briefing (from the run 1 rulings) is labelled incomplete"
+  ],
+  "stop_reason": null,
+  "superseded": {},
+  "usage": {
+    "tokens": {
+      "heimdall": {
+        "input": 31257,
+        "output": 3923,
+        "calls": 4
+      },
+      "thor": {
+        "input": 64022,
+        "output": 5025,
+        "calls": 4
+      },
+      "loki": {
+        "input": 71821,
+        "output": 5315,
+        "calls": 4
+      },
+      "odin": {
+        "input": 8546,
+        "output": 7543,
+        "calls": 1
+      }
+    },
+    "tool_calls": {
+      "heimdall": 16,
+      "thor": 15,
+      "loki": 17
+    },
+    "evidence_refs": 154,
+    "runs": 1,
+    "llm_calls": {
+      "used": 14,
+      "limit": 30,
+      "cached": 0
+    }
+  },
+  "attempt": 1,
+  "paused_until": null
+}

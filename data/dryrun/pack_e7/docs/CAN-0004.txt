@@ -1,0 +1,17 @@
+DOC_ID: CAN-0004
+EVENT_ID: E7
+TITLE: canal shut for a YEAR, Ketra LNG terminal closed
+SOURCE_NAME: Saga Chat
+SOURCE_TYPE: social_post
+RELIABILITY: 4
+PUB_DATE: 2027-03-06
+PUB_TIME: 22:10
+COUNTRY: Ketra
+SECTOR: LNG
+LANGUAGE: en
+---
+canal shut for a YEAR, Ketra LNG terminal closed
+
+[P1] Hearing the Ymir canal is shut for a whole year and the Ketra LNG terminal has closed its gates. Lights out soon!!
+
+[P2] Share before they delete this.

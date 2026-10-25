@@ -1,0 +1,17 @@
+DOC_ID: CAN-0007
+EVENT_ID: E7
+TITLE: Ymir Canal expected to reopen within a week
+SOURCE_NAME: Raven Wire
+SOURCE_TYPE: news
+RELIABILITY: 2
+PUB_DATE: 2027-03-08
+PUB_TIME: 09:15
+COUNTRY: Ymir
+SECTOR: LNG
+LANGUAGE: en
+---
+Ymir Canal expected to reopen within a week
+
+[P1] Shipping agents in Ymir said the canal could reopen within a week as repairs go faster than planned.
+
+[P2] The Ymir Canal Authority did not comment.

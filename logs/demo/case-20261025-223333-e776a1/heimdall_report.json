@@ -1,0 +1,88 @@
+{
+  "report": {
+    "countries": [
+      "Midgard",
+      "Tolan"
+    ],
+    "sectors": [
+      "wheat",
+      "maize"
+    ],
+    "related_countries": [
+      "Orvan",
+      "Vanir",
+      "Asgard"
+    ],
+    "commodities": [
+      "wheat",
+      "maize"
+    ],
+    "routes": [
+      "Orvan to Midgard",
+      "Orvan to Tolan",
+      "Vanir to Midgard",
+      "Vanir to Tolan",
+      "Ravik (rail)"
+    ],
+    "candidate_event_ids": [
+      "e5"
+    ],
+    "event_status": "established",
+    "status_reasons": "The Corridor Agreement, which facilitated grain exports from Orvan, expired on 10 September 2026 without a renewal, as confirmed by official notices from the Realm Trade Ministry and news reports. An initial report of a renewal was corrected and retracted by the source.",
+    "event_citations": [
+      {
+        "doc_id": "ORV-0016",
+        "paragraph_ref": "P1",
+        "row_id": "",
+        "quote": "The Corridor Agreement expired on 10 September 2026."
+      },
+      {
+        "doc_id": "ORV-0013",
+        "paragraph_ref": "P2",
+        "row_id": "",
+        "quote": "The agreement expired on 10 September without a renewal."
+      },
+      {
+        "doc_id": "ORV-0002",
+        "paragraph_ref": "P2",
+        "row_id": "",
+        "quote": "The agreement was signed on 10 September 2025 and ran for one year."
+      },
+      {
+        "doc_id": "ORV-0006",
+        "paragraph_ref": "P3",
+        "row_id": "",
+        "quote": "It expired on 10 September without a replacement."
+      }
+    ],
+    "corrections": [
+      {
+        "doc_id": "ORV-0013",
+        "relation": "correction",
+        "about_doc_id": "ORV-0043",
+        "note": "Raven Wire retracted its report that the corridor agreement was renewed, stating the agreement expired without a signed replacement."
+      }
+    ],
+    "key_doc_ids": [
+      "ORV-0009",
+      "ORV-0030",
+      "ORV-0046",
+      "ORV-0016",
+      "ORV-0013",
+      "ORV-0006",
+      "ORV-0024"
+    ],
+    "trade_table_ids": [
+      "ORV-0009",
+      "ORV-0030",
+      "ORV-0046"
+    ],
+    "missing_data": [
+      "Monthly trade volume and value for Orvan to Tolan maize imports (2025-2026).",
+      "Quantitative monthly data for alternative Vanir exports and Ravik rail loadings to Midgard and Tolan.",
+      "As-of date grain stock levels for Midgard and Tolan to determine economic buffer."
+    ],
+    "injection_reports": []
+  },
+  "dropped": []
+}

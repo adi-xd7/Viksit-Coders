@@ -18,46 +18,36 @@
   "stop_after": null,
   "briefing_status": "incomplete",
   "notes": [
-    "heimdall failed during send-back research (run 2): rate limited after 7 attempt(s): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/d",
-    "Heimdall's run 2 research failed; the briefing uses the run 1 rulings and is incomplete"
+    "run 2: Heimdall's targeted searches found no genuinely new relevant evidence (code check: no cited ref outside run 1-1 evidence and its duplicates); advocates and Odin were not re-run and the briefing (from the run 1 rulings) is labelled incomplete"
   ],
   "stop_reason": null,
   "superseded": {},
   "usage": {
     "tokens": {
-      "heimdall": {
-        "input": 12781,
-        "output": 1524,
-        "calls": 2
-      },
-      "thor": {
-        "input": 57248,
-        "output": 10031,
-        "calls": 4
-      },
-      "loki": {
-        "input": 59382,
-        "output": 6097,
-        "calls": 4
-      },
       "odin": {
         "input": 7093,
-        "output": 11898,
+        "output": 4591,
         "calls": 1
+      },
+      "heimdall": {
+        "input": 10298,
+        "output": 1122,
+        "calls": 2
       }
     },
     "tool_calls": {
-      "heimdall": 10,
+      "heimdall": 12,
       "thor": 13,
       "loki": 17
     },
     "evidence_refs": 120,
     "runs": 1,
     "llm_calls": {
-      "used": 11,
+      "used": 4,
       "limit": 30,
-      "cached": 0
+      "cached": 10
     }
   },
-  "attempt": 1
+  "attempt": 2,
+  "paused_until": null
 }
