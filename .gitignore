@@ -43,3 +43,11 @@ backend/app/data/
 
 # Local reference materials (untracked challenge files)
 03_Ragnarok Trial of the Nine Realms/
+
+# Node & Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# UI UX Pro Max CLI local files
+.claude/

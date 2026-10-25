@@ -88,3 +88,21 @@ The outlet credibility tier model in `ATL-0012` is inspired by standard source r
 *This dataset is for educational and competition use only.*
 
 ---
+
+## Running the Application
+
+### 1. Start the FastAPI Backend
+From the workspace root:
+```bash
+uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+API Documentation: `http://127.0.0.1:8000/docs`
+
+### 2. Start the Medieval Frontend Dashboard
+In a separate terminal:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Dashboard: `http://localhost:5173`
