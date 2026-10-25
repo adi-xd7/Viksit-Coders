@@ -1,4 +1,4 @@
-"""Core data contracts shared by every module (CLAUDE.md section 7).
+"""Core data contracts shared by every module.
 
 Rules encoded here:
 - Verdicts are exactly established | contested | conceded | rejected.
