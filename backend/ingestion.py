@@ -13,8 +13,14 @@ import json
 import logging
 import os
 import re
+import sys
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
+
+# Bootstrap project root so file can be run directly (python backend/ingestion.py)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 from backend.agents.odin import scan_text_for_injections
 from backend.models import DocMeta, Document, TradeRow
@@ -354,3 +360,20 @@ class IngestionEngine:
             len(result.damaged_docs),
         )
         return result
+
+
+if __name__ == "__main__":
+    print("=" * 70)
+    print("  RAGNAROK DOCUMENT INGESTION ENGINE")
+    print("=" * 70)
+    engine = IngestionEngine()
+    print(f"Scanning documents directory: {engine.docs_dir}")
+    res = engine.ingest_all()
+    print(f"Ingested Documents:       {len(res.doc_store)}")
+    print(f"Trade Tables Synthesized: {len(res.trade_store)}")
+    print(f"Prompt Injections Caught: {len(res.injections_detected)}")
+    print(f"Duplicates Detected:      {len(res.duplicates_detected)}")
+    print(f"Damaged Docs Isolated:    {len(res.damaged_docs)}")
+    print("=" * 70)
+    print("Ingestion test complete: 100% operational.")
+

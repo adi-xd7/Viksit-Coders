@@ -69,6 +69,10 @@ async def main():
 
     print_banner(f"RAGNAROK: TRIAL OF THE NINE REALMS\n  SUPPLY CHAIN DISRUPTION IMPACT ANALYZER — ODIN COURTROOM\n  [{mode_label}]")
 
+    if not is_live:
+        from backend.llm import deterministic_offline_adjudication
+        default_llm_client.set_mock_handler(deterministic_offline_adjudication)
+
     # Step 1: Scenario Loading
     print_step(1, "Loading Synthetic Disruption Scenario & Evidence Corpus")
     doc_store, trade_store = load_adversarial_fixtures()

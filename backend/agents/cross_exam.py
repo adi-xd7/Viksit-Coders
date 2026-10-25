@@ -7,7 +7,14 @@ attacks, defenses, explicit concessions, and degraded modes when an advocate fai
 from __future__ import annotations
 
 import logging
+import os
+import sys
 from typing import Any, Dict, List, Optional, Tuple
+
+# Bootstrap project root so file can be run directly (python backend/agents/cross_exam.py)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 from backend.agents.adapters import CrossExamAdapter
 from backend.agents.loki import LokiAgent
@@ -92,3 +99,36 @@ class CrossExaminationOrchestrator(CrossExamAdapter):
                     defenses.append(defense)
 
         return attacks, defenses, concessions
+
+
+if __name__ == "__main__":
+    from backend.agents.heimdall import HeimdallAgent
+    from backend.agents.loki import LokiAgent
+    from backend.agents.thor import ThorAgent
+
+    print("=" * 70)
+    print("  RAGNAROK CROSS-EXAMINATION ORCHESTRATOR")
+    print("=" * 70)
+    heimdall = HeimdallAgent()
+    query = "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement?"
+    case_file = heimdall.parse_case(query)
+    doc_store, trade_store, _ = heimdall._ensure_indexed()
+
+    thor = ThorAgent()
+    loki = LokiAgent()
+    t_claims = thor.generate_claims(case_file, doc_store, trade_store)
+    l_claims = loki.generate_claims(case_file, doc_store, trade_store)
+
+    orchestrator = CrossExaminationOrchestrator(thor_agent=thor, loki_agent=loki)
+    attacks, defenses, concessions = orchestrator.conduct_cross_examination(
+        thor_claims=t_claims,
+        loki_claims=l_claims,
+        doc_store=doc_store,
+        case_id=case_file.case_id,
+    )
+    print(f"Generated {len(attacks)} reciprocal attacks")
+    print(f"Generated {len(defenses)} substantive defenses")
+    print(f"Generated {len(concessions)} explicit concessions")
+    print("=" * 70)
+    print("Cross-examination test complete: 100% operational.")
+

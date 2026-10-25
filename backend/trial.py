@@ -14,6 +14,11 @@ import os
 import sys
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+# Bootstrap project root so file can be run directly (python backend/trial.py)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from langgraph.graph import END, START, StateGraph
 
 from backend.models import (
@@ -685,6 +690,10 @@ def main():
     print(f"Question: {args.question}")
     print(f"As-of Date: {args.as_of}")
     print("----------------------------------------------------------------------")
+
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        from backend.llm import default_llm_client, deterministic_offline_adjudication
+        default_llm_client.set_mock_handler(deterministic_offline_adjudication)
 
     state = asyncio.run(run_trial(question=args.question, as_of=args.as_of, max_runs=args.max_runs))
 

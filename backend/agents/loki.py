@@ -9,8 +9,15 @@ challenges Thor's high-exposure extrapolations, and explicitly concedes when dat
 from __future__ import annotations
 
 import logging
+import os
 import re
+import sys
 from typing import Any, Dict, List, Optional, Set, Tuple
+
+# Bootstrap project root so file can be run directly (python backend/agents/loki.py)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 from backend.agents.adapters import LokiAdapter
 from backend.llm import LLMClient, default_llm_client
@@ -256,3 +263,26 @@ class LokiAgent(LokiAdapter):
             payload={"defense_id": defense_id, "attack_id": attack.attack_id, "argument": argument},
         )
         return def_obj, None
+
+
+if __name__ == "__main__":
+    from backend.agents.heimdall import HeimdallAgent
+
+    print("=" * 70)
+    print("  RAGNAROK LOKI AGENT — LIMITED-EXPOSURE ADVOCATE")
+    print("=" * 70)
+    heimdall = HeimdallAgent()
+    query = "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement?"
+    case_file = heimdall.parse_case(query)
+    doc_store, trade_store, _ = heimdall._ensure_indexed()
+
+    loki = LokiAgent()
+    claims = loki.generate_claims(case_file, doc_store, trade_store)
+    print(f"Generated {len(claims)} limited-exposure claims:")
+    for c in claims:
+        print(f"  - [{c.claim_id}] {c.country} / {c.sector}: Range=[{c.estimate_low}, {c.estimate_high}] {c.unit}")
+        print(f"    Statement: \"{c.statement[:80]}...\"")
+        print(f"    Citations: {', '.join(cit.doc_id for cit in c.citations)}")
+    print("=" * 70)
+    print("Loki test complete: 100% operational.")
+

@@ -4,7 +4,14 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 from typing import Optional
+
+# Bootstrap project root so file can be run directly (python backend/app.py)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -113,9 +120,9 @@ app = create_app()
 
 
 def main():
-    """Runs the FastAPI server locally on port 8000: python -m backend.app"""
+    """Runs the FastAPI server locally on port 8000: python -m backend.app or python backend/app.py"""
     import uvicorn
-    uvicorn.run("backend.app:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("backend.app:app", host="0.0.0.0", port=8000, reload=True, app_dir=PROJECT_ROOT)
 
 
 if __name__ == "__main__":

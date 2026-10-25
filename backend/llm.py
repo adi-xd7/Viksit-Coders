@@ -46,6 +46,42 @@ def wrap_document_text(doc_id: str, tier: int, date: str, content: str) -> str:
     return f'<document id="{doc_id}" tier="{tier}" date="{date}">\n{safe_content}\n</document>'
 
 
+def deterministic_offline_adjudication(system_prompt: str, user_prompt: str) -> str:
+    """Provides a deterministic, evidence-grounded judicial response when running offline without an API key."""
+    claim_ids = re.findall(r"Claim ID:\s*([\w\-]+)", user_prompt)
+    rulings = []
+    for cid in claim_ids:
+        block_match = re.search(rf"Claim ID:\s*{re.escape(cid)}.*?(?=Claim ID:|\Z)", user_prompt, re.DOTALL)
+        block = block_match.group(0) if block_match else ""
+
+        has_citations = "Admissible Citations: None" not in block and "Admissible Citations:" in block
+        has_concession = "concede" in block.lower()
+
+        if has_concession:
+            rulings.append({
+                "claim_id": cid,
+                "verdict": "conceded",
+                "basis": "inference",
+                "rationale": "Claim explicitly conceded during cross-examination.",
+            })
+        elif has_citations:
+            rulings.append({
+                "claim_id": cid,
+                "verdict": "established",
+                "basis": "sourced_fact",
+                "rationale": f"Admissible records and official trade data substantiate {cid}.",
+            })
+        else:
+            rulings.append({
+                "claim_id": cid,
+                "verdict": "contested",
+                "basis": "inference",
+                "rationale": f"Claim lacks direct corroboration in admissible primary sources.",
+            })
+
+    return json.dumps({"rulings": rulings}, indent=2)
+
+
 class LLMClient:
     """LLM Client supporting Anthropic and pluggable mock callers for testing."""
 
@@ -118,8 +154,19 @@ class LLMClient:
                 )
             return response_text
 
-        # Production Anthropic API call
+        # Production Anthropic API call or deterministic offline evaluator
         if not self.api_key:
+            if os.getenv("OFFLINE_MOCK_LLM", "").lower() in ("1", "true"):
+                logger.info("ANTHROPIC_API_KEY not configured. Using deterministic offline judicial evaluator.")
+                response_text = deterministic_offline_adjudication(system_prompt, user_prompt)
+                mock_tokens = (len(system_prompt) + len(user_prompt) + len(response_text)) // 4
+                self.total_tokens_used += mock_tokens
+                if self.total_tokens_used > MAX_TOKENS_PER_CASE:
+                    raise BudgetExceededError(
+                        f"Case token budget exceeded during call: {self.total_tokens_used} > {MAX_TOKENS_PER_CASE}"
+                    )
+                return response_text
+
             raise ValueError(
                 "ANTHROPIC_API_KEY not configured. Set environment variable or use LLMClient.set_mock_handler() for tests."
             )

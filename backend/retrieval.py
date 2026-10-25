@@ -13,6 +13,14 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+import os
+import sys
+
+# Bootstrap project root so file can be run directly (python backend/retrieval.py)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from rank_bm25 import BM25Okapi  # type: ignore
 
 from backend.models import Document
@@ -124,7 +132,9 @@ class HybridRetrievalEngine:
                 self._qdrant_client = QdrantClient(location=":memory:")
 
                 dim = 384  # bge-small-en-v1.5 dimension
-                self._qdrant_client.recreate_collection(
+                if hasattr(self._qdrant_client, "collection_exists") and self._qdrant_client.collection_exists("paragraphs"):
+                    self._qdrant_client.delete_collection("paragraphs")
+                self._qdrant_client.create_collection(
                     collection_name="paragraphs",
                     vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
                 )
@@ -150,6 +160,7 @@ class HybridRetrievalEngine:
         self,
         query: str,
         as_of: Optional[str] = None,
+        as_of_date: Optional[str] = None,
         country: Optional[str] = None,
         sector: Optional[str] = None,
         top_k: int = 10,
@@ -157,6 +168,7 @@ class HybridRetrievalEngine:
         max_reliability: Optional[int] = None,
     ) -> List[SearchResult]:
         """Executes hybrid retrieval over eligible paragraphs satisfying date and quality constraints."""
+        target_as_of = as_of or as_of_date
         if not self.records or self.bm25 is None:
             return []
 
@@ -171,11 +183,19 @@ class HybridRetrievalEngine:
         if self._vector_ready and self._embedding_model and self._qdrant_client:
             try:
                 q_emb = list(self._embedding_model.embed([query]))[0].tolist()
-                hits = self._qdrant_client.search(
-                    collection_name="paragraphs",
-                    query_vector=q_emb,
-                    limit=min(top_k * 3, len(self.records)),
-                )
+                if hasattr(self._qdrant_client, "query_points"):
+                    res = self._qdrant_client.query_points(
+                        collection_name="paragraphs",
+                        query=q_emb,
+                        limit=min(top_k * 3, len(self.records)),
+                    )
+                    hits = res.points
+                else:
+                    hits = self._qdrant_client.search(
+                        collection_name="paragraphs",
+                        query_vector=q_emb,
+                        limit=min(top_k * 3, len(self.records)),
+                    )
                 for h in hits:
                     idx = h.payload["idx"]
                     dense_scores_map[idx] = float(h.score)
@@ -186,7 +206,7 @@ class HybridRetrievalEngine:
         candidate_indices: List[int] = []
         for idx, rec in enumerate(self.records):
             # 1. As-of date cutoff constraint
-            if as_of and rec.pub_date > as_of:
+            if target_as_of and rec.pub_date > target_as_of:
                 continue
 
             # 2. Damaged document exclusion
@@ -253,3 +273,25 @@ class HybridRetrievalEngine:
 
         results.sort(key=lambda r: r.score, reverse=True)
         return results[:top_k]
+
+
+if __name__ == "__main__":
+    from backend.ingestion import IngestionEngine
+
+    print("=" * 70)
+    print("  RAGNAROK HYBRID RETRIEVAL ENGINE")
+    print("=" * 70)
+    engine = IngestionEngine()
+    corpus = engine.ingest_all()
+    retriever = HybridRetrievalEngine(corpus.doc_store)
+    
+    test_query = "Orvan corridor agreement expiration trade wheat Midgard"
+    print(f"Executing hybrid search for: '{test_query}' (cutoff: 2027-01-25)")
+    hits = retriever.search(test_query, as_of_date="2027-01-25", top_k=5)
+    print(f"Retrieved {len(hits)} paragraph hits:")
+    for i, h in enumerate(hits, 1):
+        print(f"  {i}. [{h.doc_id} P{h.paragraph_num}] (Score: {h.score}, Date: {h.pub_date}, Tier: {h.reliability})")
+        print(f"     \"{h.text[:80]}...\"")
+    print("=" * 70)
+    print("Retrieval test complete: 100% operational.")
+

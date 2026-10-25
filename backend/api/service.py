@@ -18,7 +18,7 @@ from backend.models import (
     LogEventType,
     Ruling,
 )
-from backend.llm import LLMClient
+from backend.llm import LLMClient, default_llm_client
 from backend.trial import TrialGraphBuilder, run_trial
 
 logger = logging.getLogger("service")
@@ -183,11 +183,18 @@ class TrialService:
             )
 
             # Build graph using custom builder or standard factory
+            llm = self.llm_client or default_llm_client
+            if not llm.api_key and llm._mock_handler is None:
+                import os
+                if not os.getenv("ANTHROPIC_API_KEY"):
+                    from backend.llm import deterministic_offline_adjudication
+                    llm.set_mock_handler(deterministic_offline_adjudication)
+
             if self.builder_factory:
                 builder = self.builder_factory()
             else:
                 builder = TrialGraphBuilder(
-                    llm_client=self.llm_client,
+                    llm_client=llm,
                     logbook=self.logbook,
                     output_dir=self.case_store.output_dir,
                 )

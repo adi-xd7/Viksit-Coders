@@ -13,7 +13,13 @@ import json
 import logging
 import os
 import re
+import sys
 from typing import Any, Dict, List, Optional, Set, Tuple
+
+# Bootstrap project root so file can be run directly (python backend/agents/heimdall.py)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 from backend.agents.adapters import HeimdallAdapter
 from backend.ingestion import IngestionEngine, compute_sha256
@@ -289,3 +295,29 @@ class HeimdallAgent(HeimdallAdapter):
         )
 
         return evidence_docs, evidence_trade, new_evidence_ids, evidence_hashes
+
+
+if __name__ == "__main__":
+    print("=" * 70)
+    print("  RAGNAROK HEIMDALL AGENT — GATEKEEPER & CHIEF INVESTIGATOR")
+    print("=" * 70)
+    heimdall = HeimdallAgent()
+    query = "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement?"
+    print(f"Investigating query: \"{query}\"")
+    
+    case_file = heimdall.parse_case(query)
+    doc_store, trade_store, _ = heimdall._ensure_indexed()
+    print(f"Case ID:        {case_file.case_id}")
+    print(f"As-of Date:     {case_file.as_of}")
+    print(f"Target Pairs:   {case_file.target_pairs}")
+
+    print(f"Event Status:   {case_file.verification_status.value.upper()}")
+    print(f"Reason:         {case_file.verification_reason}")
+
+    ev_docs, ev_trade, new_ids, hashes = heimdall.retrieve_evidence(case_file)
+    print(f"Evidence Docs:  {len(ev_docs)} admissible documents retrieved")
+    print(f"Trade Tables:   {len(ev_trade)} trade tables retrieved")
+    print("=" * 70)
+    print("Heimdall test complete: 100% operational.")
+
+

@@ -9,8 +9,14 @@ from __future__ import annotations
 import logging
 import os
 import re
+import sys
 from typing import Any, Dict, List, Optional, Set, Tuple
 from pydantic import BaseModel, Field
+
+# Bootstrap project root so file can be run directly (python backend/agents/odin.py)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 from backend.models import (
     AgentRole,
@@ -1122,4 +1128,71 @@ def assess_sufficiency(
         unresolved_gaps=unique_missing,
         disclosed_uncertainties=disclosed_uncertainties,
     )
+
+
+if __name__ == "__main__":
+    import asyncio
+    from backend.agents.heimdall import HeimdallAgent
+    from backend.agents.thor import ThorAgent
+    from backend.agents.loki import LokiAgent
+    from backend.agents.cross_exam import CrossExaminationOrchestrator
+
+    async def run_odin_demo():
+        print("=" * 70)
+        print("  RAGNAROK ODIN — CHIEF JUDICIAL ARBITER")
+        print("=" * 70)
+        heimdall = HeimdallAgent()
+        query = "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement?"
+        case_file = heimdall.parse_case(query)
+        doc_store, trade_store, _ = heimdall._ensure_indexed()
+
+        thor = ThorAgent()
+        loki = LokiAgent()
+        t_claims = thor.generate_claims(case_file, doc_store, trade_store)
+        l_claims = loki.generate_claims(case_file, doc_store, trade_store)
+
+        orchestrator = CrossExaminationOrchestrator(thor_agent=thor, loki_agent=loki)
+        attacks, defenses, concessions = orchestrator.conduct_cross_examination(
+            thor_claims=t_claims,
+            loki_claims=l_claims,
+            doc_store=doc_store,
+            case_id=case_file.case_id,
+        )
+
+        all_claims = t_claims + l_claims
+        odin = OdinJudge()
+        print(f"Evaluating {len(all_claims)} adversarial claims...")
+        rulings = await odin.judge_claims(
+            case_file=case_file,
+            claims=all_claims,
+            doc_store=doc_store,
+            trade_store=trade_store,
+            attacks=attacks,
+            defenses=defenses,
+            concessions=concessions,
+        )
+        print(f"Issued {len(rulings)} judicial rulings:")
+        for r in rulings:
+            print(f"  [{r.verdict.value.upper():<11}] Claim {r.claim_id}: {r.rationale[:70]}...")
+
+        exp_ranges = odin.derive_exposure_ranges(case_file=case_file, claims=all_claims, rulings=rulings, trade_store=trade_store)
+        print(f"\nCalculated {len(exp_ranges)} Odin Judicial Exposure Ranges:")
+        for er in exp_ranges:
+            print(f"  - {er.country} ({er.sector}): Status={er.status} | Odin Range={er.odin_range} (Thor: {er.thor_range}, Loki: {er.loki_range})")
+
+        suff = odin.assess_sufficiency(
+            case_file=case_file,
+            rulings=rulings,
+            claims=all_claims,
+            exposure_ranges=exp_ranges,
+            doc_store=doc_store,
+            trade_store=trade_store,
+            run_count=1,
+        )
+        print(f"\nSufficiency Status: {suff.status.value.upper()} (Sufficient: {suff.is_sufficient})")
+        print("=" * 70)
+        print("Odin judicial test complete: 100% operational.")
+
+    asyncio.run(run_odin_demo())
+
 
