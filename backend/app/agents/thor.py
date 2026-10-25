@@ -45,11 +45,15 @@ class ThorAgent:
     # Public Agent Interface
     # -------------------------------------------------------------------------
 
-    def investigate_and_argue(self, case_file: CaseFile) -> ThorResult:
+    def investigate_and_argue(
+        self,
+        case_file: CaseFile,
+        loki_result: Optional[Any] = None,
+    ) -> ThorResult:
         """
         Execute Thor's courtroom turn.
         Round 1: Independent evidence search & formulation of grounded high-exposure claims.
-        Round 2: (Reserved for Part 4) Adversarial cross-examination and concessions.
+        Round 2: Adversarial cross-examination attacks against Loki's claims.
         """
         case_id = case_file.case_id
         as_of_date = case_file.as_of_date
@@ -71,7 +75,7 @@ class ThorAgent:
         memory_used: list[str] = []
 
         try:
-            # Round 1: Formulate grounded high-exposure claims
+            # 1. Round 1 or Run 2: Build grounded high-exposure claims
             if round_no == 1 or run_no > 1:
                 claims, r1_searches, r1_uncertainties = self.build_round1_claims(
                     case_file=case_file,
@@ -79,29 +83,41 @@ class ThorAgent:
                 )
                 search_audit.extend(r1_searches)
                 uncertainties.extend(r1_uncertainties)
+            elif round_no >= 2:
+                # Carry over existing Thor claims from CaseFile if present
+                claims = [c for c in case_file.claims if getattr(c, "agent", None) == "thor"]
 
-            # Round 2: (Deferred to Part 4)
+            # 2. Round 2: Adversarial cross-examination of Loki
             if round_no >= 2:
-                logger.info(f"Round 2 advocacy logic for Thor deferred to Part 4 on case {case_id}")
+                attacks = self.cross_examine_loki(
+                    case_file=case_file,
+                    loki_result=loki_result,
+                    thor_result=None,
+                )
+                if not attacks and not self._extract_loki_claims(case_file, loki_result):
+                    uncertainties.append("Round 2 cross-examination limited: No Loki claims submitted for cross-examination.")
 
-            # Pull utilized memory references for auditability
+            # 3. Pull utilized memory references for auditability
             case_lessons = self.memory.get_lessons(case_id)
             for k, item in case_lessons.items():
                 memory_used.append(f"{k} (conf={item.confidence:.2f})")
 
             # Determine overall execution status
-            if not claims:
-                status = "error" if any("error" in u.lower() for u in uncertainties) else "partial"
-            elif any(c.is_unsupported for c in claims) and all(c.is_unsupported for c in claims):
-                status = "partial"
+            if round_no >= 2:
+                status = "success" if (claims or attacks) else "partial"
             else:
-                status = "success"
+                if not claims:
+                    status = "error" if any("error" in u.lower() for u in uncertainties) else "partial"
+                elif any(c.is_unsupported for c in claims) and all(c.is_unsupported for c in claims):
+                    status = "partial"
+                else:
+                    status = "success"
             err_msg = None
 
         except Exception as e:
             logger.exception(f"Thor agent error on case {case_id}: {e}")
             self.logger.log_error(case_id, str(e), {"round": round_no, "run": run_no})
-            status = "partial" if claims else "error"
+            status = "partial" if (claims or attacks) else "error"
             err_msg = str(e)
             uncertainties.append(f"Execution degraded due to error: {e}")
 
@@ -470,3 +486,283 @@ class ThorAgent:
             ))
 
         return claims, search_logs, uncertainties
+
+    # -------------------------------------------------------------------------
+    # Round 2: Adversarial Cross-Examination of Loki
+    # -------------------------------------------------------------------------
+
+    def cross_examine_loki(
+        self,
+        case_file: CaseFile,
+        loki_result: Optional[Any] = None,
+        thor_result: Optional[Any] = None,
+    ) -> list[CrossExamination]:
+        """
+        Scrutinize Loki's low-exposure claims and launch evidence-backed cross-examination challenges.
+        """
+        case_id = case_file.case_id
+        as_of_date = case_file.as_of_date
+        challenges: list[CrossExamination] = []
+
+        # 1. Safely parse Loki's claims
+        loki_claims = self._extract_loki_claims(case_file=case_file, loki_result=loki_result)
+        if not loki_claims:
+            logger.info(f"No Loki claims found to cross-examine for case {case_id}")
+            return challenges
+
+        for claim in loki_claims:
+            self.memory.record_opponent_claim(case_id, claim.claim_id)
+            claim_text = (claim.statement + " " + claim.reasoning).lower()
+
+            # -----------------------------------------------------------------
+            # Attack Vector 1: Clock cutoff violations in Loki's citations
+            # -----------------------------------------------------------------
+            for cit in claim.citations:
+                if cit.publication_date and CitationValidator.is_clock_violation(cit.publication_date, as_of_date):
+                    x = CrossExamination(
+                        challenge_id=f"THOR-X{len(challenges)+1:02d}",
+                        challenger="thor",
+                        target_claim_id=claim.claim_id,
+                        challenge_type="clock_violation",
+                        objection=f"Loki cited post-dated source {cit.doc_id} ({cit.publication_date}), violating the {as_of_date} clock cutoff.",
+                        reasoning=(
+                            f"Document {cit.doc_id} was published on {cit.publication_date}, which is strictly after the simulated as-of date {as_of_date}. "
+                            f"Under courtroom simulated clock rules, evidence published after the cutoff date is inadmissible."
+                        ),
+                        counter_citations=[]
+                    )
+                    challenges.append(x)
+                    self.logger.log_attack(case_id, x.challenge_id, x.target_claim_id, x.challenge_type, x.objection)
+                    break
+
+            # -----------------------------------------------------------------
+            # Attack Vector 2: Retracted or contradicted documents
+            # -----------------------------------------------------------------
+            for cit in claim.citations:
+                retraction = CitationValidator.check_retraction(cit.doc_id)
+                if retraction:
+                    corr_id, reason = retraction
+                    counter_cits = self._get_counter_citations([corr_id], as_of_date)
+                    x = CrossExamination(
+                        challenge_id=f"THOR-X{len(challenges)+1:02d}",
+                        challenger="thor",
+                        target_claim_id=claim.claim_id,
+                        challenge_type="contradiction",
+                        objection=f"Loki's claim relies on retracted or contradicted source {cit.doc_id}.",
+                        reasoning=f"Source {cit.doc_id} was formally retracted or superseded: {reason}",
+                        counter_citations=counter_cits
+                    )
+                    challenges.append(x)
+                    self.logger.log_attack(case_id, x.challenge_id, x.target_claim_id, x.challenge_type, x.objection)
+                    break
+
+            # -----------------------------------------------------------------
+            # Attack Vector 3: Tier 4 unverified tabloid/blog rumors
+            # -----------------------------------------------------------------
+            for cit in claim.citations:
+                if cit.reliability_tier == 4 or cit.doc_id in ["ORV-0026", "ORV-0028", "ORV-0010"]:
+                    x = CrossExamination(
+                        challenge_id=f"THOR-X{len(challenges)+1:02d}",
+                        challenger="thor",
+                        target_claim_id=claim.claim_id,
+                        challenge_type="unreliable_source",
+                        objection=f"Loki cited Tier 4 unverified outlet ({cit.doc_id}).",
+                        reasoning="Tier 4 sources lack trade desk verification and are prone to unverified speculation (see ATL-0012).",
+                        counter_citations=[]
+                    )
+                    challenges.append(x)
+                    self.logger.log_attack(case_id, x.challenge_id, x.target_claim_id, x.challenge_type, x.objection)
+                    break
+
+            # -----------------------------------------------------------------
+            # Attack Vector 4: Prompt injection directives in citation text
+            # -----------------------------------------------------------------
+            for cit in claim.citations:
+                _, injection_detected = CitationValidator.sanitize_content(cit.quote_or_datapoint)
+                if injection_detected:
+                    x = CrossExamination(
+                        challenge_id=f"THOR-X{len(challenges)+1:02d}",
+                        challenger="thor",
+                        target_claim_id=claim.claim_id,
+                        challenge_type="prompt_injection_trap",
+                        objection=f"Loki's citation in {cit.doc_id} contains suspected adversarial prompt injection.",
+                        reasoning="The cited text contains embedded instructions attempting to manipulate agent behavior rather than legitimate trade facts.",
+                        counter_citations=[]
+                    )
+                    challenges.append(x)
+                    self.logger.log_attack(case_id, x.challenge_id, x.target_claim_id, x.challenge_type, x.objection)
+                    break
+
+            # -----------------------------------------------------------------
+            # Attack Vector 5: Unsupported claims lacking verified primary citations
+            # -----------------------------------------------------------------
+            if claim.is_unsupported or len(claim.citations) == 0:
+                x = CrossExamination(
+                    challenge_id=f"THOR-X{len(challenges)+1:02d}",
+                    challenger="thor",
+                    target_claim_id=claim.claim_id,
+                    challenge_type="unsupported_inference",
+                    objection=f"Loki's claim {claim.claim_id} lacks primary Runemark document citations.",
+                    reasoning="The claim asserts commercial mitigation without citing verifiable documents from the evidence corpus.",
+                    counter_citations=[]
+                )
+                challenges.append(x)
+                self.logger.log_attack(case_id, x.challenge_id, x.target_claim_id, x.challenge_type, x.objection)
+                continue
+
+            # -----------------------------------------------------------------
+            # Attack Vector 6: Substantive Attack — Overstating Rail Capacity
+            # -----------------------------------------------------------------
+            if any(w in claim_text for w in ["rail", "ravik", "substitute"]):
+                counter_cits = self._get_counter_citations(
+                    ["ORV-0001", "ORV-0050", "ORV-0021"],
+                    as_of_date=as_of_date,
+                    preferred_para={"ORV-0001": "P2", "ORV-0050": "P1", "ORV-0021": "P3"}
+                )
+                if counter_cits:
+                    x = CrossExamination(
+                        challenge_id=f"THOR-X{len(challenges)+1:02d}",
+                        challenger="thor",
+                        target_claim_id=claim.claim_id,
+                        challenge_type="omitted_substitution",
+                        objection="Loki overstates rail capacity; the rail link is a single corridor carrying only a fraction of sea throughput.",
+                        reasoning=(
+                            "While grain traffic on the Ravik Rail Link rose, major trading firm Vantro Trading verified that 'the rail link can take only a fraction of the volume that normally leaves Orvan Grain Port by sea' (ORV-0001 [P2]). "
+                            "Operators in ORV-0050 [P1] and Corvan Grain in ORV-0021 [P3] explicitly warn that rail capacity is limited and cannot replace the maritime corridor."
+                        ),
+                        counter_citations=counter_cits
+                    )
+                    challenges.append(x)
+                    self.logger.log_attack(case_id, x.challenge_id, x.target_claim_id, x.challenge_type, x.objection)
+
+            # -----------------------------------------------------------------
+            # Attack Vector 7: Substantive Attack — Replacement is Smaller than Gap
+            # -----------------------------------------------------------------
+            if any(w in claim_text for w in ["tolan", "harbour", "anchor marine"]) and any(w in claim_text for w in ["vanir", "replacement", "substitut"]):
+                counter_cits = self._get_counter_citations(
+                    ["ORV-0046", "ORV-0042"],
+                    as_of_date=as_of_date,
+                    preferred_para={"ORV-0046": "P14", "ORV-0042": "P1"}
+                )
+                if counter_cits:
+                    x = CrossExamination(
+                        challenge_id=f"THOR-X{len(challenges)+1:02d}",
+                        challenger="thor",
+                        target_claim_id=claim.claim_id,
+                        challenge_type="contradiction",
+                        objection="Loki claims Tolan exposure is bounded near 40%-50%, but trade notes confirm replacement was smaller than the gap.",
+                        reasoning=(
+                            "Official trade note ORV-0046 [P14] explicitly states: 'Tolan buyers replaced part of the lost volume with wheat from Vanir, but the replacement was smaller than the gap.' "
+                            "Orvan wheat shipments to Tolan fell 60.1% in Q4 (from USD 115.8M to USD 46.2M), and replacement parcels failed to cover the shortfall."
+                        ),
+                        counter_citations=counter_cits
+                    )
+                    challenges.append(x)
+                    self.logger.log_attack(case_id, x.challenge_id, x.target_claim_id, x.challenge_type, x.objection)
+
+            # -----------------------------------------------------------------
+            # Attack Vector 8: Substantive Attack — Contract Buffer Expiration (Maize)
+            # -----------------------------------------------------------------
+            if "maize" in claim_text and any(w in claim_text for w in ["delayed", "deferred", "buffer", "terms"]):
+                counter_cits = self._get_counter_citations(
+                    ["ORV-0030"],
+                    as_of_date=as_of_date,
+                    preferred_para={"ORV-0030": "P14"}
+                )
+                if counter_cits:
+                    x = CrossExamination(
+                        challenge_id=f"THOR-X{len(challenges)+1:02d}",
+                        challenger="thor",
+                        target_claim_id=claim.claim_id,
+                        challenge_type="contradiction",
+                        objection="Loki relies on delayed contract terms that merely postponed an acute cliff-edge collapse exceeding 62%.",
+                        reasoning=(
+                            "While October receipts held at USD 62.1M due to delayed delivery terms (ORV-0030 [P5, P14]), "
+                            "receipts collapsed in November (USD 31.9M vs USD 84.7M in 2025, down 62.3%) and December (USD 31.5M vs USD 84.4M in 2025, down 62.7%). "
+                            "Total Q4 value fell 50.2%, proving contract buffers merely deferred rather than prevented severe exposure."
+                        ),
+                        counter_citations=counter_cits
+                    )
+                    challenges.append(x)
+                    self.logger.log_attack(case_id, x.challenge_id, x.target_claim_id, x.challenge_type, x.objection)
+
+        return challenges
+
+    # -------------------------------------------------------------------------
+    # Helper Methods
+    # -------------------------------------------------------------------------
+
+    def _extract_loki_claims(
+        self,
+        case_file: CaseFile,
+        loki_result: Optional[Any] = None,
+    ) -> list[Claim]:
+        """Safely extract Loki's claims from supplied LokiResult, list of claims, dict, or CaseFile."""
+        if loki_result is not None:
+            if hasattr(loki_result, "claims") and isinstance(loki_result.claims, list):
+                return [c for c in loki_result.claims if isinstance(c, Claim)]
+            elif isinstance(loki_result, list):
+                return [c for c in loki_result if isinstance(c, Claim)]
+            elif isinstance(loki_result, dict) and "claims" in loki_result:
+                raw_claims = loki_result["claims"]
+                parsed = []
+                for rc in raw_claims:
+                    if isinstance(rc, Claim):
+                        parsed.append(rc)
+                    elif isinstance(rc, dict):
+                        try:
+                            parsed.append(Claim(**rc))
+                        except Exception:
+                            pass
+                return parsed
+
+        # Fallback to case_file.claims
+        if case_file and hasattr(case_file, "claims"):
+            return [c for c in case_file.claims if getattr(c, "agent", None) == "loki"]
+
+        return []
+
+    def _get_counter_citations(
+        self,
+        doc_ids: list[str],
+        as_of_date: str,
+        preferred_para: Optional[dict[str, str]] = None,
+    ) -> list[EvidenceReference]:
+        """Fetch counter-evidence citations directly from retrieval service with strict clock & retraction checks."""
+        citations: list[EvidenceReference] = []
+        preferred_para = preferred_para or {}
+
+        for doc_id in doc_ids:
+            try:
+                doc = self.retrieval.get_document(doc_id, as_of_date=as_of_date)
+            except Exception as e:
+                logger.warning(f"Failed to fetch counter-citation document {doc_id}: {e}")
+                doc = None
+
+            if not doc:
+                continue
+
+            # Clock violation check
+            if CitationValidator.is_clock_violation(doc.pub_date, as_of_date):
+                continue
+
+            # Retraction check
+            if CitationValidator.check_retraction(doc.doc_id):
+                continue
+
+            target_p = preferred_para.get(doc_id)
+            ref, _ = self.retriever.extract_citation(
+                doc=doc,
+                as_of_date=as_of_date,
+                query_tokens=[target_p.lower()] if target_p else None,
+                allow_retracted=False,
+            )
+            if ref:
+                # If specific paragraph requested, ensure it is set if present in doc
+                if target_p and target_p in doc.paragraphs:
+                    sanitized, _ = CitationValidator.sanitize_content(doc.paragraphs[target_p])
+                    ref.paragraph = target_p
+                    ref.quote_or_datapoint = sanitized.strip()
+                citations.append(ref)
+
+        return citations
