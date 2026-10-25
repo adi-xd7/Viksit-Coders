@@ -54,6 +54,9 @@ class Settings(BaseSettings):
     max_evidence_per_query: int = Field(12, ge=1, le=100)
     max_evidence_per_case: int = Field(200, ge=1)
 
+    # Retrieval: Reciprocal Rank Fusion constant (score = sum 1 / (k + rank)).
+    rrf_k: int = Field(60, ge=1, le=1000)
+
     @model_validator(mode="after")
     def _resolve_and_check(self) -> "Settings":
         for name in ("data_dir", "packs_dir", "index_dir", "processed_dir", "log_dir", "db_path"):

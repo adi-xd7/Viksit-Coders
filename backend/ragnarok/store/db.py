@@ -113,6 +113,33 @@ CREATE TABLE IF NOT EXISTS audit_log (
     refs_json TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_audit_case ON audit_log(case_id, seq);
+CREATE TABLE IF NOT EXISTS store_meta (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS embeddings (
+    text_sha256 TEXT NOT NULL,
+    model TEXT NOT NULL,
+    dim INTEGER NOT NULL,
+    vector BLOB NOT NULL,
+    PRIMARY KEY (text_sha256, model)
+);
+CREATE TABLE IF NOT EXISTS query_cache (
+    cache_key TEXT PRIMARY KEY,
+    case_id TEXT NOT NULL,
+    agent TEXT NOT NULL,
+    query_norm TEXT NOT NULL,
+    request_json TEXT NOT NULL,
+    result_json TEXT NOT NULL,
+    first_seq INTEGER,
+    created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS calculations (
+    calc_id TEXT PRIMARY KEY,
+    case_id TEXT NOT NULL,
+    record_json TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
 CREATE TRIGGER IF NOT EXISTS audit_log_no_update BEFORE UPDATE ON audit_log
 BEGIN SELECT RAISE(ABORT, 'audit_log is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS audit_log_no_delete BEFORE DELETE ON audit_log
@@ -148,6 +175,20 @@ class Store:
         with self.conn:
             yield self.conn
 
+    # ----------------------------------------------------------- version ---
+    # Bumped on every evidence write so in-memory indexes can detect hot ingests.
+
+    def version(self) -> int:
+        r = self.conn.execute("SELECT value FROM store_meta WHERE key='version'").fetchone()
+        return int(r["value"]) if r else 0
+
+    @staticmethod
+    def _bump(c: sqlite3.Connection) -> None:
+        c.execute(
+            "INSERT INTO store_meta(key, value) VALUES ('version', '1') "
+            "ON CONFLICT(key) DO UPDATE SET value = CAST(value AS INTEGER) + 1"
+        )
+
     # ------------------------------------------------------------- packs ---
 
     def upsert_pack(self, pack_id: str, path: Path, manifest: dict[str, Any] | None) -> None:
@@ -171,6 +212,7 @@ class Store:
             self._insert_document(c, doc, file_path)
             for t in tables:
                 self._insert_table(c, t)
+            self._bump(c)
 
     def update_document(self, doc: Document) -> None:
         """Rewrite a stored document's record, flags and relations (paragraphs and tables unchanged)."""
@@ -183,6 +225,7 @@ class Store:
             c.execute("DELETE FROM doc_flags WHERE doc_id=?", (m.doc_id,))
             c.execute("DELETE FROM doc_relations WHERE doc_id=?", (m.doc_id,))
             self._insert_flags_relations(c, doc)
+            self._bump(c)
 
     @staticmethod
     def _doc_json(doc: Document) -> str:
@@ -302,6 +345,71 @@ class Store:
     def all_trade_tables(self) -> list[TradeTable]:
         ids = [r["table_id"] for r in self.conn.execute("SELECT table_id FROM trade_tables ORDER BY table_id")]
         return [t for t in (self.get_trade_table(i) for i in ids) if t is not None]
+
+    def all_trade_rows(self) -> list[TradeRow]:
+        return [self._row(r) for r in self.conn.execute("SELECT * FROM trade_rows ORDER BY table_id, rowid")]
+
+    def table_sectors_by_doc(self) -> dict[str, set[str]]:
+        out: dict[str, set[str]] = {}
+        for r in self.conn.execute("SELECT source_doc_id, sector FROM trade_tables"):
+            if r["sector"]:
+                out.setdefault(r["source_doc_id"], set()).add(r["sector"].lower())
+        return out
+
+    def incoming_relations(self, target_doc_id: str) -> list[tuple[str, str, str]]:
+        """(source doc, relation type, evidence) for relations pointing at a document."""
+        return [
+            (r["doc_id"], r["type"], r["evidence"])
+            for r in self.conn.execute(
+                "SELECT doc_id, type, evidence FROM doc_relations WHERE target_doc_id=? ORDER BY doc_id", (target_doc_id,)
+            )
+        ]
+
+    # -------------------------------------------------------- embeddings ---
+
+    def get_embeddings(self, model: str, hashes: list[str]) -> dict[str, bytes]:
+        out: dict[str, bytes] = {}
+        for i in range(0, len(hashes), 500):
+            part = hashes[i:i + 500]
+            q = f"SELECT text_sha256, vector FROM embeddings WHERE model=? AND text_sha256 IN ({','.join('?' * len(part))})"
+            for r in self.conn.execute(q, [model, *part]):
+                out[r["text_sha256"]] = r["vector"]
+        return out
+
+    def put_embeddings(self, model: str, dim: int, items: list[tuple[str, bytes]]) -> None:
+        with self.tx() as c:
+            c.executemany(
+                "INSERT OR REPLACE INTO embeddings(text_sha256, model, dim, vector) VALUES (?,?,?,?)",
+                [(h, model, dim, v) for h, v in items],
+            )
+
+    # ------------------------------------------------------- query cache ---
+
+    def cache_get(self, key: str) -> tuple[str, int | None] | None:
+        r = self.conn.execute("SELECT result_json, first_seq FROM query_cache WHERE cache_key=?", (key,)).fetchone()
+        return (r["result_json"], r["first_seq"]) if r else None
+
+    def cache_put(self, key: str, case_id: str, agent: str, query_norm: str, request_json: str, result_json: str,
+                  first_seq: int | None) -> None:
+        with self.tx() as c:
+            c.execute(
+                "INSERT OR REPLACE INTO query_cache(cache_key, case_id, agent, query_norm, request_json, result_json, first_seq, created_at)"
+                " VALUES (?,?,?,?,?,?,?,?)",
+                (key, case_id, agent, query_norm, request_json, result_json, first_seq, _now()),
+            )
+
+    # ------------------------------------------------------ calculations ---
+
+    def save_calculation(self, calc_id: str, case_id: str, record_json: str) -> None:
+        with self.tx() as c:
+            c.execute(
+                "INSERT OR REPLACE INTO calculations(calc_id, case_id, record_json, created_at) VALUES (?,?,?,?)",
+                (calc_id, case_id, record_json, _now()),
+            )
+
+    def get_calculation_json(self, calc_id: str) -> str | None:
+        r = self.conn.execute("SELECT record_json FROM calculations WHERE calc_id=?", (calc_id,)).fetchone()
+        return r["record_json"] if r else None
 
     # --------------------------------------------------------- audit log ---
 

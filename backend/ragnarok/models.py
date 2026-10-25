@@ -463,11 +463,16 @@ class CalculationRecord(_Model):
     formula: str
     excluded_rows: dict[str, str] = Field(default_factory=dict)  # row_id -> reason
     notes: str = ""
+    as_of: date | None = None  # the date gate the input rows were read under
+    rows_requested: int = Field(0, ge=0)
+    complete: bool = True  # False => some requested rows were excluded; a result, if any, is partial
 
     @model_validator(mode="after")
     def _missing_stays_missing(self) -> "CalculationRecord":
         if any(i.value is None for i in self.inputs) and self.result is not None:
             raise ValueError("a calculation with a missing input cannot produce a result")
+        if self.excluded_rows and self.complete:
+            raise ValueError("a calculation that excluded rows cannot be marked complete")
         return self
 
 
