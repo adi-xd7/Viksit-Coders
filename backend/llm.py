@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar
 from pydantic import BaseModel
+
+logger = logging.getLogger("llm")
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -15,8 +18,22 @@ MODEL_FAST = os.getenv("MODEL_FAST", "claude-3-haiku-20240307")
 MODEL_ADVOCATE = os.getenv("MODEL_ADVOCATE", "claude-3-5-sonnet-20241022")
 MODEL_JUDGE = os.getenv("MODEL_JUDGE", "claude-3-5-sonnet-20241022")
 
+MAX_RUNS = int(os.getenv("MAX_RUNS", "3"))
+MAX_ROUNDS = int(os.getenv("MAX_ROUNDS", "2"))
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", "2"))
+MAX_TOOL_CALLS_PER_AGENT = int(os.getenv("MAX_TOOL_CALLS_PER_AGENT", "12"))
 MAX_TOKENS_PER_CASE = int(os.getenv("MAX_TOKENS_PER_CASE", "200000"))
+DEFAULT_TIMEOUT = float(os.getenv("LLM_TIMEOUT", "60.0"))
+
+
+class BudgetExceededError(RuntimeError):
+    """Raised when the case-wide token budget is exceeded."""
+    pass
+
+
+class ToolCallLimitExceededError(RuntimeError):
+    """Raised when an agent exceeds its allowed tool call quota."""
+    pass
 
 
 def wrap_document_text(doc_id: str, tier: int, date: str, content: str) -> str:
@@ -36,7 +53,23 @@ class LLMClient:
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY", "")
         self._mock_handler: Optional[Callable[[str, str, Dict[str, Any]], str]] = None
         self.total_tokens_used: int = 0
+        self.tool_call_counts: Dict[str, int] = {}
         self._client = None
+
+    def reset_case_budget(self) -> None:
+        """Resets the case-wide token usage and tool call counters (for starting a new case)."""
+        self.total_tokens_used = 0
+        self.tool_call_counts.clear()
+
+    def record_tool_call(self, agent: str = "odin") -> int:
+        """Records a tool call for an agent and enforces MAX_TOOL_CALLS_PER_AGENT."""
+        current = self.tool_call_counts.get(agent, 0) + 1
+        self.tool_call_counts[agent] = current
+        if current > MAX_TOOL_CALLS_PER_AGENT:
+            raise ToolCallLimitExceededError(
+                f"Agent '{agent}' exceeded tool call limit ({current} > {MAX_TOOL_CALLS_PER_AGENT})"
+            )
+        return current
 
     def set_mock_handler(self, handler: Optional[Callable[[str, str, Dict[str, Any]], str]]) -> None:
         """Injects a mock response handler for deterministic testing."""
@@ -45,7 +78,10 @@ class LLMClient:
     def _get_anthropic_client(self):
         if self._client is None:
             import anthropic
-            self._client = anthropic.Anthropic(api_key=self.api_key)
+            self._client = anthropic.Anthropic(
+                api_key=self.api_key,
+                max_retries=MAX_RETRIES,
+            )
         return self._client
 
     async def call_model(
@@ -55,22 +91,31 @@ class LLMClient:
         model: Optional[str] = None,
         temperature: float = 0.0,
         max_tokens: int = 4000,
+        timeout: float = DEFAULT_TIMEOUT,
     ) -> str:
         """Calls the LLM with the provided prompts, tracking token budget."""
         target_model = model or MODEL_JUDGE
+
+        # Preflight check on case token budget
+        if self.total_tokens_used >= MAX_TOKENS_PER_CASE:
+            raise BudgetExceededError(
+                f"Case token budget already exhausted prior to call: {self.total_tokens_used} >= {MAX_TOKENS_PER_CASE}"
+            )
 
         # If a mock handler is configured, use it directly (no API key required)
         if self._mock_handler is not None:
             response_text = self._mock_handler(
                 system_prompt,
                 user_prompt,
-                {"model": target_model, "temperature": temperature, "max_tokens": max_tokens},
+                {"model": target_model, "temperature": temperature, "max_tokens": max_tokens, "timeout": timeout},
             )
             # Estimate mock token usage
             mock_tokens = (len(system_prompt) + len(user_prompt) + len(response_text)) // 4
             self.total_tokens_used += mock_tokens
             if self.total_tokens_used > MAX_TOKENS_PER_CASE:
-                raise RuntimeError(f"Case token budget exceeded: {self.total_tokens_used} > {MAX_TOKENS_PER_CASE}")
+                raise BudgetExceededError(
+                    f"Case token budget exceeded during call: {self.total_tokens_used} > {MAX_TOKENS_PER_CASE}"
+                )
             return response_text
 
         # Production Anthropic API call
@@ -84,6 +129,7 @@ class LLMClient:
             model=target_model,
             max_tokens=max_tokens,
             temperature=temperature,
+            timeout=timeout,
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}],
         )
@@ -91,8 +137,9 @@ class LLMClient:
         tokens = message.usage.input_tokens + message.usage.output_tokens
         self.total_tokens_used += tokens
         if self.total_tokens_used > MAX_TOKENS_PER_CASE:
-            raise RuntimeError(f"Case token budget exceeded: {self.total_tokens_used} > {MAX_TOKENS_PER_CASE}")
-
+            raise BudgetExceededError(
+                f"Case token budget exceeded during call: {self.total_tokens_used} > {MAX_TOKENS_PER_CASE}"
+            )
         content_block = message.content[0]
         return getattr(content_block, "text", str(content_block))
 
@@ -103,6 +150,7 @@ class LLMClient:
         response_model: Type[T],
         model: Optional[str] = None,
         retries: int = MAX_RETRIES,
+        timeout: float = DEFAULT_TIMEOUT,
     ) -> T:
         """Calls LLM and parses response into a Pydantic model with retry repair."""
         schema_json = json.dumps(response_model.model_json_schema(), indent=2)
@@ -117,7 +165,9 @@ class LLMClient:
         last_error = None
 
         for attempt in range(retries + 1):
-            raw_response = await self.call_model(augmented_system, current_user_prompt, model=model)
+            raw_response = await self.call_model(
+                augmented_system, current_user_prompt, model=model, timeout=timeout
+            )
             try:
                 # Extract JSON if wrapped in markdown code fence
                 clean_json = raw_response.strip()

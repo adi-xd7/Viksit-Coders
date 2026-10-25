@@ -24,6 +24,7 @@ from backend.models import (
     Document,
     EventVerificationStatus,
     ExposureRange,
+    LogEventType,
     Ruling,
     SendBack,
     SufficiencyResult,
@@ -31,7 +32,15 @@ from backend.models import (
     TradeRow,
     Verdict,
 )
-from backend.llm import LLMClient, default_llm_client, wrap_document_text
+from backend.llm import (
+    BudgetExceededError,
+    LLMClient,
+    ToolCallLimitExceededError,
+    default_llm_client,
+    wrap_document_text,
+)
+from backend.logbook import LogBook, default_logbook
+from backend.memory import MemoryStore, default_memory_store
 from backend.trade_calc import (
     calculate_exposure_bounds,
     calculate_substitute_offset,
@@ -337,11 +346,15 @@ class OdinJudge:
         self,
         llm_client: Optional[LLMClient] = None,
         prompt_path: Optional[str] = None,
+        memory_store: Optional[MemoryStore] = None,
+        logbook: Optional[LogBook] = None,
     ):
         self.llm_client = llm_client or default_llm_client
         self.prompt_path = prompt_path or os.path.join(
             os.path.dirname(__file__), "prompts", "odin.md"
         )
+        self.memory_store = memory_store or default_memory_store
+        self.logbook = logbook or default_logbook
         self._system_prompt: Optional[str] = None
 
     def get_system_prompt(self) -> str:
@@ -398,6 +411,8 @@ class OdinJudge:
         attacks: Optional[List[Attack]] = None,
         defenses: Optional[List[Defense]] = None,
         concessions: Optional[List[Concession]] = None,
+        run_num: int = 1,
+        round_num: int = 1,
     ) -> List[Ruling]:
         """Judicially evaluates all submitted claims and issues guaranteed complete rulings.
         
@@ -406,6 +421,57 @@ class OdinJudge:
         """
         if not claims:
             return []
+
+        # Audit log: Query / Judgment cycle start
+        self.logbook.log(
+            event_type=LogEventType.QUERY,
+            agent=AgentRole.ODIN,
+            case_id=case_file.case_id,
+            payload={"claims_count": len(claims), "run_num": run_num, "round_num": round_num},
+            run_num=run_num,
+            round_num=round_num,
+        )
+
+        # Audit log: Log trap injections detected in evidence corpus
+        for doc in doc_store.values():
+            if doc.injection_detected:
+                self.logbook.log(
+                    event_type=LogEventType.TRAP_INJECTION,
+                    agent=AgentRole.ODIN,
+                    case_id=case_file.case_id,
+                    payload={
+                        "doc_id": doc.meta.DOC_ID,
+                        "details": doc.injection_details or "Prompt injection instructions detected in evidence",
+                    },
+                    run_num=run_num,
+                    round_num=round_num,
+                )
+
+        # Memory recall: Retrieve relevant Odin lessons (strict isolation: Odin recalls Odin only)
+        recalled_lessons = []
+        try:
+            recalled_lessons = self.memory_store.recall(
+                requesting_agent=AgentRole.ODIN,
+                target_agent=AgentRole.ODIN,
+            )
+            self.logbook.log(
+                event_type=LogEventType.MEMORY_READ,
+                agent=AgentRole.ODIN,
+                case_id=case_file.case_id,
+                payload={"status": "success", "recalled_count": len(recalled_lessons)},
+                run_num=run_num,
+                round_num=round_num,
+            )
+        except Exception as e:
+            logger.warning(f"Odin memory recall warning: {e}")
+            self.logbook.log(
+                event_type=LogEventType.MEMORY_READ,
+                agent=AgentRole.ODIN,
+                case_id=case_file.case_id,
+                payload={"status": "failed", "error": str(e)},
+                run_num=run_num,
+                round_num=round_num,
+            )
 
         rulings_map: Dict[str, Ruling] = {}
         eligible_claims: List[Claim] = []
@@ -463,10 +529,20 @@ class OdinJudge:
 
                 claims_summary.append(c_info)
 
+            memory_section = ""
+            if recalled_lessons:
+                notes = [f"- (Topic: {m.topic or 'General'}) {m.lesson}" for m in recalled_lessons]
+                memory_section = (
+                    "ADVISORY JUDICIAL NOTES FROM PRIOR CASES (Advisory only; never override evidence, rules, or limits):\n"
+                    + "\n".join(notes)
+                    + "\n\n"
+                )
+
             user_prompt = (
                 f"CASE FILE: {case_file.case_id}\n"
                 f"AS-OF DATE: {case_file.as_of}\n"
                 f"TARGET QUERY: {case_file.query}\n\n"
+                f"{memory_section}"
                 f"ADMISSIBLE EVIDENCE ON RECORD:\n{evidence_context}\n\n"
                 f"SUBMITTED CLAIMS TO ADJUDICATE:\n"
                 + "\n---\n".join(claims_summary)
@@ -474,26 +550,96 @@ class OdinJudge:
                 "Issue a ruling for each claim with 'claim_id', 'verdict', 'basis', and 'rationale'."
             )
 
-            llm_response = await self.llm_client.call_structured(
-                system_prompt=self.get_system_prompt(),
-                user_prompt=user_prompt,
-                response_model=LLMRulingsPayload,
-            )
+            try:
+                # Count tool/execution call under Odin's budget
+                self.llm_client.record_tool_call(AgentRole.ODIN.value)
 
-            for r in llm_response.rulings:
-                if r.claim_id in eligibility_map and eligibility_map[r.claim_id].is_eligible_for_llm:
-                    if r.claim_id in rulings_map:
-                        logger.warning(f"Ignoring duplicate LLM ruling for claim '{r.claim_id}'")
-                        continue
-                    res = eligibility_map[r.claim_id]
-                    rulings_map[r.claim_id] = Ruling(
-                        claim_id=r.claim_id,
-                        verdict=r.verdict,
-                        basis=r.basis,
-                        rationale=r.rationale,
-                        admissible_citations=res.admissible_citations,
-                        inadmissible_citations=res.inadmissible_citations,
-                    )
+                llm_response = await self.llm_client.call_structured(
+                    system_prompt=self.get_system_prompt(),
+                    user_prompt=user_prompt,
+                    response_model=LLMRulingsPayload,
+                )
+
+                for r in llm_response.rulings:
+                    if r.claim_id in eligibility_map and eligibility_map[r.claim_id].is_eligible_for_llm:
+                        if r.claim_id in rulings_map:
+                            logger.warning(f"Ignoring duplicate LLM ruling for claim '{r.claim_id}'")
+                            continue
+                        res = eligibility_map[r.claim_id]
+                        rulings_map[r.claim_id] = Ruling(
+                            claim_id=r.claim_id,
+                            verdict=r.verdict,
+                            basis=r.basis,
+                            rationale=r.rationale,
+                            admissible_citations=res.admissible_citations,
+                            inadmissible_citations=res.inadmissible_citations,
+                        )
+            except BudgetExceededError as e:
+                # Case token budget exceeded: log LIMIT_HIT and gracefully fallback for unruled claims
+                self.logbook.log(
+                    event_type=LogEventType.LIMIT_HIT,
+                    agent=AgentRole.ODIN,
+                    case_id=case_file.case_id,
+                    payload={"limit_type": "token_budget", "error": str(e)},
+                    run_num=run_num,
+                    round_num=round_num,
+                )
+                for c in eligible_claims:
+                    if c.claim_id not in rulings_map:
+                        res = eligibility_map[c.claim_id]
+                        rulings_map[c.claim_id] = Ruling(
+                            claim_id=c.claim_id,
+                            verdict=Verdict.CONTESTED,
+                            basis=c.nature,
+                            rationale="Judicial evaluation interrupted: case token budget exhausted.",
+                            disqualified_reason="token_budget_exceeded",
+                            admissible_citations=res.admissible_citations,
+                            inadmissible_citations=res.inadmissible_citations,
+                        )
+            except ToolCallLimitExceededError as e:
+                # Tool call quota exceeded: log LIMIT_HIT and gracefully fallback
+                self.logbook.log(
+                    event_type=LogEventType.LIMIT_HIT,
+                    agent=AgentRole.ODIN,
+                    case_id=case_file.case_id,
+                    payload={"limit_type": "tool_calls", "error": str(e)},
+                    run_num=run_num,
+                    round_num=round_num,
+                )
+                for c in eligible_claims:
+                    if c.claim_id not in rulings_map:
+                        res = eligibility_map[c.claim_id]
+                        rulings_map[c.claim_id] = Ruling(
+                            claim_id=c.claim_id,
+                            verdict=Verdict.CONTESTED,
+                            basis=c.nature,
+                            rationale="Judicial evaluation interrupted: tool call quota exhausted.",
+                            disqualified_reason="tool_call_limit_exceeded",
+                            admissible_citations=res.admissible_citations,
+                            inadmissible_citations=res.inadmissible_citations,
+                        )
+            except Exception as e:
+                # General provider or runtime error: log ERROR and gracefully fallback
+                self.logbook.log(
+                    event_type=LogEventType.ERROR,
+                    agent=AgentRole.ODIN,
+                    case_id=case_file.case_id,
+                    payload={"error_type": type(e).__name__, "message": str(e)},
+                    run_num=run_num,
+                    round_num=round_num,
+                )
+                for c in eligible_claims:
+                    if c.claim_id not in rulings_map:
+                        res = eligibility_map[c.claim_id]
+                        rulings_map[c.claim_id] = Ruling(
+                            claim_id=c.claim_id,
+                            verdict=Verdict.CONTESTED,
+                            basis=c.nature,
+                            rationale=f"Judicial evaluation interrupted due to provider error: {str(e)}",
+                            disqualified_reason="provider_error",
+                            admissible_citations=res.admissible_citations,
+                            inadmissible_citations=res.inadmissible_citations,
+                        )
 
         # 3. Complete claim coverage & integrity check
         final_rulings: List[Ruling] = []
@@ -515,6 +661,57 @@ class OdinJudge:
                         inadmissible_citations=res.inadmissible_citations,
                     )
                 )
+
+        # 4. Audit logging for each final ruling
+        for r in final_rulings:
+            self.logbook.log(
+                event_type=LogEventType.RULING,
+                agent=AgentRole.ODIN,
+                case_id=case_file.case_id,
+                payload={
+                    "claim_id": r.claim_id,
+                    "verdict": r.verdict.value,
+                    "basis": r.basis.value,
+                    "rationale": r.rationale,
+                    "admissible_citations": [c.doc_id for c in r.admissible_citations],
+                },
+                run_num=run_num,
+                round_num=round_num,
+            )
+
+        # 5. Memory Write: Learn reusable judicial lessons from this trial cycle
+        try:
+            tier4_rejections = [
+                r for r in final_rulings
+                if r.verdict == Verdict.REJECTED and r.disqualified_reason and "tier_4" in r.disqualified_reason.lower()
+            ]
+            if tier4_rejections:
+                lesson_text = "Claims supported exclusively by Tier 4 sources are inadmissible and must be rejected deterministically."
+                self.memory_store.remember(
+                    agent=AgentRole.ODIN,
+                    lesson=lesson_text,
+                    topic="tier_admissibility",
+                    case_id=case_file.case_id,
+                    evidence=f"Claims {', '.join(r.claim_id for r in tier4_rejections)} rejected for tier_4_only",
+                )
+                self.logbook.log(
+                    event_type=LogEventType.MEMORY_WRITE,
+                    agent=AgentRole.ODIN,
+                    case_id=case_file.case_id,
+                    payload={"status": "success", "topic": "tier_admissibility", "lesson": lesson_text, "case_id": case_file.case_id},
+                    run_num=run_num,
+                    round_num=round_num,
+                )
+        except Exception as e:
+            logger.error(f"Odin memory write failed: {e}")
+            self.logbook.log(
+                event_type=LogEventType.ERROR,
+                agent=AgentRole.ODIN,
+                case_id=case_file.case_id,
+                payload={"action": "memory_write_failed", "error": str(e)},
+                run_num=run_num,
+                round_num=round_num,
+            )
 
         return final_rulings
 
@@ -545,7 +742,7 @@ class OdinJudge:
         max_runs: int = 3,
     ) -> SufficiencyResult:
         """Evaluates trial evidence sufficiency and produces structured send-back requests."""
-        return assess_sufficiency(
+        res = assess_sufficiency(
             case_file=case_file,
             rulings=rulings,
             claims=claims,
@@ -555,6 +752,23 @@ class OdinJudge:
             run_count=run_count,
             max_runs=max_runs,
         )
+        if res.send_back:
+            self.logbook.log(
+                event_type=LogEventType.SENDBACK,
+                agent=AgentRole.ODIN,
+                case_id=case_file.case_id,
+                payload={"missing": res.send_back.missing, "gap_types": res.send_back.gap_types},
+                run_num=run_count,
+            )
+        elif res.status == SufficiencyStatus.LIMITS_EXHAUSTED:
+            self.logbook.log(
+                event_type=LogEventType.LIMIT_HIT,
+                agent=AgentRole.ODIN,
+                case_id=case_file.case_id,
+                payload={"limit_type": "max_runs", "run_count": run_count, "max_runs": max_runs},
+                run_num=run_count,
+            )
+        return res
 
 
 def derive_exposure_ranges(

@@ -119,11 +119,11 @@ To maintain modularity and isolation:
   - [x] Actionable, specific `SendBack` requests
   - [x] Tests (`tests/test_odin_sufficiency.py`, `tests/test_trade_calc.py` - 21/21 passing, 41/41 total)
 
-- [ ] **Phase 3 — Odin Memory, Audit Logging, and Resource Budgets**
-  - [ ] Private memory isolation (Odin private memory read/write only)
-  - [ ] SQLite and JSONL append-only audit logbook integration
-  - [ ] Resource budgets: token tracking, max tool calls, max retries, limit exhaustion handling
-  - [ ] Tests (`tests/test_odin_memory.py`, `tests/test_odin_logging.py`)
+- [x] **Phase 3 — Odin Memory, Audit Logging, and Resource Budgets**
+  - [x] Private memory isolation (Odin private memory read/write only, strict permission enforcement)
+  - [x] SQLite and JSONL append-only audit logbook integration (`LogBook`, recursive secret redaction)
+  - [x] Resource budgets: token tracking, max tool calls (`MAX_TOOL_CALLS_PER_AGENT=12`), max retries (`MAX_RETRIES=2`), timeout handling, limit exhaustion graceful fallback
+  - [x] Tests (`tests/test_odin_memory.py`, `tests/test_odin_logging.py`, `tests/test_odin_budgets.py` - 20/20 passing, 61/61 total)
 
 - [ ] **Phase 4 — LangGraph Trial State Machine and Send-Back Loop**
   - [ ] LangGraph state definition (`TrialState`)
@@ -197,5 +197,44 @@ To maintain modularity and isolation:
   - Actionable SendBack: Requests pinpoint exact countries, sectors, missing baselines, or specific contradictory claim IDs rather than generic "find more evidence" prompts.
 - **Dependencies for Phase 3**:
   - Odin private memory isolation (`recall`/`remember`), append-only SQLite/JSONL audit logbook integration, and case-wide token/tool-call budget enforcement.
+
+---
+
+## Phase 3 Execution Notes
+
+- **Status**: Completed
+- **Files Created / Changed**:
+  - `backend/memory.py`:
+    - Implemented `MemoryStore` supporting isolated agent memories (`recall(agent, topic)`, `remember(agent, lesson, evidence)`).
+    - Enforced strict agent memory isolation: Odin can only read and write Odin's private memory. Attempts to read Thor's or Loki's private memory raise `MemoryAccessError`.
+    - Added recursive credential and secret sanitization (`sanitize_lesson_text`), scrubbing Anthropic API keys, bearer tokens, passwords, and authorization headers from stored lessons and evidence.
+    - Preserved provenance (`case_id`, `evidence`, `timestamp`) and added support for optional SQLite persistence.
+  - `backend/logbook.py`:
+    - Implemented thread-safe `LogBook` persisting append-only audit events to SQLite and JSONL with query support (`case_id`, `event_type`, `agent`).
+    - Configured automatic recursive secret redaction (`redact_secrets`) across strings, dicts, lists, and Pydantic models.
+    - Verified strict audit reliability: SQLite and JSONL persistence failures raise `RuntimeError` rather than silently reporting success.
+  - `backend/llm.py`:
+    - Enforced shared resource configuration: `MAX_RUNS=3`, `MAX_ROUNDS=2`, `MAX_RETRIES=2`, `MAX_TOOL_CALLS_PER_AGENT=12`, `MAX_TOKENS_PER_CASE=200000`, `LLM_TIMEOUT=60.0`.
+    - Added preflight and in-flight token budget accounting (`BudgetExceededError`). Tokens accumulate case-wide across runs and cycles (never reset within the same case).
+    - Added per-agent tool-call quota tracking (`record_tool_call`), enforcing `MAX_TOOL_CALLS_PER_AGENT=12` (`ToolCallLimitExceededError`).
+    - Bounded structured output repair retries to `MAX_RETRIES=2` with controlled failure upon exhaustion.
+  - `backend/agents/odin.py`:
+    - Integrated memory recall: Odin queries prior judicial lessons (e.g. tier admissibility, baseline requirements) and passes them as untrusted advisory notes in the prompt (never modifying system rules, dates, or schemas).
+    - Added memory failure resilience: Memory recall or write failures are safely logged (`MEMORY_READ` failed or `ERROR`), preventing fabricated rulings and preserving trial integrity.
+    - Integrated audit logging: Logs `QUERY` on cycle start, `TRAP_INJECTION` for tainted evidence, `MEMORY_READ`, `RULING` for all final rulings, `MEMORY_WRITE` for learned lessons, `SENDBACK` for missing evidence, `LIMIT_HIT` for budget/run exhaustion, and `ERROR` for provider failures.
+    - Integrated budget failure fallback: On token or tool-call budget exhaustion, valid deterministic rulings are preserved, unadjudicated claims are marked `CONTESTED` with clear `disqualified_reason`, and `LIMIT_HIT` is logged.
+  - `tests/test_odin_memory.py`: 8 unit tests verifying memory recall, isolation (`MemoryAccessError` on cross-agent reads), secret redaction, provenance, untrusted memory handling, recall failure tolerance, write failure logging, and SQLite persistence.
+  - `tests/test_odin_logging.py`: 6 unit tests verifying recursive secret redaction, event creation, SQLite/JSONL persistence, query filtering, SQLite/JSONL failure detection, and trial cycle audit taxonomy.
+  - `tests/test_odin_budgets.py`: 6 unit tests verifying within-budget execution, preflight token budget exhaustion, tool-call quota exhaustion, provider timeout handling, repair retry exhaustion, and non-resetting case budgets across runs.
+- **Tests Executed**:
+  - `python -m pytest tests -v`
+  - Result: 61 passed in 0.29s (100% pass rate: 20 Phase 1 + 21 Phase 2 + 20 Phase 3).
+- **Decisions Made**:
+  - Thread-Safe SQLite: `LogBook` and `MemoryStore` maintain persistent connections with thread locks, ensuring in-memory SQLite instances (`:memory:`) do not discard tables across calls and SQLite file writes are thread-safe.
+  - Fail-Safe Persistence: Logging persistence failures raise `RuntimeError`, guaranteeing that no unsupported ruling can be presented as established if audit logging fails.
+  - Preserved Claims on Budget Limit: When an LLM budget limit or provider error interrupts judgment, already validated deterministic rulings are preserved, and unadjudicated claims are returned as `CONTESTED` with an explicit reason (`token_budget_exceeded`, `tool_call_limit_exceeded`, `provider_error`), maintaining 100% claim coverage.
+- **Dependencies for Phase 4**:
+  - LangGraph trial state machine orchestration (`TrialState`), connecting Heimdall verification, Thor/Loki parallel advocacy, cross-examination, Odin judgment, sufficiency check, and send-back routing loop.
+
 
 
