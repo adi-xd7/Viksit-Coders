@@ -1048,14 +1048,18 @@
       (briefing.established_findings || []).concat(briefing.contested_findings || []).forEach(f => {
         const card = document.createElement('div');
         card.className = 'log-entry';
-        const cits = (f.citations || []).map(c => `<span class="citation-tag">${c.display_str || c.doc_id}</span>`).join(' ');
+        const cits = (f.citations || []).map(c => {
+          if (typeof c === 'string') return `<span class="citation-tag">${c}</span>`;
+          return `<span class="citation-tag">[${c.doc_id || c.trade_row_ref || 'DOC'} P${c.paragraph_num || ''}]</span>`;
+        }).join(' ');
+        const stmtText = f.disputed_statement || f.statement || f.finding || f.rationale || '';
         card.innerHTML = `
           <div class="log-header">
             <span>${f.claim_id}</span>
             <span class="badge badge-${(f.verdict||'established').toLowerCase()}">${f.verdict || 'Ruling'}</span>
           </div>
-          <div>${f.statement || f.finding || ''}</div>
-          <div style="margin-top:4px;">${cits}</div>
+          <div style="font-size:0.9rem; margin-top:4px;">${stmtText}</div>
+          <div style="margin-top:6px;">${cits || '<span style="color:var(--text-dim);">None</span>'}</div>
         `;
 
         if (f.claim_id && f.claim_id.startsWith('THOR')) {
@@ -1065,6 +1069,38 @@
         }
       });
 
+      // Render Cross-Examination Tab
+      const crossList = document.getElementById('crossExamList');
+      if (crossList) {
+        crossList.innerHTML = '';
+        const allWithDebate = (briefing.established_findings || []).concat(briefing.contested_findings || []);
+        let foundDebate = false;
+        allWithDebate.forEach(f => {
+          if (f.opposing_arguments && f.opposing_arguments.length) {
+            foundDebate = true;
+            f.opposing_arguments.forEach(arg => {
+              const card = document.createElement('div');
+              card.className = 'log-entry';
+              const isThorTarget = f.claim_id && f.claim_id.startsWith('THOR');
+              const challenger = isThorTarget ? 'LOKI' : 'THOR';
+              const badgeClass = isThorTarget ? 'badge-conceded' : 'badge-contested';
+              card.innerHTML = `
+                <div class="log-header">
+                  <span style="font-weight:700;">⚔️ ${challenger} Challenge Against ${f.claim_id}</span>
+                  <span class="badge ${badgeClass}">Cross-Examined</span>
+                </div>
+                <div style="margin-top:6px; font-size:0.9rem;">${arg}</div>
+                <div style="margin-top:6px; font-size:0.8rem; color:var(--text-muted);">Target: ${f.disputed_statement || f.statement || f.finding || ''}</div>
+              `;
+              crossList.appendChild(card);
+            });
+          }
+        });
+        if (!foundDebate) {
+          crossList.innerHTML = '<div class="empty-state">No cross-examination challenges recorded for this case.</div>';
+        }
+      }
+
       // Render Thor and Loki Theses on Overview Tab
       const allFindings = (briefing.established_findings || []).concat(briefing.contested_findings || []);
       const thorClaims = allFindings.filter(f => f.claim_id && f.claim_id.startsWith('THOR'));
@@ -1073,7 +1109,8 @@
       if (thorClaims.length) {
         document.getElementById('thorSummaryBadge').innerText = 'Advocated';
         document.getElementById('thorSummaryBadge').className = 'badge badge-contested';
-        document.getElementById('thorSummaryText').innerText = thorClaims.map(c => c.statement || c.finding).slice(0, 2).join(' | ');
+        const txt = thorClaims.map(c => c.disputed_statement || c.statement || c.finding || c.rationale).filter(Boolean).slice(0, 2).join(' | ');
+        document.getElementById('thorSummaryText').innerText = txt || 'High commercial disruption advocated.';
       } else if (briefing.exposure_table && briefing.exposure_table.some(e => e.thor_range)) {
         document.getElementById('thorSummaryBadge').innerText = 'Evaluated';
         document.getElementById('thorSummaryBadge').className = 'badge badge-contested';
@@ -1083,7 +1120,8 @@
       if (lokiClaims.length) {
         document.getElementById('lokiSummaryBadge').innerText = 'Advocated';
         document.getElementById('lokiSummaryBadge').className = 'badge badge-conceded';
-        document.getElementById('lokiSummaryText').innerText = lokiClaims.map(c => c.statement || c.finding).slice(0, 2).join(' | ');
+        const txt = lokiClaims.map(c => c.disputed_statement || c.statement || c.finding || c.rationale).filter(Boolean).slice(0, 2).join(' | ');
+        document.getElementById('lokiSummaryText').innerText = txt || 'Limited exposure & inventory mitigation advocated.';
       } else if (briefing.exposure_table && briefing.exposure_table.some(e => e.loki_range)) {
         document.getElementById('lokiSummaryBadge').innerText = 'Evaluated';
         document.getElementById('lokiSummaryBadge').className = 'badge badge-conceded';

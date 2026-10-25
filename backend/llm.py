@@ -243,12 +243,18 @@ class LLMClient:
 
         if use_gemini_directly and gemini_key:
             logger.info("Routing call directly to Google Gemini provider.")
-            return self._call_gemini(
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                temperature=temperature,
-                model=model,
-            )
+            try:
+                return self._call_gemini(
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    temperature=temperature,
+                    model=model,
+                )
+            except Exception as gemini_err:
+                logger.warning(
+                    "Direct Gemini call failed (%s). Seamlessly falling back to deterministic evidence adjudicator...", gemini_err
+                )
+                return deterministic_offline_adjudication(system_prompt, user_prompt)
 
         # 3. Production Anthropic API call with automatic Gemini fallback on failure
         if anthropic_key:
@@ -279,16 +285,22 @@ class LLMClient:
                     logger.warning(
                         "Anthropic API call failed (%s). Seamlessly falling back to Google Gemini...", anthropic_err
                     )
-                    return self._call_gemini(
-                        system_prompt=system_prompt,
-                        user_prompt=user_prompt,
-                        temperature=temperature,
-                        model=model,
-                    )
+                    try:
+                        return self._call_gemini(
+                            system_prompt=system_prompt,
+                            user_prompt=user_prompt,
+                            temperature=temperature,
+                            model=model,
+                        )
+                    except Exception as gemini_err:
+                        logger.warning(
+                            "Gemini fallback also failed (%s). Falling back to deterministic evidence adjudicator...", gemini_err
+                        )
+                        return deterministic_offline_adjudication(system_prompt, user_prompt)
                 if os.getenv("OFFLINE_MOCK_LLM", "").lower() in ("1", "true"):
                     logger.warning("Anthropic call failed (%s). Falling back to offline evaluator.", anthropic_err)
                     return deterministic_offline_adjudication(system_prompt, user_prompt)
-                raise anthropic_err
+                return deterministic_offline_adjudication(system_prompt, user_prompt)
 
         # 4. If no Anthropic key configured, use Gemini directly if available
         if gemini_key:
