@@ -1,0 +1,276 @@
+{
+  "attacks": [
+    {
+      "attack_id": "A1-T1",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "thor",
+      "target_claim_id": "L1-1",
+      "target_agent": "loki",
+      "objection": "The low bound is wrong. A December-only figure (-50.9) is a single month, not an exposure range, and ignores that the post-expiry shortfall is persistent. Nov-Dec (CALC-54746bbc2bce35cc, -104.2) is a better low bound. Every month from September to December 2026 is far below the prior year (Sep 38.2 vs 97.9, Dec 34.1 vs 85.0), so a one-month window understates exposure. It also frames Vanir as an offset, yet the offset (+18.6) is under 9% of the Orvan fall of 216.2.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0009",
+          "paragraph_ref": null,
+          "row_id": "ORV-0009#R3",
+          "pub_date": "2027-01-19",
+          "quote": "In September 2026, the value was USD 38.2M and the volume was 93,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0009",
+          "paragraph_ref": null,
+          "row_id": "ORV-0009#R5",
+          "pub_date": "2027-01-19",
+          "quote": "In November 2026, the value was USD 35.3M and the volume was 86,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0017",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2026-12-16",
+          "quote": "Buyers in Midgard and Tolan are working through contracts month by month rather than committing to longer terms."
+        }
+      ],
+      "evidence_gap": null,
+      "why_it_matters": "A low bound of 50.9 understates the sustained Midgard wheat exposure, which has run at roughly 50-60 USD M per month below the prior year since September."
+    },
+    {
+      "attack_id": "A1-T2",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "thor",
+      "target_claim_id": "L1-2",
+      "target_agent": "loki",
+      "objection": "The Vanir flow is labelled a documented substitute, but the Vanir rise began only in November (Oct 30.9 vs Nov 38.5). Vanir flows were flat in September and October, when Orvan wheat had already fallen by more than 55 USD M per month. The offset is therefore late and partial. ORV-0022 also says the substitute is more expensive to handle, and the customs figures are provisional. Value comparisons also hide handling costs, so the extra Vanir value cannot be read as full replacement.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": null,
+          "row_id": "ORV-0027#R4",
+          "pub_date": "2027-01-22",
+          "quote": "In October 2026, the value was USD 30.9M and the volume was 77,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "more expensive to handle"
+        },
+        {
+          "doc_id": "ORV-0021",
+          "paragraph_ref": "P3",
+          "row_id": null,
+          "pub_date": "2026-11-12",
+          "quote": "Rail capacity is limited and cannot replace the sea route."
+        }
+      ],
+      "evidence_gap": null,
+      "why_it_matters": "It shows the substitution is slow, costly and capacity-limited, which supports a high-exposure reading for Midgard wheat."
+    },
+    {
+      "attack_id": "A1-T3",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "thor",
+      "target_claim_id": "L1-5",
+      "target_agent": "loki",
+      "objection": "The claim cites a Midgard-only passage (ORV-0022/P3) and so cannot support a statement about Tolan maize. The real point is the evidence gap: there is no Orvan to Tolan or Vanir to Tolan maize table. The gap means Tolan maize exposure is unquantified, so a combined Midgard/Tolan maize range would be incomplete. It should not be read as low or zero.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0017",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2026-12-16",
+          "quote": "Buyers in Midgard and Tolan are working through contracts month by month"
+        }
+      ],
+      "evidence_gap": "No Orvan to Tolan maize trade table, no Vanir to Tolan maize table, and no Ravik Rail Link volumes for Tolan.",
+      "why_it_matters": "Without Tolan maize data, the high end of the requested maize range is understated, and Loki's lack of an estimate should not be treated as low exposure."
+    },
+    {
+      "attack_id": "A1-L1",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "loki",
+      "target_claim_id": "T1-2",
+      "target_agent": "thor",
+      "objection": "The 104.2..216.2 USD M range is a gross decline on one route. The claim concedes it nets out no substitute flows. Ministry rows show Vanir wheat to Midgard running above the prior year in every month from September to December 2026. The December Vanir figure was 36.9M against 28.1M a year earlier. Midgard millers also describe the substitute supply as reliable enough for current demand. Netting is therefore the correct exposure metric, and this claim does not provide it. It treats lost Orvan trade value as if it were unmet import need.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": null,
+          "row_id": "ORV-0027#R6",
+          "pub_date": "2027-01-22",
+          "quote": "In December 2026, the value was USD 36.9M and the volume was 92,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": null,
+          "row_id": "ORV-0027#R12",
+          "pub_date": "2027-01-22",
+          "quote": "In December 2025, the value was USD 28.1M and the volume was 75,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Millers say the substitute supply is reliable enough for current demand but more expensive to handle."
+        }
+      ],
+      "evidence_gap": "Ravik Rail Link wheat volumes delivered to Midgard are missing, so the full substitute offset is unmeasured and the gross figure overstates net exposure.",
+      "why_it_matters": "Presenting the gross route decline as the exposure range inflates Midgard wheat exposure. The documented substitutes show that part of the lost Orvan supply was replaced."
+    },
+    {
+      "attack_id": "A1-L2",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "loki",
+      "target_claim_id": "T1-3",
+      "target_agent": "thor",
+      "objection": "The claim attributes the whole maize decline to the corridor ending. The documents show a port bottleneck. Port agents say berth shortage, not lack of grain, is holding loadings down. A dock strike began on 14 September and overlaps the decline. The maize drop starts in October, which the ministry explains by delayed delivery terms. The 126.4 USD M high is therefore a combined corridor-plus-strike figure, and part of it may reverse once berths reopen. No document separates the two effects.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0017",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2026-12-16",
+          "quote": "Port agents say the berth shortage, rather than a lack of grain, is holding loadings down."
+        },
+        {
+          "doc_id": "ORV-0032",
+          "paragraph_ref": "P2",
+          "row_id": null,
+          "pub_date": "2026-09-15",
+          "quote": "Some grain berths are closed and the remaining berths are working at reduced speed."
+        }
+      ],
+      "evidence_gap": "There is no document giving the strike end date or post-December recovery of Orvan maize loadings. The corridor-only share of the decline cannot be isolated.",
+      "why_it_matters": "If the strike drives much of the decline, the corridor-attributable exposure is lower and more temporary than the 105.7..126.4 USD M range suggests."
+    },
+    {
+      "attack_id": "A1-L3",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "loki",
+      "target_claim_id": "T1-6",
+      "target_agent": "thor",
+      "objection": "The claim calls the Vanir offset small and treats it as a minor limit on exposure. It compares Vanir's year-on-year rise with the gross Orvan decline. The Vanir offset is a lower bound, because Ravik rail deliveries are documented but not quantified. Vanir volumes also stepped up from November on short-term contracts, so the offset was still growing at the end of the data. The claim itself says the offset is not netted anywhere in its estimates. It cannot call it small without Ravik data.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P3",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Midgard millers have increased purchases from Vanir and moved more grain by rail through Ravik."
+        },
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-22",
+          "quote": "Vanir wheat reached Midgard in larger volumes from November, mostly on short-term contracts."
+        }
+      ],
+      "evidence_gap": "Ravik Rail Link volumes to Midgard and Tolan are missing, as are any Vanir maize rows. The offset size is therefore a floor, not an estimate.",
+      "why_it_matters": "Calling a partial, rising and incompletely measured offset small biases the exposure reading upward for Midgard and Tolan wheat."
+    }
+  ],
+  "defenses": [
+    {
+      "defense_id": "D-A1-T2",
+      "run_number": 1,
+      "defender": "loki",
+      "attack_id": "A1-T2",
+      "claim_id": "L1-2",
+      "argument": "I accept that the Vanir rise began only in November and is partial. My claim L1-2 said only that it was a documented substitute that offsets a small part of the Orvan decline. That is consistent with Thor's reading. The Vanir rise is documented in the ministry's tier-1 note, which says larger volumes arrived from November. Independent evidence shows the substitute is real and working: Midgard millers describe it as reliable enough for current demand, and shipping agents report vessels already shifting to Vanir wheat cargoes in September. This supports the view that substitution exists and is growing, even though it is incomplete. I do not claim full replacement.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0008",
+          "paragraph_ref": "P4",
+          "row_id": null,
+          "pub_date": "2026-09-18",
+          "quote": "Hammer Freight, a bulk operator, says it has moved ships to Vanir for wheat cargoes."
+        },
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": null,
+          "row_id": "ORV-0027#R3",
+          "pub_date": "2027-01-22",
+          "quote": "In September 2026, the value was USD 31.5M and the volume was 84,000 tonnes."
+        }
+      ]
+    },
+    {
+      "defense_id": "D-A1-L2",
+      "run_number": 1,
+      "defender": "thor",
+      "attack_id": "A1-L2",
+      "claim_id": "T1-3",
+      "argument": "I accept that the maize decline mixes the corridor and the strike effects, and that no document separates them. But the claim does not assume the corridor alone caused it. Its assumptions already name the strike as a possible contributor. The decline is also real and persistent in the data. Maize stayed near USD 31M a month in both November and December, versus about 84M a year earlier. Ministry data also show Orvan maize loadings at about a third of normal into December, and the ministry could not say when they would improve (ORV-0017/P5). Buyers in Midgard and Tolan are rolling contracts month by month, so they are exposed to continued disruption. The post-expiry port bottleneck is itself a consequence of having no replacement arrangement in place. That leaves exposure high, even if the corridor-only share is unknown. The range stays labelled as corridor-plus-strike, with no recovery assumed or ruled out.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0017",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2026-12-16",
+          "quote": "Buyers in Midgard and Tolan are working through contracts month by month rather than committing to longer terms."
+        },
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R12",
+          "pub_date": "2027-01-21",
+          "quote": "In December 2025, the value was USD 84.4M and the volume was 222,000 tonnes."
+        }
+      ]
+    }
+  ],
+  "concessions": [
+    {
+      "concession_id": "C-A1-T1",
+      "run_number": 1,
+      "agent": "loki",
+      "claim_id": "L1-1",
+      "attack_id": "A1-T1",
+      "reason": "Thor is right that a December-only low bound is weak. Every month from September to December ran far below the prior year (ORV-0009 Sep 38.2 vs 97.9; Nov 35.3 vs 88.6; Dec 34.1 vs 85.0). The shortfall is persistent, so a single month is not a defensible low. I revise the low bound to the Nov-Dec change of 104.2 USD M (CALC-54746bbc2bce35cc), which is the more recent post-expiry run-rate. I keep my point that Vanir flows offset part of the loss, but I do not claim that this makes Midgard wheat exposure modest. The documented net offset is small.",
+      "partial": true,
+      "revised_claim_text": "Midgard wheat: Orvan wheat import value was down 104.2 USD M in Nov-Dec 2026 versus a year earlier and 216.2 USD M in Sep-Dec 2026. These are trade exposure, not economic loss. Vanir wheat rose 17.7 USD M in Nov-Dec and 18.6 USD M in Sep-Dec, which is a documented but partial offset (inference). Exposure range for Midgard wheat: 104.2..216.2 USD M, before netting Vanir flows."
+    },
+    {
+      "concession_id": "C-A1-T3",
+      "run_number": 1,
+      "agent": "loki",
+      "claim_id": "L1-5",
+      "attack_id": "A1-T3",
+      "reason": "Thor is right on both points. ORV-0022/P3 refers to Midgard millers and does not support any statement about Tolan maize. The real position is an evidence gap: there is no Orvan to Tolan or Vanir to Tolan maize table, and no Ravik volume data for Tolan, and my search for Tolan maize supply or stocks returned zero hits. Tolan maize exposure is unknown, not low and not zero. The claim is revised to a pure evidence-gap statement, with no citation to the Midgard-only passage.",
+      "partial": true,
+      "revised_claim_text": "Tolan maize: no trade table exists for Orvan to Tolan or Vanir to Tolan maize, and a search for Tolan maize supply, stocks or alternative suppliers returned no documents. Exposure is unquantified, not zero and not low. Any combined Midgard/Tolan maize range covers Midgard only and is incomplete."
+    },
+    {
+      "concession_id": "C-A1-L1",
+      "run_number": 1,
+      "agent": "thor",
+      "claim_id": "T1-2",
+      "attack_id": "A1-L1",
+      "reason": "The attack is largely right. The 104.2..216.2 USD M figure is a gross decline on the Orvan route and is not net exposure. Vanir wheat to Midgard was above the prior year in the Sep-Dec months (CALC-7bf09156ad946b01, +18.6M), and ORV-0022/P5 says millers find substitute supply reliable for current demand. Ravik volumes are unmeasured, so the offset is a floor. I keep the gross figure only as 'trade value that moved off the Orvan route', not as unmet import need or loss. I concede partially: the claim should be reworded as gross route decline and flag that the net-of-Vanir figure is much smaller. The net-offset calc CALC-a1d18a2d9d5a5731 gives only 4.3M, but I use it only as a labelled context figure, since it compares Orvan levels with Vanir levels rather than year-on-year changes.",
+      "partial": true,
+      "revised_claim_text": "Midgard wheat imports on the Orvan route fell by USD 104.2M (Nov-Dec) to 216.2M (Sep-Dec) versus the same months of 2025. This is a gross route decline, not net exposure or loss. Vanir wheat rose by USD 18.6M over Sep-Dec, and unmeasured Ravik rail flows offset some of the decline. Millers describe the substitute supply as reliable but more costly to handle."
+    },
+    {
+      "concession_id": "C-A1-L3",
+      "run_number": 1,
+      "agent": "thor",
+      "claim_id": "T1-6",
+      "attack_id": "A1-L3",
+      "reason": "The attack is fair. I called the Vanir offset small without Ravik data and without Vanir maize rows. The offset is a measured floor, not a size estimate. ORV-0027/P14 says Vanir volumes stepped up from November, so the offset was still growing at the end of the data. For Tolan, the Vanir rise of 14.4M is small against the 96.0M gross decline. I concede the word 'small' and the framing of the offset as a minor limit. The honest position is that the Vanir offset is a floor that is partly measured, rising, and unquantified for rail.",
+      "partial": true,
+      "revised_claim_text": "Vanir wheat to Midgard (+18.6M) and to Tolan (+14.4M) rose over Sep-Dec 2026 versus 2025, with Vanir volumes stepping up from November. This is a measured lower bound on substitution. Ravik rail flows and Vanir maize flows are not quantified, so the full size of the offset is unknown and the Orvan declines cannot be netted fully."
+    }
+  ],
+  "invalid_defenses": [],
+  "unanswered": [],
+  "failures": [],
+  "rejected_attacks": []
+}

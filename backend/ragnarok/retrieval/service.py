@@ -47,11 +47,19 @@ def _month_start(period: str) -> date:
 
 
 class RetrievalService:
-    def __init__(self, store: Store, settings: Settings | None = None, embedder: Embedder | None = None) -> None:
+    def __init__(self, store: Store, settings: Settings | None = None, embedder: Embedder | None = None,
+                 index: HybridIndex | None = None) -> None:
         self.store = store
         self.settings = settings or get_settings()
-        self.embedder = embedder or FastEmbedder(self.settings.embedding_model, self.settings.index_dir / "models")
-        self.index = HybridIndex(store, self.embedder, rrf_k=self.settings.rrf_k)
+        if index is not None:  # share a built index (and its embedder) across threads
+            self.index, self.embedder = index, index.embedder
+        else:
+            self.embedder = embedder or FastEmbedder(self.settings.embedding_model, self.settings.index_dir / "models")
+            self.index = HybridIndex(store, self.embedder, rrf_k=self.settings.rrf_k)
+
+    def fork(self) -> "RetrievalService":
+        """A service for another thread: own SQLite connection, shared index."""
+        return RetrievalService(Store(self.store.path), self.settings, index=self.index)
 
     # ------------------------------------------------------------ logging ---
 
@@ -80,7 +88,7 @@ class RetrievalService:
         limit = max(1, min(limit or cap, cap))
         if not query or not query.strip():
             raise ValueError("query must not be empty")
-        self.index.refresh()
+        self.index.refresh(store=self.store)
         qn = normalise_query(query)
         request = {"case_id": case_id, "agent": agent.value, "query": qn, "filters": f.model_dump(mode="json"),
                    "as_of": as_of.isoformat(), "limit": limit, "index_version": self.index.version,
@@ -280,7 +288,7 @@ class RetrievalService:
 
         rep = ingest_pack(pack_dir, self.store, self.settings)
         before = len(self.index.chunks)
-        self.index.refresh()
+        self.index.refresh(store=self.store)
         self._log(case_id, 0, AgentName.HEIMDALL, LogEventType.INGEST,
                   f"hot ingest of pack {rep.pack_id}: {len(rep.documents)} document(s); index {before} -> "
                   f"{len(self.index.chunks)} paragraphs", {"pack_id": rep.pack_id, "errors": rep.errors},

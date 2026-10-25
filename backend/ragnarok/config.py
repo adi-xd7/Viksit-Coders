@@ -43,12 +43,14 @@ class Settings(BaseSettings):
     # Limits: hard caps enforced in code.
     max_runs: int = Field(3, ge=1, le=5)
     max_cross_exam_rounds: int = Field(1, ge=1, le=3)
-    max_tool_calls_per_agent: int = Field(12, ge=1, le=100)
-    max_tool_calls_per_case: int = Field(60, ge=1, le=500)
-    max_tokens_per_agent: int = Field(150_000, ge=1_000)
-    max_tokens_per_case: int = Field(600_000, ge=1_000)
-    llm_max_output_tokens: int = Field(4096, ge=256, le=64_000)
-    request_timeout_s: float = Field(120.0, gt=0, le=900)
+    # Sized from the first real trial: ~25 tool calls and ~130k tokens per advocate for
+    # research (3 rounds x 5) + attack and defense research.
+    max_tool_calls_per_agent: int = Field(30, ge=1, le=100)
+    max_tool_calls_per_case: int = Field(120, ge=1, le=500)
+    max_tokens_per_agent: int = Field(300_000, ge=1_000)
+    max_tokens_per_case: int = Field(1_200_000, ge=1_000)
+    llm_max_output_tokens: int = Field(16_000, ge=256, le=64_000)  # thinking is always on: leave room
+    request_timeout_s: float = Field(300.0, gt=0, le=900)
     max_retries: int = Field(2, ge=0, le=5)
     max_upload_bytes: int = Field(20 * 1024 * 1024, ge=1024)
     max_evidence_per_query: int = Field(12, ge=1, le=100)
@@ -57,9 +59,18 @@ class Settings(BaseSettings):
     # Retrieval: Reciprocal Rank Fusion constant (score = sum 1 / (k + rank)).
     rrf_k: int = Field(60, ge=1, le=1000)
 
+    # Trial
+    llm_refusal_fallback: bool = True  # server-side refusal fallback on Opus 5.5 / Sonnet 5.5
+    max_research_rounds: int = Field(3, ge=1, le=6)  # tool-request rounds per agent per step
+    max_claims_per_advocate: int = Field(8, ge=1, le=12)
+    max_attacks_per_advocate: int = Field(3, ge=1, le=6)
+    effort_advocate: str = Field("medium", pattern="^(low|medium|high|xhigh|max)$")
+    effort_judge: str = Field("high", pattern="^(low|medium|high|xhigh|max)$")
+    cases_dir: Path = Path("logs/cases")
+
     @model_validator(mode="after")
     def _resolve_and_check(self) -> "Settings":
-        for name in ("data_dir", "packs_dir", "index_dir", "processed_dir", "log_dir", "db_path"):
+        for name in ("data_dir", "packs_dir", "index_dir", "processed_dir", "log_dir", "db_path", "cases_dir"):
             p: Path = getattr(self, name)
             if not p.is_absolute():
                 object.__setattr__(self, name, (PROJECT_ROOT / p).resolve())

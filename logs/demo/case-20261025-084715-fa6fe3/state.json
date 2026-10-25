@@ -1,0 +1,46 @@
+{
+  "case_id": "case-20261025-084715-fa6fe3",
+  "question": "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.",
+  "as_of": "2027-01-25",
+  "stage": "DONE",
+  "history": [
+    "HEIMDALL",
+    "THOR_LOKI",
+    "CROSS_EXAMINATION",
+    "ODIN",
+    "BRIEFING",
+    "DONE"
+  ],
+  "notes": [],
+  "stop_reason": null,
+  "usage": {
+    "tokens": {
+      "heimdall": {
+        "input": 58813,
+        "output": 3512,
+        "calls": 4
+      },
+      "loki": {
+        "input": 121957,
+        "output": 10019,
+        "calls": 8
+      },
+      "thor": {
+        "input": 148647,
+        "output": 14346,
+        "calls": 9
+      },
+      "odin": {
+        "input": 54822,
+        "output": 17812,
+        "calls": 3
+      }
+    },
+    "tool_calls": {
+      "heimdall": 12,
+      "loki": 18,
+      "thor": 17,
+      "odin": 5
+    }
+  }
+}

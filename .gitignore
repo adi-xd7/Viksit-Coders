@@ -27,6 +27,7 @@ logs/*.db
 logs/*.db-*
 logs/*.sqlite
 logs/**/*.jsonl
+logs/cases/
 !logs/demo/
 !logs/demo/**
 

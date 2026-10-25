@@ -156,7 +156,9 @@ class Store:
         self.path = Path(db_path)
         if str(db_path) != ":memory:":
             self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.conn = sqlite3.connect(str(db_path))
+        # One connection per agent; an agent may move between worker threads but never
+        # shares its connection concurrently, so cross-thread use is safe.
+        self.conn = sqlite3.connect(str(db_path), timeout=30, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self.conn.execute("PRAGMA foreign_keys = ON")
         self.conn.executescript(SCHEMA)

@@ -115,13 +115,16 @@ class HybridIndex:
         self.vectors = np.zeros((0, 0), dtype=np.float32)
         self.version = -1
 
-    def refresh(self, force: bool = False) -> bool:
-        """Rebuild from the store if it changed (hot ingest). Only new texts are embedded."""
-        v = self.store.version()
+    def refresh(self, force: bool = False, store: Store | None = None) -> bool:
+        """Rebuild from the store if it changed (hot ingest). Only new texts are embedded.
+
+        `store` lets a thread use its own SQLite connection with a shared index."""
+        store = store or self.store
+        v = store.version()
         if not force and v == self.version:
             return False
-        chunks = chunks_from_documents(self.store.all_documents(), self.store.table_sectors_by_doc())
-        self.vectors = embed_cached(self.store, self.embedder, [c.index_text for c in chunks])
+        chunks = chunks_from_documents(store.all_documents(), store.table_sectors_by_doc())
+        self.vectors = embed_cached(store, self.embedder, [c.index_text for c in chunks])
         self.chunks = chunks
         self.version = v
         return True

@@ -132,6 +132,10 @@ class LogEventType(StrEnum):
     RUN_START = "RUN_START"
     RUN_END = "RUN_END"
     BRIEFING = "BRIEFING"
+    CASE_FILE = "CASE_FILE"  # Heimdall's case file / verification
+    STAGE = "STAGE"  # state-machine transition
+    SUFFICIENCY = "SUFFICIENCY"
+    PRECHECK = "PRECHECK"  # code pre-checks on a claim before Odin rules  # Odin's sufficiency assessment (send-back decision in Phase 4)
 
 
 class _Model(BaseModel):
@@ -525,8 +529,9 @@ class CaseFile(_Model):
     question: str = Field(min_length=5)
     as_of: date
     created_at: datetime = Field(default_factory=_utcnow)
-    countries: list[str] = Field(default_factory=list)
-    sectors: list[str] = Field(default_factory=list)
+    countries: list[str] = Field(default_factory=list)  # whose exposure the question asks about
+    sectors: list[str] = Field(default_factory=list)  # commodities/sectors the question asks about
+    related_countries: list[str] = Field(default_factory=list)  # exporters, transit, alternative suppliers
     commodities: list[str] = Field(default_factory=list)
     routes: list[str] = Field(default_factory=list)
     candidate_event_ids: list[str] = Field(default_factory=list)
@@ -536,6 +541,7 @@ class CaseFile(_Model):
     evidence_doc_ids: list[str] = Field(default_factory=list)
     trade_table_ids: list[str] = Field(default_factory=list)
     missing_data: list[str] = Field(default_factory=list)
+    corrections: list[str] = Field(default_factory=list)  # corrections / retractions / contradictions noted
     run_number: int = Field(1, ge=1)
 
     @field_validator("case_id")
