@@ -957,7 +957,7 @@
       if (briefingRes.ok) {
         const bData = await briefingRes.json();
         activeTrialData.briefing = bData;
-        renderBriefing(bData);
+        renderBriefing(bData, caseId, trialId);
       }
 
       // Update Stepper to Completed
@@ -990,7 +990,7 @@
       });
     }
 
-    function renderBriefing(briefing) {
+    function renderBriefing(briefing, caseId, trialId) {
       document.getElementById('overviewExecutiveText').innerText = briefing.executive_summary || 'Trial completed.';
       document.getElementById('briefingMarkdownBox').innerText = briefing.markdown_content || JSON.stringify(briefing, null, 2);
 
@@ -1073,29 +1073,95 @@
       const crossList = document.getElementById('crossExamList');
       if (crossList) {
         crossList.innerHTML = '';
-        const allWithDebate = (briefing.established_findings || []).concat(briefing.contested_findings || []);
         let foundDebate = false;
-        allWithDebate.forEach(f => {
-          if (f.opposing_arguments && f.opposing_arguments.length) {
-            foundDebate = true;
-            f.opposing_arguments.forEach(arg => {
-              const card = document.createElement('div');
-              card.className = 'log-entry';
-              const isThorTarget = f.claim_id && f.claim_id.startsWith('THOR');
-              const challenger = isThorTarget ? 'LOKI' : 'THOR';
-              const badgeClass = isThorTarget ? 'badge-conceded' : 'badge-contested';
-              card.innerHTML = `
-                <div class="log-header">
-                  <span style="font-weight:700;">⚔️ ${challenger} Challenge Against ${f.claim_id}</span>
-                  <span class="badge ${badgeClass}">Cross-Examined</span>
-                </div>
-                <div style="margin-top:6px; font-size:0.9rem;">${arg}</div>
-                <div style="margin-top:6px; font-size:0.8rem; color:var(--text-muted);">Target: ${f.disputed_statement || f.statement || f.finding || ''}</div>
-              `;
-              crossList.appendChild(card);
-            });
-          }
-        });
+
+        // 1. First-class structured cross-examination records
+        if (briefing.cross_examination && briefing.cross_examination.length) {
+          foundDebate = true;
+          briefing.cross_examination.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'log-entry';
+            const challenger = item.challenger || (item.target_claim_id && item.target_claim_id.startsWith('THOR') ? 'LOKI' : 'THOR');
+            const defender = item.defender || (challenger === 'THOR' ? 'LOKI' : 'THOR');
+            const badgeClass = item.conceded ? 'badge-conceded' : 'badge-contested';
+            const badgeText = item.conceded ? 'CONCEDED' : 'RECIPROCAL CLASH';
+
+            const citsHtml = (item.counter_citations || []).map(c => `<span class="citation-tag">${c}</span>`).join(' ');
+            const defCitsHtml = (item.defense_citations || []).map(c => `<span class="citation-tag">${c}</span>`).join(' ');
+
+            card.innerHTML = `
+              <div class="log-header">
+                <span style="font-weight:700;">⚔️ ${challenger} Challenge Against ${item.target_claim_id}</span>
+                <span class="badge ${badgeClass}">${badgeText}</span>
+              </div>
+              <div style="margin-top:6px; font-size:0.92rem; color: #f1f5f9;">
+                <strong style="color: ${challenger === 'THOR' ? 'var(--thor-gold)' : 'var(--loki-emerald)'};">${challenger} Challenge:</strong> ${item.challenge_argument || ''}
+              </div>
+              ${citsHtml ? `<div style="margin-top:4px;">${citsHtml}</div>` : ''}
+              <div style="margin-top:8px; padding:8px 12px; background: rgba(15, 23, 42, 0.6); border-left:3px solid var(--accent-blue); border-radius:4px; font-size:0.88rem; color: #cbd5e1;">
+                <strong style="color: ${defender === 'THOR' ? 'var(--thor-gold)' : 'var(--loki-emerald)'};">${defender} Defense / Rebuttal:</strong> ${item.counter_argument || 'Claim maintained based on baseline documentation.'}
+                ${defCitsHtml ? `<div style="margin-top:4px;">${defCitsHtml}</div>` : ''}
+              </div>
+              <div style="margin-top:6px; font-size:0.8rem; color:var(--text-dim);">Target Statement: ${item.target_statement || ''}</div>
+            `;
+            crossList.appendChild(card);
+          });
+        }
+
+        // 2. Secondary fallback: contested and established findings opposing arguments
+        if (!foundDebate) {
+          const allWithDebate = (briefing.established_findings || []).concat(briefing.contested_findings || []);
+          allWithDebate.forEach(f => {
+            if (f.opposing_arguments && f.opposing_arguments.length) {
+              foundDebate = true;
+              f.opposing_arguments.forEach(arg => {
+                const card = document.createElement('div');
+                card.className = 'log-entry';
+                const isThorTarget = f.claim_id && f.claim_id.startsWith('THOR');
+                const challenger = isThorTarget ? 'LOKI' : 'THOR';
+                const badgeClass = isThorTarget ? 'badge-conceded' : 'badge-contested';
+                card.innerHTML = `
+                  <div class="log-header">
+                    <span style="font-weight:700;">⚔️ ${challenger} Challenge Against ${f.claim_id}</span>
+                    <span class="badge ${badgeClass}">Cross-Examined</span>
+                  </div>
+                  <div style="margin-top:6px; font-size:0.9rem;">${arg}</div>
+                  <div style="margin-top:6px; font-size:0.8rem; color:var(--text-muted);">Target: ${f.disputed_statement || f.statement || f.finding || ''}</div>
+                `;
+                crossList.appendChild(card);
+              });
+            }
+          });
+        }
+
+        // 3. Third fallback: load from submission deliverables execution trace
+        if (!foundDebate && caseId && trialId) {
+          fetch(`/api/cases/${caseId}/trials/${trialId}/submission`).then(r => r.ok ? r.json() : null).then(pkg => {
+            if (!pkg) return;
+            const chs = (pkg.execution_trace && pkg.execution_trace.question_5_cross_examination_challenges_and_counter_arguments && pkg.execution_trace.question_5_cross_examination_challenges_and_counter_arguments.challenges) || [];
+            if (chs.length) {
+              crossList.innerHTML = '';
+              chs.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'log-entry';
+                card.innerHTML = `
+                  <div class="log-header">
+                    <span style="font-weight:700;">⚔️ ${c.challenger} Challenge Against ${c.target_claim_id}</span>
+                    <span class="badge badge-contested">Round ${c.round_num || 1}</span>
+                  </div>
+                  <div style="margin-top:6px; font-size:0.92rem; color: #f1f5f9;">
+                    <strong style="color: ${c.challenger === 'THOR' ? 'var(--thor-gold)' : 'var(--loki-emerald)'};">${c.challenger} Challenge:</strong> ${c.challenge_argument}
+                  </div>
+                  <div style="margin-top:8px; padding:8px 12px; background: rgba(15, 23, 42, 0.6); border-left:3px solid var(--accent-blue); border-radius:4px; font-size:0.88rem; color: #cbd5e1;">
+                    <strong style="color: ${c.defender === 'THOR' ? 'var(--thor-gold)' : 'var(--loki-emerald)'};">${c.defender} Defense / Rebuttal:</strong> ${c.counter_argument}
+                  </div>
+                `;
+                crossList.appendChild(card);
+              });
+            }
+          }).catch(console.error);
+        }
+
         if (!foundDebate) {
           crossList.innerHTML = '<div class="empty-state">No cross-examination challenges recorded for this case.</div>';
         }

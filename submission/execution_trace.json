@@ -1,0 +1,410 @@
+{
+  "question_4_agent_queries_and_retrieved_documents": [
+    {
+      "agent": "odin",
+      "run": 1,
+      "round": 1,
+      "query": "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.",
+      "retrieved_doc_ids": [
+        "ORV-0002"
+      ],
+      "hashes": [
+        "ATL-0001",
+        "ATL-0002",
+        "ATL-0003",
+        "ATL-0004",
+        "ATL-0005"
+      ],
+      "timestamp": "2026-10-25T13:02:30.500900+00:00"
+    },
+    {
+      "agent": "odin",
+      "run": 1,
+      "round": 1,
+      "query": "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.",
+      "retrieved_doc_ids": [
+        "ORV-0002"
+      ],
+      "hashes": [
+        "ATL-0001",
+        "ATL-0002",
+        "ATL-0003",
+        "ATL-0004",
+        "ATL-0005"
+      ],
+      "timestamp": "2026-10-25T13:02:30.766099+00:00"
+    },
+    {
+      "agent": "odin",
+      "run": 2,
+      "round": 1,
+      "query": "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.",
+      "retrieved_doc_ids": [
+        "ORV-0002"
+      ],
+      "hashes": [
+        "ATL-0001",
+        "ATL-0002",
+        "ATL-0003",
+        "ATL-0004",
+        "ATL-0005"
+      ],
+      "timestamp": "2026-10-25T13:02:30.936110+00:00"
+    }
+  ],
+  "question_5_cross_examination_challenges_and_counter_arguments": {
+    "total_challenges": 16,
+    "rounds": [
+      {
+        "round_num": 1,
+        "attacks_and_defenses": [
+          {
+            "challenger": "thor",
+            "target_claim_id": "LOKI-C1-MID-WHE",
+            "challenge_argument": "Loki's mitigation claim for Midgard wheat unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+            "counter_citations": [],
+            "defender": "LOKI",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "thor",
+            "target_claim_id": "LOKI-C2-MID-MAI",
+            "challenge_argument": "Loki's mitigation claim for Midgard maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+            "counter_citations": [],
+            "defender": "LOKI",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "thor",
+            "target_claim_id": "LOKI-C3-TOL-WHE",
+            "challenge_argument": "Loki's mitigation claim for Tolan wheat unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+            "counter_citations": [],
+            "defender": "LOKI",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "thor",
+            "target_claim_id": "LOKI-C4-TOL-MAI",
+            "challenge_argument": "Loki's mitigation claim for Tolan maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+            "counter_citations": [],
+            "defender": "LOKI",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "loki",
+            "target_claim_id": "THOR-C1-MID-WHE",
+            "challenge_argument": "Thor's claim THOR-C1-MID-WHE inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Midgard.",
+            "counter_citations": [],
+            "defender": "THOR",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "loki",
+            "target_claim_id": "THOR-C2-MID-MAI",
+            "challenge_argument": "Thor's claim THOR-C2-MID-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Midgard.",
+            "counter_citations": [],
+            "defender": "THOR",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "loki",
+            "target_claim_id": "THOR-C3-TOL-WHE",
+            "challenge_argument": "Thor's claim THOR-C3-TOL-WHE inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Tolan.",
+            "counter_citations": [],
+            "defender": "THOR",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "loki",
+            "target_claim_id": "THOR-C4-TOL-MAI",
+            "challenge_argument": "Thor's claim THOR-C4-TOL-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Tolan.",
+            "counter_citations": [],
+            "defender": "THOR",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "thor",
+            "target_claim_id": "LOKI-C1-MID-WHE",
+            "challenge_argument": "Loki's mitigation claim for Midgard wheat unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+            "counter_citations": [],
+            "defender": "LOKI",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "thor",
+            "target_claim_id": "LOKI-C2-MID-MAI",
+            "challenge_argument": "Loki's mitigation claim for Midgard maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+            "counter_citations": [],
+            "defender": "LOKI",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "thor",
+            "target_claim_id": "LOKI-C3-TOL-WHE",
+            "challenge_argument": "Loki's mitigation claim for Tolan wheat unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+            "counter_citations": [],
+            "defender": "LOKI",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "thor",
+            "target_claim_id": "LOKI-C4-TOL-MAI",
+            "challenge_argument": "Loki's mitigation claim for Tolan maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+            "counter_citations": [],
+            "defender": "LOKI",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "loki",
+            "target_claim_id": "THOR-C1-MID-WHE",
+            "challenge_argument": "Thor's claim THOR-C1-MID-WHE inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Midgard.",
+            "counter_citations": [],
+            "defender": "THOR",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "loki",
+            "target_claim_id": "THOR-C2-MID-MAI",
+            "challenge_argument": "Thor's claim THOR-C2-MID-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Midgard.",
+            "counter_citations": [],
+            "defender": "THOR",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "loki",
+            "target_claim_id": "THOR-C3-TOL-WHE",
+            "challenge_argument": "Thor's claim THOR-C3-TOL-WHE inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Tolan.",
+            "counter_citations": [],
+            "defender": "THOR",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          },
+          {
+            "challenger": "loki",
+            "target_claim_id": "THOR-C4-TOL-MAI",
+            "challenge_argument": "Thor's claim THOR-C4-TOL-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Tolan.",
+            "counter_citations": [],
+            "defender": "THOR",
+            "counter_argument": "Corroborated by trade ledger volume and baseline atlas.",
+            "round_num": 1
+          }
+        ]
+      }
+    ]
+  },
+  "question_6_memory_updates_and_claim_concessions": {
+    "memory_operations": [
+      {
+        "agent": "odin",
+        "operation": "MEMORY_READ",
+        "lesson": "Case observation logged.",
+        "evidence": "",
+        "timestamp": "2026-10-25T13:02:30.768374+00:00"
+      },
+      {
+        "agent": "odin",
+        "operation": "MEMORY_READ",
+        "lesson": "Case observation logged.",
+        "evidence": "",
+        "timestamp": "2026-10-25T13:02:30.938525+00:00"
+      }
+    ],
+    "concessions": []
+  },
+  "question_7_judicial_rulings_per_round": {
+    "Round 1": [
+      {
+        "claim_id": "THOR-C1-MID-WHE",
+        "verdict": "established",
+        "basis": "sourced_fact",
+        "rationale": "Admissible trade records substantiate baseline and disruption bounds for THOR-C1-MID-WHE.",
+        "disqualified_reason": null,
+        "admissible_citations": [
+          {
+            "doc_id": "ORV-0002",
+            "paragraph_num": 5,
+            "trade_row_ref": null,
+            "quoted_text": null,
+            "pub_date": "2026-06-15"
+          },
+          {
+            "doc_id": "TAB-ORV-0009",
+            "paragraph_num": null,
+            "trade_row_ref": "TAB-ORV-0009#2",
+            "quoted_text": null,
+            "pub_date": "2026-07"
+          }
+        ],
+        "inadmissible_citations": []
+      },
+      {
+        "claim_id": "THOR-C2-MID-MAI",
+        "verdict": "contested",
+        "basis": "inference",
+        "rationale": "Claim THOR-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+        "disqualified_reason": null,
+        "admissible_citations": [
+          {
+            "doc_id": "ORV-0002",
+            "paragraph_num": 5,
+            "trade_row_ref": null,
+            "quoted_text": null,
+            "pub_date": "2026-06-15"
+          }
+        ],
+        "inadmissible_citations": []
+      },
+      {
+        "claim_id": "THOR-C3-TOL-WHE",
+        "verdict": "established",
+        "basis": "sourced_fact",
+        "rationale": "Admissible trade records substantiate baseline and disruption bounds for THOR-C3-TOL-WHE.",
+        "disqualified_reason": null,
+        "admissible_citations": [
+          {
+            "doc_id": "ORV-0002",
+            "paragraph_num": 5,
+            "trade_row_ref": null,
+            "quoted_text": null,
+            "pub_date": "2026-06-15"
+          },
+          {
+            "doc_id": "TAB-ORV-0046",
+            "paragraph_num": null,
+            "trade_row_ref": "TAB-ORV-0046#2",
+            "quoted_text": null,
+            "pub_date": "2026-07"
+          }
+        ],
+        "inadmissible_citations": []
+      },
+      {
+        "claim_id": "THOR-C4-TOL-MAI",
+        "verdict": "contested",
+        "basis": "inference",
+        "rationale": "Claim THOR-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+        "disqualified_reason": null,
+        "admissible_citations": [
+          {
+            "doc_id": "ORV-0002",
+            "paragraph_num": 5,
+            "trade_row_ref": null,
+            "quoted_text": null,
+            "pub_date": "2026-06-15"
+          }
+        ],
+        "inadmissible_citations": []
+      },
+      {
+        "claim_id": "LOKI-C1-MID-WHE",
+        "verdict": "established",
+        "basis": "sourced_fact",
+        "rationale": "Admissible trade records substantiate baseline and disruption bounds for LOKI-C1-MID-WHE.",
+        "disqualified_reason": null,
+        "admissible_citations": [
+          {
+            "doc_id": "ORV-0002",
+            "paragraph_num": 4,
+            "trade_row_ref": null,
+            "quoted_text": null,
+            "pub_date": "2026-06-15"
+          },
+          {
+            "doc_id": "TAB-ORV-0036",
+            "paragraph_num": null,
+            "trade_row_ref": "TAB-ORV-0036#2",
+            "quoted_text": null,
+            "pub_date": "2027-01"
+          },
+          {
+            "doc_id": "TAB-ORV-0005",
+            "paragraph_num": null,
+            "trade_row_ref": "TAB-ORV-0005#2",
+            "quoted_text": null,
+            "pub_date": "2026-07"
+          }
+        ],
+        "inadmissible_citations": []
+      },
+      {
+        "claim_id": "LOKI-C2-MID-MAI",
+        "verdict": "contested",
+        "basis": "inference",
+        "rationale": "Claim LOKI-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+        "disqualified_reason": null,
+        "admissible_citations": [
+          {
+            "doc_id": "ORV-0002",
+            "paragraph_num": 4,
+            "trade_row_ref": null,
+            "quoted_text": null,
+            "pub_date": "2026-06-15"
+          }
+        ],
+        "inadmissible_citations": []
+      },
+      {
+        "claim_id": "LOKI-C3-TOL-WHE",
+        "verdict": "established",
+        "basis": "sourced_fact",
+        "rationale": "Admissible trade records substantiate baseline and disruption bounds for LOKI-C3-TOL-WHE.",
+        "disqualified_reason": null,
+        "admissible_citations": [
+          {
+            "doc_id": "ORV-0002",
+            "paragraph_num": 4,
+            "trade_row_ref": null,
+            "quoted_text": null,
+            "pub_date": "2026-06-15"
+          },
+          {
+            "doc_id": "TAB-ORV-0046",
+            "paragraph_num": null,
+            "trade_row_ref": "TAB-ORV-0046#2",
+            "quoted_text": null,
+            "pub_date": "2026-07"
+          },
+          {
+            "doc_id": "TAB-ORV-0005",
+            "paragraph_num": null,
+            "trade_row_ref": "TAB-ORV-0005#2",
+            "quoted_text": null,
+            "pub_date": "2026-07"
+          }
+        ],
+        "inadmissible_citations": []
+      },
+      {
+        "claim_id": "LOKI-C4-TOL-MAI",
+        "verdict": "contested",
+        "basis": "inference",
+        "rationale": "Claim LOKI-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+        "disqualified_reason": null,
+        "admissible_citations": [
+          {
+            "doc_id": "ORV-0002",
+            "paragraph_num": 4,
+            "trade_row_ref": null,
+            "quoted_text": null,
+            "pub_date": "2026-06-15"
+          }
+        ],
+        "inadmissible_citations": []
+      }
+    ]
+  }
+}

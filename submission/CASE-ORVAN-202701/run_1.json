@@ -1,0 +1,1286 @@
+{
+  "case_id": "CASE-ORVAN-202701",
+  "as_of": "2027-01-25",
+  "run_num": 1,
+  "case_file": {
+    "case_id": "CASE-ORVAN-202701",
+    "query": "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.",
+    "as_of": "2027-01-25",
+    "target_pairs": [
+      [
+        "Midgard",
+        "wheat"
+      ],
+      [
+        "Midgard",
+        "maize"
+      ],
+      [
+        "Tolan",
+        "wheat"
+      ],
+      [
+        "Tolan",
+        "maize"
+      ],
+      [
+        "Orvan",
+        "wheat"
+      ],
+      [
+        "Orvan",
+        "maize"
+      ]
+    ],
+    "verification_status": "real",
+    "verification_reason": "Disruption confirmed real by Realm Trade Ministry [ORV-0002 P1, 2026-06-15]: 'The Realm Trade Ministry publishes this summary of the Corridor Agreement for th...'",
+    "active_event_id": "E5"
+  },
+  "evidence_ids": [
+    "TAB-ORV-0044#2",
+    "TAB-ORV-0027#12",
+    "TAB-ORV-0046#9",
+    "TAB-ORV-0009#3",
+    "TAB-ORV-0029#5",
+    "TAB-ORV-0046#2",
+    "TAB-ORV-0009#10",
+    "TAB-ORV-0046#4",
+    "TAB-ORV-0019#9",
+    "TAB-ORV-0019#4",
+    "TAB-ORV-0027#7",
+    "TAB-ORV-0005#13",
+    "TAB-ORV-0030#13",
+    "ORV-0007",
+    "TAB-ORV-0044#4",
+    "ATL-0010",
+    "TAB-ORV-0009#12",
+    "TAB-ORV-0029#6",
+    "TAB-ORV-0005#9",
+    "TAB-ORV-0046#8",
+    "TAB-ORV-0036#2",
+    "TAB-ORV-0029#13",
+    "TAB-ORV-0029#3",
+    "ORV-0016",
+    "TAB-ORV-0009#6",
+    "TAB-ORV-0044#13",
+    "TAB-ORV-0046#5",
+    "TAB-ORV-0005#5",
+    "TAB-ORV-0005#8",
+    "TAB-ORV-0027#3",
+    "TAB-ORV-0029#7",
+    "TAB-ORV-0009#5",
+    "TAB-ORV-0044#8",
+    "ORV-0022",
+    "TAB-ORV-0029#4",
+    "TAB-ORV-0046#7",
+    "TAB-ORV-0019#10",
+    "TAB-ORV-0027#5",
+    "TAB-ORV-0005#12",
+    "TAB-ORV-0044#6",
+    "TAB-ORV-0005#3",
+    "TAB-ORV-0019#13",
+    "TAB-ORV-0027#10",
+    "ORV-0001",
+    "TAB-ORV-0030#8",
+    "TAB-ORV-0027#4",
+    "TAB-ORV-0036#3",
+    "TAB-ORV-0046#6",
+    "TAB-ORV-0029#2",
+    "TAB-ORV-0044#7",
+    "TAB-ORV-0030#6",
+    "TAB-ORV-0029#9",
+    "ORV-0030",
+    "TAB-ORV-0046#13",
+    "TAB-ORV-0030#3",
+    "TAB-ORV-0029#12",
+    "TAB-ORV-0019#6",
+    "TAB-ORV-0046#11",
+    "ORV-0009",
+    "TAB-ORV-0030#9",
+    "TAB-ORV-0027#11",
+    "TAB-ORV-0029#10",
+    "TAB-ORV-0009#8",
+    "TAB-ORV-0046#10",
+    "TAB-ORV-0005#2",
+    "TAB-ORV-0009#7",
+    "TAB-ORV-0029#8",
+    "TAB-ORV-0009#2",
+    "TAB-ORV-0029#11",
+    "TAB-ORV-0005#10",
+    "TAB-ORV-0030#10",
+    "TAB-ORV-0030#7",
+    "TAB-ORV-0046#12",
+    "TAB-ORV-0044#9",
+    "TAB-ORV-0019#12",
+    "TAB-ORV-0005#6",
+    "TAB-ORV-0030#5",
+    "TAB-ORV-0027#8",
+    "TAB-ORV-0005#11",
+    "TAB-ORV-0009#11",
+    "TAB-ORV-0019#2",
+    "TAB-ORV-0027#6",
+    "TAB-ORV-0046#3",
+    "ATL-0011",
+    "TAB-ORV-0044#11",
+    "TAB-ORV-0019#5",
+    "TAB-ORV-0027#13",
+    "TAB-ORV-0027#2",
+    "TAB-ORV-0044#12",
+    "TAB-ORV-0030#2",
+    "TAB-ORV-0019#11",
+    "TAB-ORV-0019#8",
+    "TAB-ORV-0044#3",
+    "TAB-ORV-0009#4",
+    "TAB-ORV-0027#9",
+    "TAB-ORV-0030#11",
+    "TAB-ORV-0019#7",
+    "TAB-ORV-0044#5",
+    "TAB-ORV-0030#12",
+    "TAB-ORV-0005#7",
+    "TAB-ORV-0019#3",
+    "TAB-ORV-0044#10",
+    "TAB-ORV-0030#4",
+    "TAB-ORV-0009#9",
+    "TAB-ORV-0009#13",
+    "TAB-ORV-0005#4",
+    "ORV-0002"
+  ],
+  "evidence_hashes": {
+    "ORV-0002": "2d02b0ee9ade4232d22f0f0466727cce7a409e500117a1b4f4565f5ee42b7bfe",
+    "ATL-0011": "7f951052296edeaf7600c29a2ab0af20e39bbb3751a03064a14ea59747a1ce5e",
+    "ATL-0010": "4332db142ef3befba2f4919f9269d6a80e18d6ba0707c6ecd5a6161d093c2d6e",
+    "ORV-0009": "cce7114b2b7ec74c9ac44e3e05b91b8fae4b2b4d51be31c230eda9c9c4ce724a",
+    "ORV-0016": "651cbc9b2397d9454ed95a9bc98536ac033a83af740c956ad7ae29eceadbc899",
+    "ORV-0022": "a0650227fca328f723fc1da9acf727d7d2dc183fee3319834be924430f6b19d1",
+    "ORV-0030": "f0952378a5bb25eff11e77c54a02b02edf9e9a0d75c81a4fac5e6345c1899c87",
+    "ORV-0001": "83fee0ebffb1208e2eb789be7608011cd009935b04925ac5026fe5660374c849",
+    "ORV-0007": "6fdcdd44a7ed65f3f00bece06911b7228ad3cf90d9c96e59fb2d15e8bfe1e421",
+    "TAB-ORV-0005#2": "65b37f8a407511b351447a1fe77e4debd87b8d760fbff3f6c95da6b5ca274e92",
+    "TAB-ORV-0005#3": "00d0e10bde78606e05d9a22f8e9f212cd97d78a84a79cd0fbd79f08925d3000c",
+    "TAB-ORV-0005#4": "e74324da2310ebf6a52c9c76755fd86523549c48bcda3fc1338700904e58958c",
+    "TAB-ORV-0005#5": "78c928606f682fb9446b05906f34266f717dd055fa5cbfc0d86d69cfe4ca72f4",
+    "TAB-ORV-0005#6": "fd625a64b74e86fe8309973176f4f5b0a7a5adb532cff60ba322cb51f7906fe2",
+    "TAB-ORV-0005#7": "7526a6bc7188e718954da008ec151507a06b843d939489eec25c21ceb859b8b7",
+    "TAB-ORV-0005#8": "2f255b401be56c368e56018903c1a7534b16a837a3c470efd7711d9414a4cd85",
+    "TAB-ORV-0005#9": "481f9b823c14f059d98d3d888f2dc2440384e99e19b7a533ad04a4467452ffd1",
+    "TAB-ORV-0005#10": "58b220c0c746a727c797d1d4ad51257960069a94bf9935ce0fa02e351869a59d",
+    "TAB-ORV-0005#11": "d5527d6a5548c880a992e856e36c488b5eec1f3273ab2175c8ef035ecb1df4f0",
+    "TAB-ORV-0005#12": "73329d683cfaafa264467268add3291f7d18b7470ed4175b1df89afa87a11ca5",
+    "TAB-ORV-0005#13": "7e47d12ec5a6f92cf03ef592741e6918551c676bbfcd3ae20942c78ae76516b7",
+    "TAB-ORV-0009#2": "9d6cfe7ddca8947d18198ce3503c1bae7a06ac3136a8fee581917f00a6e09092",
+    "TAB-ORV-0009#3": "88bb4729edb40068f05330581e168da20c5830ee916b097ff882888b2953fbb8",
+    "TAB-ORV-0009#4": "ef0073d8a7f29536831475cb996288eb30b9e0e07a0d0df6bf6df38847d7972f",
+    "TAB-ORV-0009#5": "778f22d0b94d5382ad1d18ded2511b0c13fe7f9fbefd25c9c6c813453104e03b",
+    "TAB-ORV-0009#6": "6a42d0014173f19d79f593bf24bcfb7b07666b62c9128cdc61465141c62f0c41",
+    "TAB-ORV-0009#7": "ffa3a074754cad28e967d0b48e4a5d056b412b69f0d7d71f05aa8a6fee8e4712",
+    "TAB-ORV-0009#8": "74d7b1100f2b8c19aaa910402a778e5d9a079394222424d111992fa5bc730b14",
+    "TAB-ORV-0009#9": "8ac4c70ce22b76914f88e9081ff9eeeea5014bdf6961665708d6b15e33428f8a",
+    "TAB-ORV-0009#10": "e9b89ee803f240bda4eb58d84d8e6ebbcfa0423e74d6663c55e8e0f884a48c69",
+    "TAB-ORV-0009#11": "4665818d6f7c1975ce9ebe0b93bbe6d137c1ca33ba0e9670edfdc63d9f9dc7c0",
+    "TAB-ORV-0009#12": "8f72a589b7196c9364d8302ea380df79bfd5dd567f871705db900a55a031f5a9",
+    "TAB-ORV-0009#13": "50a87e7b0595917e8089bc4fe4db9130987edadf2c753cf4b283e9e2fdce011b",
+    "TAB-ORV-0019#2": "74927d54de18cb74a3677582a9199e01139402b365b30716c304118d02ab3372",
+    "TAB-ORV-0019#3": "559cb774096fa080efa2aef3cc625cee6e5ffd0803999d41141a5294483e77b0",
+    "TAB-ORV-0019#4": "598b47905ef7b40495712f6c7968abae24acae3bbb8537dc9721b556975ebd08",
+    "TAB-ORV-0019#5": "2a3f15f274e8d02b23742e2db5f543f62821b9e573c9e70b3dc2f8dc0bde4e29",
+    "TAB-ORV-0019#6": "5471a165743ca4f8c12229134aa007be58960f6e7c36d5db32b9060ff436464f",
+    "TAB-ORV-0019#7": "2688473db2ea034627e27ed54778ba8e28e04b53b702792dd86ae2fdaa2cf716",
+    "TAB-ORV-0019#8": "37308fa852bc140f23855de17ed225df094e6873ebd78f2d0d2c84efa8c5fc78",
+    "TAB-ORV-0019#9": "cddb94d738600cf10f32f267a8f1bcb919240e54c992fb82c6017722782f9fa5",
+    "TAB-ORV-0019#10": "06e42a9a49b8dfdb984e39581b3eee70fb91ef56dfdd5c834056a724c001aa76",
+    "TAB-ORV-0019#11": "8f4fd32b8f348d3e046b192de383dfc6b208ed0205a27b4afdc020c41e16ae05",
+    "TAB-ORV-0019#12": "9c815104136eec229d9cc61011f6cb07e7e2427e1d2e0ab068712abe856b63c1",
+    "TAB-ORV-0019#13": "88c05f5b8d6b7568ab104b8ba6017160f8e7392c4edfab14948bdc970c49f831",
+    "TAB-ORV-0027#2": "6ef7e13311203752d673237d297c5d4bc9413908130d443a13bc7ceba0e238ec",
+    "TAB-ORV-0027#3": "b262b87ba2af0b461e48cbce122c5ae64f955616611d189bdb1dd3417cb7e787",
+    "TAB-ORV-0027#4": "c42fbc67dc1c5422b91a3a624d9af67fb9bd22e5cb54c9f35a88cf9111bd55d0",
+    "TAB-ORV-0027#5": "918ea16f12cca77ec19baea40020dc4c81f02bdd3c7df0be1e4df182637c9b79",
+    "TAB-ORV-0027#6": "6fba201d03aa516830a2f00a0ebd879655d98380a106f6aa91757df8d7503fb6",
+    "TAB-ORV-0027#7": "c592c03464fddf88ebaac8e24d4408869c2fab57c5e8365182d947bf3c9d8d9b",
+    "TAB-ORV-0027#8": "c7997ab6ba457c9d6eefbb79b775db36a580ee3f1dd68b01fe197ed29e651e5f",
+    "TAB-ORV-0027#9": "7fe4767b4aeeebef0d17c34e970fad9611d58d4d317d6a5be5ca4c8bb0749d69",
+    "TAB-ORV-0027#10": "ba6c5d29c613a9d0111c0ac757b6637ccb40bc9ad392115fa24e6dc39f3cc433",
+    "TAB-ORV-0027#11": "f403ffbd5a779bd04d590388ce8e581cd111b3b2b22f49d531b572c982991f58",
+    "TAB-ORV-0027#12": "48b3d50f7a2f4f568ebe5d58f1a89641a39f14e2d8e0bbbe185d2c7d75386417",
+    "TAB-ORV-0027#13": "2bcc83a3c418a6368a8b43f4d75674c6a78d0d5b24b4ecf11e88d26cd77f451a",
+    "TAB-ORV-0029#2": "1108a066ee02bebe604e1742f7660751432f10717a9cd4fb806a31fc35cca762",
+    "TAB-ORV-0029#3": "38ed79c49d515a5d11ac02cb416266fed6d7b97ed2953e38f68cd0519f12fa2f",
+    "TAB-ORV-0029#4": "9e262a8e0b66c01468f5e62f9beca3109ce79ac8852f4da295c6730b0baf0fe3",
+    "TAB-ORV-0029#5": "574d7b923a59d7afe4c340f9c995d8ae155e9ee50dd3f6a4dc6cd197e7a22977",
+    "TAB-ORV-0029#6": "93803ab1ceb4eedeb45900d745d8da8fb80f46301d878390ddd8e8ea17012356",
+    "TAB-ORV-0029#7": "93323a735e6b666e6dc7a681612f8ebd81c34b59c9790fd695c516a8dd5028ff",
+    "TAB-ORV-0029#8": "1724b97c5827837222928e924daf1b1f47dc6d07fbdb5abc65bb656708b16d19",
+    "TAB-ORV-0029#9": "4c18874be18a53f721b4b3069bbe3b4af4fc32ae535970b9490e6d8a124829c0",
+    "TAB-ORV-0029#10": "d88d3453c93b600ff7c8fb2e9897215c9870ecc95b93ec0f98fc2dbb6696c408",
+    "TAB-ORV-0029#11": "e193013bd511b74e12cc591458e1102d411a4282863f37f43aa648da9caf92b9",
+    "TAB-ORV-0029#12": "68fa3970a052929024ac90493be19b0289b95a2c659e6efa751d7acd9e03394a",
+    "TAB-ORV-0029#13": "5c2680ff7c197a86284187a32941d97d92b9013405bff7a3c6524a32f84baa92",
+    "TAB-ORV-0030#2": "7dd5b1c0317aa3bc76bdba901832b3f1ad6632e74dfc2ba187baf2b55da3379a",
+    "TAB-ORV-0030#3": "5f32bcb5c071440543292d022a6699abc75b74985d7649a786d6d86b74409a0b",
+    "TAB-ORV-0030#4": "9fc4fd9d247bfe543c69166da37920df207a221620b53cdd79c954c4b1322603",
+    "TAB-ORV-0030#5": "3033e9ce8218bb0357b9ccdda1096ef5a5372b8bfdc9fb6f452571d1afee02e5",
+    "TAB-ORV-0030#6": "bef7964e128bb0512ad8197dd4b30233f329cf63be336e080af544e9b28eb985",
+    "TAB-ORV-0030#7": "b7cfc428f4e2ccdf0e32dd2da2fe411e0fe5d91712ad80e0fffc897f0ede720f",
+    "TAB-ORV-0030#8": "ff77cc9296d5434472c56d3242891130c8bdf61963e7a31a83f230d84d36652b",
+    "TAB-ORV-0030#9": "0ac91f9060b278cb213edf2b2526f121d0648890609fff9a1f351ca5d0acbc3d",
+    "TAB-ORV-0030#10": "b0435b59c98f4718a0d1b39b17497a21ccd22046979887bfe3aaa6b49affcdfb",
+    "TAB-ORV-0030#11": "691f8add074ca000d3961f5409138b28894156b57f0940282416c14c85ed1297",
+    "TAB-ORV-0030#12": "685a3c57d68e15fe0d42e315992d53060423e57125d8cc1bb2293cb55d524606",
+    "TAB-ORV-0030#13": "3ef8bcd7b4eb8e0eb102770733aee7720d0a305dc9a7bc0c7e269777042126ac",
+    "TAB-ORV-0036#2": "830bc13e68ba9ab00c8bf5ccc0c60da87427494559257bbc88b0c15aeec0d68e",
+    "TAB-ORV-0036#3": "3faafb65e9b9d76eb73546cfb153d40413de5da12825f04d130dff4d0355bc9e",
+    "TAB-ORV-0044#2": "bc301e7b5aa7b8fd12950fe46ed2502df887ab240522619fe3c8bef3c41a52ad",
+    "TAB-ORV-0044#3": "f23836f1f47d9c9aa991c0072d637c18dbfacdb8fb32acaa271b38f623920949",
+    "TAB-ORV-0044#4": "acb8713a6f0298710e7172f2846e4fb11d298c0196e55d0345e9a1f118fc71b3",
+    "TAB-ORV-0044#5": "6dbe6b6805dee96cd58e2742eb85523aba8b0518715076d0f6c51ae87509365e",
+    "TAB-ORV-0044#6": "973dea7adceeb4f5ea76ff5c04b229a52783b57ae6842195084c7cb32fa9ed77",
+    "TAB-ORV-0044#7": "634675dd80ecbc6b8df951bc6f455ce1083851dcfbbaaad18e82363b02bdad9c",
+    "TAB-ORV-0044#8": "4b7da76cc1e1177215aea16100e83d31ebbb495c036b09c1840698d70ef6dc05",
+    "TAB-ORV-0044#9": "73f053c9083be5302d7a3eb1ceb0d20e1af8167f49b0b111901e71da6cb4bc05",
+    "TAB-ORV-0044#10": "771c536acdc4268241a1f869080a80c2105249b3f4bc248cc35f9d8e1e3be8e3",
+    "TAB-ORV-0044#11": "23a2ca34cd4072f57c893c53ce030d631e7a23d32e81606fcb47971358331cdd",
+    "TAB-ORV-0044#12": "39840479dc843c290a3fb3cc81fb563dc8a2b04bcaf277382acb2dcf5d0d564e",
+    "TAB-ORV-0044#13": "89f6cbe65a7e20b57b498758657c45c57e23d789ca9f60c8055ff10f9edc97c8",
+    "TAB-ORV-0046#2": "c9b127df7f9a307152824f25dd8308a52bad0bc3ffa3ba0867c4234890ad81bf",
+    "TAB-ORV-0046#3": "6288d129bbac2d9cf859c8e1d65f38f4a001a514f6b6883a284d575a97ba45a0",
+    "TAB-ORV-0046#4": "eae2010c83311068ae217d55180d692f649d6adaaad0adefa8cbdc917b434d90",
+    "TAB-ORV-0046#5": "5e688693e41036748ca34c5ee6c7e911373ca08f8ac8cbc4683412bfade90db9",
+    "TAB-ORV-0046#6": "6d1069c80bac651ce78a71cb5edc666c9c78ec5ffb784d94323f8eddfec62764",
+    "TAB-ORV-0046#7": "d664d9ac89e787da0e528480563f69ed2aa37fb41c0c70abc954fffc84f50917",
+    "TAB-ORV-0046#8": "8525bf5c743f1b9c5c1ea336d6088f67f6fd48a8728920a3a33f35ac1fa9001d",
+    "TAB-ORV-0046#9": "2f6c9b07bfddee7b4b532b5cc648c98933c15555cbfb1c15851967cae3ccc167",
+    "TAB-ORV-0046#10": "4d6d09d06f78555ac3e15202a48bb47be741b7c802fac1a8fbab36eaada41a6b",
+    "TAB-ORV-0046#11": "cea5a953058a2759eee510bb1fe4703fffc665bac4a71fdad21e45261b45ca14",
+    "TAB-ORV-0046#12": "32191292a04aa79906fcd6b016490de944c4ece3ebb99273a47b00ee2a72726d",
+    "TAB-ORV-0046#13": "a8bd19b57b5a50d228d7ec46c071c4d5ef821bbceee99a5aacae6a88c9f3ea3a"
+  },
+  "claims": [
+    {
+      "claim_id": "THOR-C1-MID-WHE",
+      "agent": "thor",
+      "country": "Midgard",
+      "sector": "wheat",
+      "posture": "high",
+      "statement": "Severe commercial disruption for Midgard wheat: imports face an estimated 37.4% to 50.6% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "estimate_low": 37.4,
+      "estimate_high": 50.6,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 5,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        },
+        {
+          "doc_id": "TAB-ORV-0009",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0009#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        }
+      ],
+      "nature": "sourced_fact"
+    },
+    {
+      "claim_id": "THOR-C2-MID-MAI",
+      "agent": "thor",
+      "country": "Midgard",
+      "sector": "maize",
+      "posture": "high",
+      "statement": "Severe commercial disruption for Midgard maize: imports face an estimated 80.8% to 95.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "estimate_low": 80.8,
+      "estimate_high": 95.0,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 5,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ],
+      "nature": "inference"
+    },
+    {
+      "claim_id": "THOR-C3-TOL-WHE",
+      "agent": "thor",
+      "country": "Tolan",
+      "sector": "wheat",
+      "posture": "high",
+      "statement": "Severe commercial disruption for Tolan wheat: imports face an estimated 37.2% to 50.3% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "estimate_low": 37.2,
+      "estimate_high": 50.3,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 5,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        },
+        {
+          "doc_id": "TAB-ORV-0046",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0046#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        }
+      ],
+      "nature": "sourced_fact"
+    },
+    {
+      "claim_id": "THOR-C4-TOL-MAI",
+      "agent": "thor",
+      "country": "Tolan",
+      "sector": "maize",
+      "posture": "high",
+      "statement": "Severe commercial disruption for Tolan maize: imports face an estimated 80.8% to 95.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "estimate_low": 80.8,
+      "estimate_high": 95.0,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 5,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ],
+      "nature": "inference"
+    },
+    {
+      "claim_id": "LOKI-C1-MID-WHE",
+      "agent": "loki",
+      "country": "Midgard",
+      "sector": "wheat",
+      "posture": "limited",
+      "statement": "Commercial impact for Midgard wheat is strictly limited to an estimated 22.1% to 29.5% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "estimate_low": 22.1,
+      "estimate_high": 29.5,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        },
+        {
+          "doc_id": "TAB-ORV-0036",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0036#2",
+          "quoted_text": null,
+          "pub_date": "2027-01"
+        },
+        {
+          "doc_id": "TAB-ORV-0005",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0005#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        }
+      ],
+      "nature": "inference"
+    },
+    {
+      "claim_id": "LOKI-C2-MID-MAI",
+      "agent": "loki",
+      "country": "Midgard",
+      "sector": "maize",
+      "posture": "limited",
+      "statement": "Commercial impact for Midgard maize is strictly limited to an estimated 14.0% to 26.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "estimate_low": 14.0,
+      "estimate_high": 26.0,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ],
+      "nature": "inference"
+    },
+    {
+      "claim_id": "LOKI-C3-TOL-WHE",
+      "agent": "loki",
+      "country": "Tolan",
+      "sector": "wheat",
+      "posture": "limited",
+      "statement": "Commercial impact for Tolan wheat is strictly limited to an estimated 8.0% to 10.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "estimate_low": 8.0,
+      "estimate_high": 10.0,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        },
+        {
+          "doc_id": "TAB-ORV-0046",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0046#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        },
+        {
+          "doc_id": "TAB-ORV-0005",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0005#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        }
+      ],
+      "nature": "inference"
+    },
+    {
+      "claim_id": "LOKI-C4-TOL-MAI",
+      "agent": "loki",
+      "country": "Tolan",
+      "sector": "maize",
+      "posture": "limited",
+      "statement": "Commercial impact for Tolan maize is strictly limited to an estimated 16.5% to 29.5% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "estimate_low": 16.5,
+      "estimate_high": 29.5,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ],
+      "nature": "inference"
+    }
+  ],
+  "attacks": [
+    {
+      "attack_id": "ATT-THOR-1",
+      "attacker": "thor",
+      "target_claim_id": "LOKI-C1-MID-WHE",
+      "argument": "Loki's mitigation claim for Midgard wheat unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+      "counter_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-THOR-2",
+      "attacker": "thor",
+      "target_claim_id": "LOKI-C2-MID-MAI",
+      "argument": "Loki's mitigation claim for Midgard maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+      "counter_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-THOR-3",
+      "attacker": "thor",
+      "target_claim_id": "LOKI-C3-TOL-WHE",
+      "argument": "Loki's mitigation claim for Tolan wheat unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+      "counter_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-THOR-4",
+      "attacker": "thor",
+      "target_claim_id": "LOKI-C4-TOL-MAI",
+      "argument": "Loki's mitigation claim for Tolan maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+      "counter_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-LOKI-1",
+      "attacker": "loki",
+      "target_claim_id": "THOR-C1-MID-WHE",
+      "argument": "Thor's claim THOR-C1-MID-WHE inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Midgard.",
+      "counter_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-LOKI-2",
+      "attacker": "loki",
+      "target_claim_id": "THOR-C2-MID-MAI",
+      "argument": "Thor's claim THOR-C2-MID-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Midgard.",
+      "counter_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-LOKI-3",
+      "attacker": "loki",
+      "target_claim_id": "THOR-C3-TOL-WHE",
+      "argument": "Thor's claim THOR-C3-TOL-WHE inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Tolan.",
+      "counter_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-LOKI-4",
+      "attacker": "loki",
+      "target_claim_id": "THOR-C4-TOL-MAI",
+      "argument": "Thor's claim THOR-C4-TOL-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Tolan.",
+      "counter_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ]
+    }
+  ],
+  "defenses": [
+    {
+      "defense_id": "DEF-LOKI-THOR-1",
+      "attack_id": "ATT-THOR-1",
+      "defender": "loki",
+      "argument": "Loki stands by LOKI-C1-MID-WHE: operational bulletins confirm freight forwarders are rerouting cargoes via land corridors, dampening consumer price inflation.",
+      "new_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        },
+        {
+          "doc_id": "TAB-ORV-0036",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0036#2",
+          "quoted_text": null,
+          "pub_date": "2027-01"
+        },
+        {
+          "doc_id": "TAB-ORV-0005",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0005#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-LOKI-THOR-2",
+      "attack_id": "ATT-THOR-2",
+      "defender": "loki",
+      "argument": "Loki stands by LOKI-C2-MID-MAI: operational bulletins confirm freight forwarders are rerouting cargoes via land corridors, dampening consumer price inflation.",
+      "new_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-LOKI-THOR-3",
+      "attack_id": "ATT-THOR-3",
+      "defender": "loki",
+      "argument": "Loki stands by LOKI-C3-TOL-WHE: operational bulletins confirm freight forwarders are rerouting cargoes via land corridors, dampening consumer price inflation.",
+      "new_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        },
+        {
+          "doc_id": "TAB-ORV-0046",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0046#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        },
+        {
+          "doc_id": "TAB-ORV-0005",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0005#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-LOKI-THOR-4",
+      "attack_id": "ATT-THOR-4",
+      "defender": "loki",
+      "argument": "Loki stands by LOKI-C4-TOL-MAI: operational bulletins confirm freight forwarders are rerouting cargoes via land corridors, dampening consumer price inflation.",
+      "new_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-THOR-LOKI-1",
+      "attack_id": "ATT-LOKI-1",
+      "defender": "thor",
+      "argument": "Thor stands by THOR-C1-MID-WHE: port index records and customs filings confirm bulk cargo volumes have fallen by more than half, which secondary routes cannot compensate within the current quarter.",
+      "new_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 5,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        },
+        {
+          "doc_id": "TAB-ORV-0009",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0009#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-THOR-LOKI-2",
+      "attack_id": "ATT-LOKI-2",
+      "defender": "thor",
+      "argument": "Thor stands by THOR-C2-MID-MAI: port index records and customs filings confirm bulk cargo volumes have fallen by more than half, which secondary routes cannot compensate within the current quarter.",
+      "new_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 5,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-THOR-LOKI-3",
+      "attack_id": "ATT-LOKI-3",
+      "defender": "thor",
+      "argument": "Thor stands by THOR-C3-TOL-WHE: port index records and customs filings confirm bulk cargo volumes have fallen by more than half, which secondary routes cannot compensate within the current quarter.",
+      "new_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 5,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        },
+        {
+          "doc_id": "TAB-ORV-0046",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0046#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-THOR-LOKI-4",
+      "attack_id": "ATT-LOKI-4",
+      "defender": "thor",
+      "argument": "Thor stands by THOR-C4-TOL-MAI: port index records and customs filings confirm bulk cargo volumes have fallen by more than half, which secondary routes cannot compensate within the current quarter.",
+      "new_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 5,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ],
+      "is_concession": false
+    }
+  ],
+  "concessions": [],
+  "rulings": [
+    {
+      "claim_id": "THOR-C1-MID-WHE",
+      "verdict": "established",
+      "basis": "sourced_fact",
+      "rationale": "Admissible trade records substantiate baseline and disruption bounds for THOR-C1-MID-WHE.",
+      "disqualified_reason": null,
+      "admissible_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 5,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        },
+        {
+          "doc_id": "TAB-ORV-0009",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0009#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "THOR-C2-MID-MAI",
+      "verdict": "contested",
+      "basis": "inference",
+      "rationale": "Claim THOR-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+      "disqualified_reason": null,
+      "admissible_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 5,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "THOR-C3-TOL-WHE",
+      "verdict": "established",
+      "basis": "sourced_fact",
+      "rationale": "Admissible trade records substantiate baseline and disruption bounds for THOR-C3-TOL-WHE.",
+      "disqualified_reason": null,
+      "admissible_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 5,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        },
+        {
+          "doc_id": "TAB-ORV-0046",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0046#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "THOR-C4-TOL-MAI",
+      "verdict": "contested",
+      "basis": "inference",
+      "rationale": "Claim THOR-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+      "disqualified_reason": null,
+      "admissible_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 5,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "LOKI-C1-MID-WHE",
+      "verdict": "established",
+      "basis": "sourced_fact",
+      "rationale": "Admissible trade records substantiate baseline and disruption bounds for LOKI-C1-MID-WHE.",
+      "disqualified_reason": null,
+      "admissible_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        },
+        {
+          "doc_id": "TAB-ORV-0036",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0036#2",
+          "quoted_text": null,
+          "pub_date": "2027-01"
+        },
+        {
+          "doc_id": "TAB-ORV-0005",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0005#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "LOKI-C2-MID-MAI",
+      "verdict": "contested",
+      "basis": "inference",
+      "rationale": "Claim LOKI-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+      "disqualified_reason": null,
+      "admissible_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "LOKI-C3-TOL-WHE",
+      "verdict": "established",
+      "basis": "sourced_fact",
+      "rationale": "Admissible trade records substantiate baseline and disruption bounds for LOKI-C3-TOL-WHE.",
+      "disqualified_reason": null,
+      "admissible_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        },
+        {
+          "doc_id": "TAB-ORV-0046",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0046#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        },
+        {
+          "doc_id": "TAB-ORV-0005",
+          "paragraph_num": null,
+          "trade_row_ref": "TAB-ORV-0005#2",
+          "quoted_text": null,
+          "pub_date": "2026-07"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "LOKI-C4-TOL-MAI",
+      "verdict": "contested",
+      "basis": "inference",
+      "rationale": "Claim LOKI-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+      "disqualified_reason": null,
+      "admissible_citations": [
+        {
+          "doc_id": "ORV-0002",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-06-15"
+        }
+      ],
+      "inadmissible_citations": []
+    }
+  ],
+  "exposure_ranges": [
+    {
+      "country": "Midgard",
+      "sector": "wheat",
+      "thor_range": [
+        37.4,
+        50.6
+      ],
+      "loki_range": [
+        22.1,
+        29.5
+      ],
+      "odin_range": [
+        2249984.0,
+        3044096.0
+      ],
+      "status": "resolved",
+      "rationale": "Baseline volume of 6016000.0 tonnes established from rows: TAB-ORV-0009#2, TAB-ORV-0009#3, TAB-ORV-0009#4, TAB-ORV-0009#5, TAB-ORV-0009#6, TAB-ORV-0009#7, TAB-ORV-0009#8, TAB-ORV-0009#9, TAB-ORV-0009#10, TAB-ORV-0009#11, TAB-ORV-0009#12, TAB-ORV-0009#13, TAB-ORV-0027#2, TAB-ORV-0027#3, TAB-ORV-0027#4, TAB-ORV-0027#5, TAB-ORV-0027#6, TAB-ORV-0027#7, TAB-ORV-0027#8, TAB-ORV-0027#9, TAB-ORV-0027#10, TAB-ORV-0027#11, TAB-ORV-0027#12, TAB-ORV-0027#13, TAB-ORV-0030#2, TAB-ORV-0030#3, TAB-ORV-0030#4, TAB-ORV-0030#5, TAB-ORV-0030#6, TAB-ORV-0030#7, TAB-ORV-0030#8, TAB-ORV-0030#9, TAB-ORV-0030#10, TAB-ORV-0030#11, TAB-ORV-0030#12, TAB-ORV-0030#13, TAB-ORV-0036#2, TAB-ORV-0036#3. Adjudicated exposure bounds [2249984.0, 3044096.0] tonnes derived from established drop range [37.4%, 50.6%] less offset 0.0.",
+      "established_claim_ids": [
+        "THOR-C1-MID-WHE",
+        "LOKI-C1-MID-WHE"
+      ],
+      "contested_claim_ids": [],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [
+        "TAB-ORV-0009#2",
+        "TAB-ORV-0009#3",
+        "TAB-ORV-0009#4",
+        "TAB-ORV-0009#5",
+        "TAB-ORV-0009#6",
+        "TAB-ORV-0009#7",
+        "TAB-ORV-0009#8",
+        "TAB-ORV-0009#9",
+        "TAB-ORV-0009#10",
+        "TAB-ORV-0009#11",
+        "TAB-ORV-0009#12",
+        "TAB-ORV-0009#13",
+        "TAB-ORV-0027#2",
+        "TAB-ORV-0027#3",
+        "TAB-ORV-0027#4",
+        "TAB-ORV-0027#5",
+        "TAB-ORV-0027#6",
+        "TAB-ORV-0027#7",
+        "TAB-ORV-0027#8",
+        "TAB-ORV-0027#9",
+        "TAB-ORV-0027#10",
+        "TAB-ORV-0027#11",
+        "TAB-ORV-0027#12",
+        "TAB-ORV-0027#13",
+        "TAB-ORV-0030#2",
+        "TAB-ORV-0030#3",
+        "TAB-ORV-0030#4",
+        "TAB-ORV-0030#5",
+        "TAB-ORV-0030#6",
+        "TAB-ORV-0030#7",
+        "TAB-ORV-0030#8",
+        "TAB-ORV-0030#9",
+        "TAB-ORV-0030#10",
+        "TAB-ORV-0030#11",
+        "TAB-ORV-0030#12",
+        "TAB-ORV-0030#13",
+        "TAB-ORV-0036#2",
+        "TAB-ORV-0036#3"
+      ],
+      "assumptions": []
+    },
+    {
+      "country": "Midgard",
+      "sector": "maize",
+      "thor_range": [
+        80.8,
+        95.0
+      ],
+      "loki_range": [
+        14.0,
+        26.0
+      ],
+      "odin_range": null,
+      "status": "unresolved",
+      "rationale": "Submitted claims (THOR-C2-MID-MAI, LOKI-C2-MID-MAI) remain contested with insufficient corroboration.",
+      "established_claim_ids": [],
+      "contested_claim_ids": [
+        "THOR-C2-MID-MAI",
+        "LOKI-C2-MID-MAI"
+      ],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    },
+    {
+      "country": "Tolan",
+      "sector": "wheat",
+      "thor_range": [
+        37.2,
+        50.3
+      ],
+      "loki_range": [
+        8.0,
+        10.0
+      ],
+      "odin_range": [
+        664392.0,
+        898358.0
+      ],
+      "status": "resolved",
+      "rationale": "Baseline volume of 1786000.0 tonnes established from rows: TAB-ORV-0044#2, TAB-ORV-0044#3, TAB-ORV-0044#4, TAB-ORV-0044#5, TAB-ORV-0044#6, TAB-ORV-0044#7, TAB-ORV-0044#8, TAB-ORV-0044#9, TAB-ORV-0044#10, TAB-ORV-0044#11, TAB-ORV-0044#12, TAB-ORV-0044#13, TAB-ORV-0046#2, TAB-ORV-0046#3, TAB-ORV-0046#4, TAB-ORV-0046#5, TAB-ORV-0046#6, TAB-ORV-0046#7, TAB-ORV-0046#8, TAB-ORV-0046#9, TAB-ORV-0046#10, TAB-ORV-0046#11, TAB-ORV-0046#12, TAB-ORV-0046#13. Adjudicated exposure bounds [664392.0, 898358.0] tonnes derived from established drop range [37.2%, 50.3%] less offset 0.0.",
+      "established_claim_ids": [
+        "THOR-C3-TOL-WHE",
+        "LOKI-C3-TOL-WHE"
+      ],
+      "contested_claim_ids": [],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [
+        "TAB-ORV-0044#2",
+        "TAB-ORV-0044#3",
+        "TAB-ORV-0044#4",
+        "TAB-ORV-0044#5",
+        "TAB-ORV-0044#6",
+        "TAB-ORV-0044#7",
+        "TAB-ORV-0044#8",
+        "TAB-ORV-0044#9",
+        "TAB-ORV-0044#10",
+        "TAB-ORV-0044#11",
+        "TAB-ORV-0044#12",
+        "TAB-ORV-0044#13",
+        "TAB-ORV-0046#2",
+        "TAB-ORV-0046#3",
+        "TAB-ORV-0046#4",
+        "TAB-ORV-0046#5",
+        "TAB-ORV-0046#6",
+        "TAB-ORV-0046#7",
+        "TAB-ORV-0046#8",
+        "TAB-ORV-0046#9",
+        "TAB-ORV-0046#10",
+        "TAB-ORV-0046#11",
+        "TAB-ORV-0046#12",
+        "TAB-ORV-0046#13"
+      ],
+      "assumptions": []
+    },
+    {
+      "country": "Tolan",
+      "sector": "maize",
+      "thor_range": [
+        80.8,
+        95.0
+      ],
+      "loki_range": [
+        16.5,
+        29.5
+      ],
+      "odin_range": null,
+      "status": "unresolved",
+      "rationale": "Submitted claims (THOR-C4-TOL-MAI, LOKI-C4-TOL-MAI) remain contested with insufficient corroboration.",
+      "established_claim_ids": [],
+      "contested_claim_ids": [
+        "THOR-C4-TOL-MAI",
+        "LOKI-C4-TOL-MAI"
+      ],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    },
+    {
+      "country": "Orvan",
+      "sector": "wheat",
+      "thor_range": null,
+      "loki_range": null,
+      "odin_range": null,
+      "status": "unresolved",
+      "rationale": "Baseline volume of 9988000.0 tonnes established from rows: TAB-ORV-0005#2, TAB-ORV-0005#3, TAB-ORV-0005#4, TAB-ORV-0005#5, TAB-ORV-0005#6, TAB-ORV-0005#7, TAB-ORV-0005#8, TAB-ORV-0005#9, TAB-ORV-0005#10, TAB-ORV-0005#11, TAB-ORV-0005#12, TAB-ORV-0005#13, TAB-ORV-0009#2, TAB-ORV-0009#3, TAB-ORV-0009#4, TAB-ORV-0009#5, TAB-ORV-0009#6, TAB-ORV-0009#7, TAB-ORV-0009#8, TAB-ORV-0009#9, TAB-ORV-0009#10, TAB-ORV-0009#11, TAB-ORV-0009#12, TAB-ORV-0009#13, TAB-ORV-0019#2, TAB-ORV-0019#3, TAB-ORV-0019#4, TAB-ORV-0019#5, TAB-ORV-0019#6, TAB-ORV-0019#7, TAB-ORV-0019#8, TAB-ORV-0019#9, TAB-ORV-0019#10, TAB-ORV-0019#11, TAB-ORV-0019#12, TAB-ORV-0019#13, TAB-ORV-0029#2, TAB-ORV-0029#3, TAB-ORV-0029#4, TAB-ORV-0029#5, TAB-ORV-0029#6, TAB-ORV-0029#7, TAB-ORV-0029#8, TAB-ORV-0029#9, TAB-ORV-0029#10, TAB-ORV-0029#11, TAB-ORV-0029#12, TAB-ORV-0029#13, TAB-ORV-0030#2, TAB-ORV-0030#3, TAB-ORV-0030#4, TAB-ORV-0030#5, TAB-ORV-0030#6, TAB-ORV-0030#7, TAB-ORV-0030#8, TAB-ORV-0030#9, TAB-ORV-0030#10, TAB-ORV-0030#11, TAB-ORV-0030#12, TAB-ORV-0030#13, TAB-ORV-0036#2, TAB-ORV-0036#3, TAB-ORV-0046#2, TAB-ORV-0046#3, TAB-ORV-0046#4, TAB-ORV-0046#5, TAB-ORV-0046#6, TAB-ORV-0046#7, TAB-ORV-0046#8, TAB-ORV-0046#9, TAB-ORV-0046#10, TAB-ORV-0046#11, TAB-ORV-0046#12, TAB-ORV-0046#13. No established quantitative disruption claims on record.",
+      "established_claim_ids": [],
+      "contested_claim_ids": [],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [
+        "TAB-ORV-0005#2",
+        "TAB-ORV-0005#3",
+        "TAB-ORV-0005#4",
+        "TAB-ORV-0005#5",
+        "TAB-ORV-0005#6",
+        "TAB-ORV-0005#7",
+        "TAB-ORV-0005#8",
+        "TAB-ORV-0005#9",
+        "TAB-ORV-0005#10",
+        "TAB-ORV-0005#11",
+        "TAB-ORV-0005#12",
+        "TAB-ORV-0005#13",
+        "TAB-ORV-0009#2",
+        "TAB-ORV-0009#3",
+        "TAB-ORV-0009#4",
+        "TAB-ORV-0009#5",
+        "TAB-ORV-0009#6",
+        "TAB-ORV-0009#7",
+        "TAB-ORV-0009#8",
+        "TAB-ORV-0009#9",
+        "TAB-ORV-0009#10",
+        "TAB-ORV-0009#11",
+        "TAB-ORV-0009#12",
+        "TAB-ORV-0009#13",
+        "TAB-ORV-0019#2",
+        "TAB-ORV-0019#3",
+        "TAB-ORV-0019#4",
+        "TAB-ORV-0019#5",
+        "TAB-ORV-0019#6",
+        "TAB-ORV-0019#7",
+        "TAB-ORV-0019#8",
+        "TAB-ORV-0019#9",
+        "TAB-ORV-0019#10",
+        "TAB-ORV-0019#11",
+        "TAB-ORV-0019#12",
+        "TAB-ORV-0019#13",
+        "TAB-ORV-0029#2",
+        "TAB-ORV-0029#3",
+        "TAB-ORV-0029#4",
+        "TAB-ORV-0029#5",
+        "TAB-ORV-0029#6",
+        "TAB-ORV-0029#7",
+        "TAB-ORV-0029#8",
+        "TAB-ORV-0029#9",
+        "TAB-ORV-0029#10",
+        "TAB-ORV-0029#11",
+        "TAB-ORV-0029#12",
+        "TAB-ORV-0029#13",
+        "TAB-ORV-0030#2",
+        "TAB-ORV-0030#3",
+        "TAB-ORV-0030#4",
+        "TAB-ORV-0030#5",
+        "TAB-ORV-0030#6",
+        "TAB-ORV-0030#7",
+        "TAB-ORV-0030#8",
+        "TAB-ORV-0030#9",
+        "TAB-ORV-0030#10",
+        "TAB-ORV-0030#11",
+        "TAB-ORV-0030#12",
+        "TAB-ORV-0030#13",
+        "TAB-ORV-0036#2",
+        "TAB-ORV-0036#3",
+        "TAB-ORV-0046#2",
+        "TAB-ORV-0046#3",
+        "TAB-ORV-0046#4",
+        "TAB-ORV-0046#5",
+        "TAB-ORV-0046#6",
+        "TAB-ORV-0046#7",
+        "TAB-ORV-0046#8",
+        "TAB-ORV-0046#9",
+        "TAB-ORV-0046#10",
+        "TAB-ORV-0046#11",
+        "TAB-ORV-0046#12",
+        "TAB-ORV-0046#13"
+      ],
+      "assumptions": []
+    },
+    {
+      "country": "Orvan",
+      "sector": "maize",
+      "thor_range": null,
+      "loki_range": null,
+      "odin_range": null,
+      "status": "unresolved",
+      "rationale": "Zero admissible evidence on record for this country-sector pair.",
+      "established_claim_ids": [],
+      "contested_claim_ids": [],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    }
+  ],
+  "sufficiency_result": {
+    "status": "insufficient",
+    "is_sufficient": false,
+    "reasons": [
+      "Evidence base is insufficient (6 actionable gaps identified). Re-research required."
+    ],
+    "send_back": {
+      "missing": [
+        "Obtain valid pre-cutoff trade baseline observations for country 'Midgard' and sector 'maize' prior to 2027-01-25.",
+        "Obtain valid pre-cutoff trade baseline observations for country 'Tolan' and sector 'maize' prior to 2027-01-25.",
+        "Find quantitative disruption evidence establishing verified exposure bounds for Orvan (wheat).",
+        "Obtain valid pre-cutoff trade baseline observations for country 'Orvan' and sector 'maize' prior to 2027-01-25.",
+        "Retrieve official evidence to resolve material contradiction between THOR-C2-MID-MAI ('Severe commercial disruption for Midgard') and LOKI-C2-MID-MAI ('Commercial impact for Midgard maize is s') for Midgard-maize.",
+        "Retrieve official evidence to resolve material contradiction between THOR-C4-TOL-MAI ('Severe commercial disruption for Tolan m') and LOKI-C4-TOL-MAI ('Commercial impact for Tolan maize is str') for Tolan-maize."
+      ],
+      "gap_types": [
+        "missing_trade_baseline",
+        "missing_trade_baseline",
+        "unsupported_exposure_range",
+        "missing_trade_baseline",
+        "unresolved_contradiction",
+        "unresolved_contradiction"
+      ],
+      "iteration": 1
+    },
+    "unresolved_gaps": [
+      "Obtain valid pre-cutoff trade baseline observations for country 'Midgard' and sector 'maize' prior to 2027-01-25.",
+      "Obtain valid pre-cutoff trade baseline observations for country 'Tolan' and sector 'maize' prior to 2027-01-25.",
+      "Find quantitative disruption evidence establishing verified exposure bounds for Orvan (wheat).",
+      "Obtain valid pre-cutoff trade baseline observations for country 'Orvan' and sector 'maize' prior to 2027-01-25.",
+      "Retrieve official evidence to resolve material contradiction between THOR-C2-MID-MAI ('Severe commercial disruption for Midgard') and LOKI-C2-MID-MAI ('Commercial impact for Midgard maize is s') for Midgard-maize.",
+      "Retrieve official evidence to resolve material contradiction between THOR-C4-TOL-MAI ('Severe commercial disruption for Tolan m') and LOKI-C4-TOL-MAI ('Commercial impact for Tolan maize is str') for Tolan-maize."
+    ],
+    "disclosed_uncertainties": [
+      "Claim THOR-C2-MID-MAI remains contested: Claim THOR-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+      "Claim THOR-C4-TOL-MAI remains contested: Claim THOR-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+      "Claim LOKI-C2-MID-MAI remains contested: Claim LOKI-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+      "Claim LOKI-C4-TOL-MAI remains contested: Claim LOKI-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration."
+    ]
+  },
+  "send_back": {
+    "missing": [
+      "Obtain valid pre-cutoff trade baseline observations for country 'Midgard' and sector 'maize' prior to 2027-01-25.",
+      "Obtain valid pre-cutoff trade baseline observations for country 'Tolan' and sector 'maize' prior to 2027-01-25.",
+      "Find quantitative disruption evidence establishing verified exposure bounds for Orvan (wheat).",
+      "Obtain valid pre-cutoff trade baseline observations for country 'Orvan' and sector 'maize' prior to 2027-01-25.",
+      "Retrieve official evidence to resolve material contradiction between THOR-C2-MID-MAI ('Severe commercial disruption for Midgard') and LOKI-C2-MID-MAI ('Commercial impact for Midgard maize is s') for Midgard-maize.",
+      "Retrieve official evidence to resolve material contradiction between THOR-C4-TOL-MAI ('Severe commercial disruption for Tolan m') and LOKI-C4-TOL-MAI ('Commercial impact for Tolan maize is str') for Tolan-maize."
+    ],
+    "gap_types": [
+      "missing_trade_baseline",
+      "missing_trade_baseline",
+      "unsupported_exposure_range",
+      "missing_trade_baseline",
+      "unresolved_contradiction",
+      "unresolved_contradiction"
+    ],
+    "iteration": 1
+  },
+  "token_usage": 3837,
+  "tool_call_counts": {
+    "loki": 1,
+    "thor": 1,
+    "odin": 1
+  },
+  "overall_status": "send_back_loop",
+  "incomplete_reason": null,
+  "errors": [],
+  "timestamp": "2026-10-25T13:02:30.795321+00:00"
+}

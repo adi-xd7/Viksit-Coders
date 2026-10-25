@@ -1,0 +1,797 @@
+{
+  "case_id": "CASE-E6-UNSEEN-01",
+  "as_of": "2027-01-25",
+  "run_num": 2,
+  "case_file": {
+    "case_id": "CASE-E6-UNSEEN-01",
+    "query": "As of 25 January 2027, evaluate commercial exposure from the Winter Sluice Collapse across Vanaheim and Midgard timber.",
+    "as_of": "2027-01-25",
+    "target_pairs": [
+      [
+        "Midgard",
+        "wheat"
+      ],
+      [
+        "Midgard",
+        "maize"
+      ],
+      [
+        "Vanaheim",
+        "wheat"
+      ],
+      [
+        "Vanaheim",
+        "maize"
+      ]
+    ],
+    "verification_status": "real",
+    "verification_reason": "Disruption confirmed real by High Realm Cartographic Bureau [ATL-E6-0001 P1, 2026-05-10]: 'Vanaheim maintains critical timber transshipment corridors connecting the Southe...'",
+    "active_event_id": "NONE"
+  },
+  "evidence_ids": [
+    "TAB-E6-0011",
+    "INJ-E6-0007",
+    "ATL-E6-0001",
+    "TAB-E6-0003",
+    "ALT-E6-0004",
+    "RET-E6-0006",
+    "CUT-E6-0009",
+    "ENC-E6-0010",
+    "TRAP-E6-0005",
+    "DIS-E6-0002"
+  ],
+  "evidence_hashes": {
+    "ATL-E6-0001": "5341aa881443d26523d93966c9e667e9c905e5ed113f225343e02bc248d54f0b",
+    "DIS-E6-0002": "acc8ec895bbc22719e7b5a2b7e202e8b2fe76198871734f35b87a054c6c9bbb7",
+    "TAB-E6-0003": "d98ea1b751fe327a2cb4f9a4b256f4ed6939e8ebd0a87bc48ffa3d33243c155f",
+    "RET-E6-0006": "cc48a035ca31edfa0752c9971f60a600d263362d6c2fa492e10f868d901e9b5b",
+    "ALT-E6-0004": "d3e8489c008e4d8eeaca67a8d3186dc2928f6fc3da55408efb614fde2ae67322",
+    "CUT-E6-0009": "1734876de329d29d7645777b0d4179236a89031d55ca96f0a2ca288bc0035142",
+    "ENC-E6-0010": "f1960ac6253d6eb30a0779f946da98cc057065aa8c3a6fd0e1e55b7961b96221",
+    "TAB-E6-0011": "9c7ef86d612776f56aedd43cfc03a999b57f51d0d864ec0b05b5bbdd7913f188",
+    "INJ-E6-0007": "2f2782ea46bafa9497dfcdc318f3f92dbe6d7c463b3f412f56c61f8f034330da",
+    "TRAP-E6-0005": "155388a7f1171b8e4544475a7e4a7204e16e9b47d2e4f5e8581c114bead4818a"
+  },
+  "claims": [
+    {
+      "claim_id": "THOR-C1-MID-WHE",
+      "agent": "thor",
+      "country": "Midgard",
+      "sector": "wheat",
+      "posture": "high",
+      "statement": "Severe commercial disruption for Midgard wheat: imports face an estimated 35.0% to 55.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "estimate_low": 35.0,
+      "estimate_high": 55.0,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ATL-E6-0001",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-05-10"
+        }
+      ],
+      "nature": "inference"
+    },
+    {
+      "claim_id": "THOR-C2-MID-MAI",
+      "agent": "thor",
+      "country": "Midgard",
+      "sector": "maize",
+      "posture": "high",
+      "statement": "Severe commercial disruption for Midgard maize: imports face an estimated 35.0% to 55.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "estimate_low": 35.0,
+      "estimate_high": 55.0,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ATL-E6-0001",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-05-10"
+        }
+      ],
+      "nature": "inference"
+    },
+    {
+      "claim_id": "THOR-C3-VAN-WHE",
+      "agent": "thor",
+      "country": "Vanaheim",
+      "sector": "wheat",
+      "posture": "high",
+      "statement": "Severe commercial disruption for Vanaheim wheat: imports face an estimated 35.0% to 55.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "estimate_low": 35.0,
+      "estimate_high": 55.0,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ATL-E6-0001",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-05-10"
+        }
+      ],
+      "nature": "inference"
+    },
+    {
+      "claim_id": "THOR-C4-VAN-MAI",
+      "agent": "thor",
+      "country": "Vanaheim",
+      "sector": "maize",
+      "posture": "high",
+      "statement": "Severe commercial disruption for Vanaheim maize: imports face an estimated 35.0% to 55.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "estimate_low": 35.0,
+      "estimate_high": 55.0,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ATL-E6-0001",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-05-10"
+        }
+      ],
+      "nature": "inference"
+    },
+    {
+      "claim_id": "LOKI-C1-MID-WHE",
+      "agent": "loki",
+      "country": "Midgard",
+      "sector": "wheat",
+      "posture": "limited",
+      "statement": "Commercial impact for Midgard wheat is strictly limited to an estimated 10.0% to 22.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "estimate_low": 10.0,
+      "estimate_high": 22.0,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ],
+      "nature": "inference"
+    },
+    {
+      "claim_id": "LOKI-C2-MID-MAI",
+      "agent": "loki",
+      "country": "Midgard",
+      "sector": "maize",
+      "posture": "limited",
+      "statement": "Commercial impact for Midgard maize is strictly limited to an estimated 10.0% to 22.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "estimate_low": 10.0,
+      "estimate_high": 22.0,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ],
+      "nature": "inference"
+    },
+    {
+      "claim_id": "LOKI-C3-VAN-WHE",
+      "agent": "loki",
+      "country": "Vanaheim",
+      "sector": "wheat",
+      "posture": "limited",
+      "statement": "Commercial impact for Vanaheim wheat is strictly limited to an estimated 10.0% to 22.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "estimate_low": 10.0,
+      "estimate_high": 22.0,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ],
+      "nature": "inference"
+    },
+    {
+      "claim_id": "LOKI-C4-VAN-MAI",
+      "agent": "loki",
+      "country": "Vanaheim",
+      "sector": "maize",
+      "posture": "limited",
+      "statement": "Commercial impact for Vanaheim maize is strictly limited to an estimated 10.0% to 22.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "estimate_low": 10.0,
+      "estimate_high": 22.0,
+      "unit": "%",
+      "citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ],
+      "nature": "inference"
+    }
+  ],
+  "attacks": [
+    {
+      "attack_id": "ATT-THOR-1",
+      "attacker": "thor",
+      "target_claim_id": "LOKI-C1-MID-WHE",
+      "argument": "Loki's mitigation claim for Midgard wheat unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+      "counter_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-THOR-2",
+      "attacker": "thor",
+      "target_claim_id": "LOKI-C2-MID-MAI",
+      "argument": "Loki's mitigation claim for Midgard maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+      "counter_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-THOR-3",
+      "attacker": "thor",
+      "target_claim_id": "LOKI-C3-VAN-WHE",
+      "argument": "Loki's mitigation claim for Vanaheim wheat unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+      "counter_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-THOR-4",
+      "attacker": "thor",
+      "target_claim_id": "LOKI-C4-VAN-MAI",
+      "argument": "Loki's mitigation claim for Vanaheim maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+      "counter_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-LOKI-1",
+      "attacker": "loki",
+      "target_claim_id": "THOR-C1-MID-WHE",
+      "argument": "Thor's claim THOR-C1-MID-WHE inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Midgard.",
+      "counter_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-LOKI-2",
+      "attacker": "loki",
+      "target_claim_id": "THOR-C2-MID-MAI",
+      "argument": "Thor's claim THOR-C2-MID-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Midgard.",
+      "counter_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-LOKI-3",
+      "attacker": "loki",
+      "target_claim_id": "THOR-C3-VAN-WHE",
+      "argument": "Thor's claim THOR-C3-VAN-WHE inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Vanaheim.",
+      "counter_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ]
+    },
+    {
+      "attack_id": "ATT-LOKI-4",
+      "attacker": "loki",
+      "target_claim_id": "THOR-C4-VAN-MAI",
+      "argument": "Thor's claim THOR-C4-VAN-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Vanaheim.",
+      "counter_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 4,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ]
+    }
+  ],
+  "defenses": [
+    {
+      "defense_id": "DEF-LOKI-THOR-1",
+      "attack_id": "ATT-THOR-1",
+      "defender": "loki",
+      "argument": "Loki stands by LOKI-C1-MID-WHE: operational bulletins confirm freight forwarders are rerouting cargoes via land corridors, dampening consumer price inflation.",
+      "new_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-LOKI-THOR-2",
+      "attack_id": "ATT-THOR-2",
+      "defender": "loki",
+      "argument": "Loki stands by LOKI-C2-MID-MAI: operational bulletins confirm freight forwarders are rerouting cargoes via land corridors, dampening consumer price inflation.",
+      "new_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-LOKI-THOR-3",
+      "attack_id": "ATT-THOR-3",
+      "defender": "loki",
+      "argument": "Loki stands by LOKI-C3-VAN-WHE: operational bulletins confirm freight forwarders are rerouting cargoes via land corridors, dampening consumer price inflation.",
+      "new_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-LOKI-THOR-4",
+      "attack_id": "ATT-THOR-4",
+      "defender": "loki",
+      "argument": "Loki stands by LOKI-C4-VAN-MAI: operational bulletins confirm freight forwarders are rerouting cargoes via land corridors, dampening consumer price inflation.",
+      "new_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-THOR-LOKI-1",
+      "attack_id": "ATT-LOKI-1",
+      "defender": "thor",
+      "argument": "Thor stands by THOR-C1-MID-WHE: port index records and customs filings confirm bulk cargo volumes have fallen by more than half, which secondary routes cannot compensate within the current quarter.",
+      "new_citations": [
+        {
+          "doc_id": "ATL-E6-0001",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-05-10"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-THOR-LOKI-2",
+      "attack_id": "ATT-LOKI-2",
+      "defender": "thor",
+      "argument": "Thor stands by THOR-C2-MID-MAI: port index records and customs filings confirm bulk cargo volumes have fallen by more than half, which secondary routes cannot compensate within the current quarter.",
+      "new_citations": [
+        {
+          "doc_id": "ATL-E6-0001",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-05-10"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-THOR-LOKI-3",
+      "attack_id": "ATT-LOKI-3",
+      "defender": "thor",
+      "argument": "Thor stands by THOR-C3-VAN-WHE: port index records and customs filings confirm bulk cargo volumes have fallen by more than half, which secondary routes cannot compensate within the current quarter.",
+      "new_citations": [
+        {
+          "doc_id": "ATL-E6-0001",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-05-10"
+        }
+      ],
+      "is_concession": false
+    },
+    {
+      "defense_id": "DEF-THOR-LOKI-4",
+      "attack_id": "ATT-LOKI-4",
+      "defender": "thor",
+      "argument": "Thor stands by THOR-C4-VAN-MAI: port index records and customs filings confirm bulk cargo volumes have fallen by more than half, which secondary routes cannot compensate within the current quarter.",
+      "new_citations": [
+        {
+          "doc_id": "ATL-E6-0001",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-05-10"
+        }
+      ],
+      "is_concession": false
+    }
+  ],
+  "concessions": [],
+  "rulings": [
+    {
+      "claim_id": "THOR-C1-MID-WHE",
+      "verdict": "contested",
+      "basis": "inference",
+      "rationale": "Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "disqualified_reason": "provider_error",
+      "admissible_citations": [
+        {
+          "doc_id": "ATL-E6-0001",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-05-10"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "THOR-C2-MID-MAI",
+      "verdict": "contested",
+      "basis": "inference",
+      "rationale": "Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "disqualified_reason": "provider_error",
+      "admissible_citations": [
+        {
+          "doc_id": "ATL-E6-0001",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-05-10"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "THOR-C3-VAN-WHE",
+      "verdict": "contested",
+      "basis": "inference",
+      "rationale": "Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "disqualified_reason": "provider_error",
+      "admissible_citations": [
+        {
+          "doc_id": "ATL-E6-0001",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-05-10"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "THOR-C4-VAN-MAI",
+      "verdict": "contested",
+      "basis": "inference",
+      "rationale": "Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "disqualified_reason": "provider_error",
+      "admissible_citations": [
+        {
+          "doc_id": "ATL-E6-0001",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-05-10"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "LOKI-C1-MID-WHE",
+      "verdict": "contested",
+      "basis": "inference",
+      "rationale": "Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "disqualified_reason": "provider_error",
+      "admissible_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "LOKI-C2-MID-MAI",
+      "verdict": "contested",
+      "basis": "inference",
+      "rationale": "Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "disqualified_reason": "provider_error",
+      "admissible_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "LOKI-C3-VAN-WHE",
+      "verdict": "contested",
+      "basis": "inference",
+      "rationale": "Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "disqualified_reason": "provider_error",
+      "admissible_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ],
+      "inadmissible_citations": []
+    },
+    {
+      "claim_id": "LOKI-C4-VAN-MAI",
+      "verdict": "contested",
+      "basis": "inference",
+      "rationale": "Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "disqualified_reason": "provider_error",
+      "admissible_citations": [
+        {
+          "doc_id": "ENC-E6-0010",
+          "paragraph_num": 1,
+          "trade_row_ref": null,
+          "quoted_text": null,
+          "pub_date": "2026-12-20"
+        }
+      ],
+      "inadmissible_citations": []
+    }
+  ],
+  "exposure_ranges": [
+    {
+      "country": "Midgard",
+      "sector": "wheat",
+      "thor_range": [
+        35.0,
+        55.0
+      ],
+      "loki_range": [
+        10.0,
+        22.0
+      ],
+      "odin_range": null,
+      "status": "unresolved",
+      "rationale": "Submitted claims (THOR-C1-MID-WHE, LOKI-C1-MID-WHE) remain contested with insufficient corroboration.",
+      "established_claim_ids": [],
+      "contested_claim_ids": [
+        "THOR-C1-MID-WHE",
+        "LOKI-C1-MID-WHE"
+      ],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    },
+    {
+      "country": "Midgard",
+      "sector": "maize",
+      "thor_range": [
+        35.0,
+        55.0
+      ],
+      "loki_range": [
+        10.0,
+        22.0
+      ],
+      "odin_range": null,
+      "status": "unresolved",
+      "rationale": "Submitted claims (THOR-C2-MID-MAI, LOKI-C2-MID-MAI) remain contested with insufficient corroboration.",
+      "established_claim_ids": [],
+      "contested_claim_ids": [
+        "THOR-C2-MID-MAI",
+        "LOKI-C2-MID-MAI"
+      ],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    },
+    {
+      "country": "Vanaheim",
+      "sector": "wheat",
+      "thor_range": [
+        35.0,
+        55.0
+      ],
+      "loki_range": [
+        10.0,
+        22.0
+      ],
+      "odin_range": null,
+      "status": "unresolved",
+      "rationale": "Submitted claims (THOR-C3-VAN-WHE, LOKI-C3-VAN-WHE) remain contested with insufficient corroboration.",
+      "established_claim_ids": [],
+      "contested_claim_ids": [
+        "THOR-C3-VAN-WHE",
+        "LOKI-C3-VAN-WHE"
+      ],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    },
+    {
+      "country": "Vanaheim",
+      "sector": "maize",
+      "thor_range": [
+        35.0,
+        55.0
+      ],
+      "loki_range": [
+        10.0,
+        22.0
+      ],
+      "odin_range": null,
+      "status": "unresolved",
+      "rationale": "Submitted claims (THOR-C4-VAN-MAI, LOKI-C4-VAN-MAI) remain contested with insufficient corroboration.",
+      "established_claim_ids": [],
+      "contested_claim_ids": [
+        "THOR-C4-VAN-MAI",
+        "LOKI-C4-VAN-MAI"
+      ],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    }
+  ],
+  "sufficiency_result": {
+    "status": "insufficient",
+    "is_sufficient": false,
+    "reasons": [
+      "Evidence base is insufficient (8 actionable gaps identified). Re-research required."
+    ],
+    "send_back": {
+      "missing": [
+        "Obtain valid pre-cutoff trade baseline observations for country 'Midgard' and sector 'wheat' prior to 2027-01-25.",
+        "Obtain valid pre-cutoff trade baseline observations for country 'Midgard' and sector 'maize' prior to 2027-01-25.",
+        "Obtain valid pre-cutoff trade baseline observations for country 'Vanaheim' and sector 'wheat' prior to 2027-01-25.",
+        "Obtain valid pre-cutoff trade baseline observations for country 'Vanaheim' and sector 'maize' prior to 2027-01-25.",
+        "Retrieve official evidence to resolve material contradiction between THOR-C1-MID-WHE ('Severe commercial disruption for Midgard') and LOKI-C1-MID-WHE ('Commercial impact for Midgard wheat is s') for Midgard-wheat.",
+        "Retrieve official evidence to resolve material contradiction between THOR-C2-MID-MAI ('Severe commercial disruption for Midgard') and LOKI-C2-MID-MAI ('Commercial impact for Midgard maize is s') for Midgard-maize.",
+        "Retrieve official evidence to resolve material contradiction between THOR-C3-VAN-WHE ('Severe commercial disruption for Vanahei') and LOKI-C3-VAN-WHE ('Commercial impact for Vanaheim wheat is ') for Vanaheim-wheat.",
+        "Retrieve official evidence to resolve material contradiction between THOR-C4-VAN-MAI ('Severe commercial disruption for Vanahei') and LOKI-C4-VAN-MAI ('Commercial impact for Vanaheim maize is ') for Vanaheim-maize."
+      ],
+      "gap_types": [
+        "missing_trade_baseline",
+        "missing_trade_baseline",
+        "missing_trade_baseline",
+        "missing_trade_baseline",
+        "unresolved_contradiction",
+        "unresolved_contradiction",
+        "unresolved_contradiction",
+        "unresolved_contradiction"
+      ],
+      "iteration": 2
+    },
+    "unresolved_gaps": [
+      "Obtain valid pre-cutoff trade baseline observations for country 'Midgard' and sector 'wheat' prior to 2027-01-25.",
+      "Obtain valid pre-cutoff trade baseline observations for country 'Midgard' and sector 'maize' prior to 2027-01-25.",
+      "Obtain valid pre-cutoff trade baseline observations for country 'Vanaheim' and sector 'wheat' prior to 2027-01-25.",
+      "Obtain valid pre-cutoff trade baseline observations for country 'Vanaheim' and sector 'maize' prior to 2027-01-25.",
+      "Retrieve official evidence to resolve material contradiction between THOR-C1-MID-WHE ('Severe commercial disruption for Midgard') and LOKI-C1-MID-WHE ('Commercial impact for Midgard wheat is s') for Midgard-wheat.",
+      "Retrieve official evidence to resolve material contradiction between THOR-C2-MID-MAI ('Severe commercial disruption for Midgard') and LOKI-C2-MID-MAI ('Commercial impact for Midgard maize is s') for Midgard-maize.",
+      "Retrieve official evidence to resolve material contradiction between THOR-C3-VAN-WHE ('Severe commercial disruption for Vanahei') and LOKI-C3-VAN-WHE ('Commercial impact for Vanaheim wheat is ') for Vanaheim-wheat.",
+      "Retrieve official evidence to resolve material contradiction between THOR-C4-VAN-MAI ('Severe commercial disruption for Vanahei') and LOKI-C4-VAN-MAI ('Commercial impact for Vanaheim maize is ') for Vanaheim-maize."
+    ],
+    "disclosed_uncertainties": [
+      "Claim THOR-C1-MID-WHE remains contested: Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "Claim THOR-C2-MID-MAI remains contested: Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "Claim THOR-C3-VAN-WHE remains contested: Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "Claim THOR-C4-VAN-MAI remains contested: Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "Claim LOKI-C1-MID-WHE remains contested: Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "Claim LOKI-C2-MID-MAI remains contested: Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "Claim LOKI-C3-VAN-WHE remains contested: Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given",
+      "Claim LOKI-C4-VAN-MAI remains contested: Judicial evaluation interrupted due to provider error: deterministic_offline_adjudication() takes 2 positional arguments but 3 were given"
+    ]
+  },
+  "send_back": {
+    "missing": [
+      "Obtain valid pre-cutoff trade baseline observations for country 'Midgard' and sector 'wheat' prior to 2027-01-25.",
+      "Obtain valid pre-cutoff trade baseline observations for country 'Midgard' and sector 'maize' prior to 2027-01-25.",
+      "Obtain valid pre-cutoff trade baseline observations for country 'Vanaheim' and sector 'wheat' prior to 2027-01-25.",
+      "Obtain valid pre-cutoff trade baseline observations for country 'Vanaheim' and sector 'maize' prior to 2027-01-25.",
+      "Retrieve official evidence to resolve material contradiction between THOR-C1-MID-WHE ('Severe commercial disruption for Midgard') and LOKI-C1-MID-WHE ('Commercial impact for Midgard wheat is s') for Midgard-wheat.",
+      "Retrieve official evidence to resolve material contradiction between THOR-C2-MID-MAI ('Severe commercial disruption for Midgard') and LOKI-C2-MID-MAI ('Commercial impact for Midgard maize is s') for Midgard-maize.",
+      "Retrieve official evidence to resolve material contradiction between THOR-C3-VAN-WHE ('Severe commercial disruption for Vanahei') and LOKI-C3-VAN-WHE ('Commercial impact for Vanaheim wheat is ') for Vanaheim-wheat.",
+      "Retrieve official evidence to resolve material contradiction between THOR-C4-VAN-MAI ('Severe commercial disruption for Vanahei') and LOKI-C4-VAN-MAI ('Commercial impact for Vanaheim maize is ') for Vanaheim-maize."
+    ],
+    "gap_types": [
+      "missing_trade_baseline",
+      "missing_trade_baseline",
+      "missing_trade_baseline",
+      "missing_trade_baseline",
+      "unresolved_contradiction",
+      "unresolved_contradiction",
+      "unresolved_contradiction",
+      "unresolved_contradiction"
+    ],
+    "iteration": 2
+  },
+  "token_usage": 0,
+  "tool_call_counts": {
+    "loki": 2,
+    "thor": 2,
+    "odin": 2
+  },
+  "overall_status": "send_back_loop",
+  "incomplete_reason": null,
+  "errors": [],
+  "timestamp": "2026-10-25T11:57:54.255229+00:00"
+}

@@ -206,6 +206,7 @@ class Briefing(BaseModel):
     verification_summary: Dict[str, Any] = Field(default_factory=dict)
     traps_and_data_quality: Dict[str, Any] = Field(default_factory=dict)
     sources: List[Dict[str, Any]] = Field(default_factory=list)
+    cross_examination: List[Dict[str, Any]] = Field(default_factory=list)
     markdown_content: str = ""
 
     @property

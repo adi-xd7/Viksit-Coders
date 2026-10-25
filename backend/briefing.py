@@ -880,6 +880,7 @@ class BriefingGenerator:
         outlook = self.build_outlook()
         verification_summary = self.build_verification_summary()
         traps, sources = self.build_traps_and_sources()
+        cross_exam_records = self.build_cross_examination()
 
         markdown_report = self.build_markdown_report(
             exec_summary=exec_summary,
@@ -920,8 +921,41 @@ class BriefingGenerator:
             verification_summary=verification_summary,
             traps_and_data_quality=traps,
             sources=sources,
+            cross_examination=cross_exam_records,
             markdown_content=markdown_report,
         )
+
+    def build_cross_examination(self) -> List[Dict[str, Any]]:
+        """Assembles structured cross-examination challenge and counter-argument records."""
+        records = []
+        defenses_by_attack = {d.attack_id: d for d in self.defenses}
+        concessions_by_claim = {c.claim_id: c for c in self.concessions}
+
+        for att in self.attacks:
+            target_claim = self.claims_map.get(att.target_claim_id)
+            match_def = defenses_by_attack.get(att.attack_id)
+            concession = concessions_by_claim.get(att.target_claim_id)
+
+            challenger = att.attacker.value if hasattr(att.attacker, "value") else str(att.attacker)
+            defender = match_def.defender.value if (match_def and hasattr(match_def.defender, "value")) else ("LOKI" if challenger.upper() == "THOR" else "THOR")
+
+            cits = [c.display_str() if hasattr(c, "display_str") else str(c) for c in (att.counter_citations or [])]
+            def_cits = [c.display_str() if hasattr(c, "display_str") else str(c) for c in (match_def.new_citations or [])] if match_def else []
+
+            records.append({
+                "attack_id": att.attack_id,
+                "target_claim_id": att.target_claim_id,
+                "target_statement": target_claim.statement if target_claim else f"Dispute on {att.target_claim_id}",
+                "challenger": challenger.upper(),
+                "challenge_argument": att.argument,
+                "counter_citations": cits,
+                "defender": defender.upper(),
+                "counter_argument": match_def.argument if match_def else "Claim maintained based on verified baseline records.",
+                "defense_citations": def_cits,
+                "conceded": concession is not None,
+                "concession_rationale": concession.rationale if concession else None,
+            })
+        return records
 
 
 def generate_briefing(

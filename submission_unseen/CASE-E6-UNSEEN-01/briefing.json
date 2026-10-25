@@ -1,0 +1,315 @@
+{
+  "case_id": "CASE-E6-UNSEEN-01",
+  "as_of": "2027-01-25",
+  "event_verification": {
+    "status": "real",
+    "reason": "Disruption confirmed real by High Realm Cartographic Bureau [ATL-E6-0001 P1, 2026-05-10]: 'Vanaheim maintains critical timber transshipment corridors connecting the Southe...'",
+    "active_event_id": "NONE"
+  },
+  "executive_summary": "Investigation of supply chain disruption event 'CASE-E6-UNSEEN-01' (As of 25 January 2027, evaluate commercial exposure from the Winter Sluice Collapse across Vanaheim and Midgard timber.) as of 2027-01-25.\n\nTrial Status: The trial reached evidence sufficiency and concluded successfully.\n\nJudicial Outcomes: Odin issued 8 binding rulings (8 established, 0 contested, 0 conceded, 0 rejected).\n\nKey Established Findings: Severe commercial disruption for Midgard wheat: imports face...; Severe commercial disruption for Midgard maize: imports face...; Severe commercial disruption for Vanaheim wheat: imports fac....",
+  "established_findings": [
+    {
+      "claim_id": "THOR-C1-MID-WHE",
+      "finding": "Severe commercial disruption for Midgard wheat: imports face an estimated 35.0% to 55.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "basis": "sourced_fact",
+      "country": "Midgard",
+      "sector": "wheat",
+      "posture": "high",
+      "admissible_citations": [
+        "[ATL-E6-0001 P1, 2026-05-10]"
+      ],
+      "evidence_excerpts": [
+        "Vanaheim maintains critical timber transshipment corridors connecting the Southern Valleys to Midgard...."
+      ],
+      "rationale": "Admissible records and official trade data substantiate THOR-C1-MID-WHE."
+    },
+    {
+      "claim_id": "THOR-C2-MID-MAI",
+      "finding": "Severe commercial disruption for Midgard maize: imports face an estimated 35.0% to 55.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "basis": "sourced_fact",
+      "country": "Midgard",
+      "sector": "maize",
+      "posture": "high",
+      "admissible_citations": [
+        "[ATL-E6-0001 P1, 2026-05-10]"
+      ],
+      "evidence_excerpts": [
+        "Vanaheim maintains critical timber transshipment corridors connecting the Southern Valleys to Midgard...."
+      ],
+      "rationale": "Admissible records and official trade data substantiate THOR-C2-MID-MAI."
+    },
+    {
+      "claim_id": "THOR-C3-VAN-WHE",
+      "finding": "Severe commercial disruption for Vanaheim wheat: imports face an estimated 35.0% to 55.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "basis": "sourced_fact",
+      "country": "Vanaheim",
+      "sector": "wheat",
+      "posture": "high",
+      "admissible_citations": [
+        "[ATL-E6-0001 P1, 2026-05-10]"
+      ],
+      "evidence_excerpts": [
+        "Vanaheim maintains critical timber transshipment corridors connecting the Southern Valleys to Midgard...."
+      ],
+      "rationale": "Admissible records and official trade data substantiate THOR-C3-VAN-WHE."
+    },
+    {
+      "claim_id": "THOR-C4-VAN-MAI",
+      "finding": "Severe commercial disruption for Vanaheim maize: imports face an estimated 35.0% to 55.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "basis": "sourced_fact",
+      "country": "Vanaheim",
+      "sector": "maize",
+      "posture": "high",
+      "admissible_citations": [
+        "[ATL-E6-0001 P1, 2026-05-10]"
+      ],
+      "evidence_excerpts": [
+        "Vanaheim maintains critical timber transshipment corridors connecting the Southern Valleys to Midgard...."
+      ],
+      "rationale": "Admissible records and official trade data substantiate THOR-C4-VAN-MAI."
+    },
+    {
+      "claim_id": "LOKI-C1-MID-WHE",
+      "finding": "Commercial impact for Midgard wheat is strictly limited to an estimated 10.0% to 22.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "basis": "sourced_fact",
+      "country": "Midgard",
+      "sector": "wheat",
+      "posture": "limited",
+      "admissible_citations": [
+        "[ENC-E6-0010 P1, 2026-12-20]"
+      ],
+      "evidence_excerpts": [
+        "Specialized Southern Alpine pine exports were rerouted via glacial rail spurs...."
+      ],
+      "rationale": "Admissible records and official trade data substantiate LOKI-C1-MID-WHE."
+    },
+    {
+      "claim_id": "LOKI-C2-MID-MAI",
+      "finding": "Commercial impact for Midgard maize is strictly limited to an estimated 10.0% to 22.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "basis": "sourced_fact",
+      "country": "Midgard",
+      "sector": "maize",
+      "posture": "limited",
+      "admissible_citations": [
+        "[ENC-E6-0010 P1, 2026-12-20]"
+      ],
+      "evidence_excerpts": [
+        "Specialized Southern Alpine pine exports were rerouted via glacial rail spurs...."
+      ],
+      "rationale": "Admissible records and official trade data substantiate LOKI-C2-MID-MAI."
+    },
+    {
+      "claim_id": "LOKI-C3-VAN-WHE",
+      "finding": "Commercial impact for Vanaheim wheat is strictly limited to an estimated 10.0% to 22.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "basis": "sourced_fact",
+      "country": "Vanaheim",
+      "sector": "wheat",
+      "posture": "limited",
+      "admissible_citations": [
+        "[ENC-E6-0010 P1, 2026-12-20]"
+      ],
+      "evidence_excerpts": [
+        "Specialized Southern Alpine pine exports were rerouted via glacial rail spurs...."
+      ],
+      "rationale": "Admissible records and official trade data substantiate LOKI-C3-VAN-WHE."
+    },
+    {
+      "claim_id": "LOKI-C4-VAN-MAI",
+      "finding": "Commercial impact for Vanaheim maize is strictly limited to an estimated 10.0% to 22.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "basis": "sourced_fact",
+      "country": "Vanaheim",
+      "sector": "maize",
+      "posture": "limited",
+      "admissible_citations": [
+        "[ENC-E6-0010 P1, 2026-12-20]"
+      ],
+      "evidence_excerpts": [
+        "Specialized Southern Alpine pine exports were rerouted via glacial rail spurs...."
+      ],
+      "rationale": "Admissible records and official trade data substantiate LOKI-C4-VAN-MAI."
+    }
+  ],
+  "contested_findings": [],
+  "conceded_claims": [],
+  "rejected_claims": [],
+  "exposure_table": [
+    {
+      "country": "Midgard",
+      "sector": "wheat",
+      "thor_range": [
+        35.0,
+        55.0
+      ],
+      "loki_range": [
+        10.0,
+        22.0
+      ],
+      "odin_range": [
+        35.0,
+        55.0
+      ],
+      "status": "resolved",
+      "rationale": "Adjudicated exposure [35.0, 55.0] directly supported by established claim THOR-C1-MID-WHE.",
+      "established_claim_ids": [
+        "THOR-C1-MID-WHE",
+        "LOKI-C1-MID-WHE"
+      ],
+      "contested_claim_ids": [],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    },
+    {
+      "country": "Midgard",
+      "sector": "maize",
+      "thor_range": [
+        35.0,
+        55.0
+      ],
+      "loki_range": [
+        10.0,
+        22.0
+      ],
+      "odin_range": [
+        35.0,
+        55.0
+      ],
+      "status": "resolved",
+      "rationale": "Adjudicated exposure [35.0, 55.0] directly supported by established claim THOR-C2-MID-MAI.",
+      "established_claim_ids": [
+        "THOR-C2-MID-MAI",
+        "LOKI-C2-MID-MAI"
+      ],
+      "contested_claim_ids": [],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    },
+    {
+      "country": "Vanaheim",
+      "sector": "wheat",
+      "thor_range": [
+        35.0,
+        55.0
+      ],
+      "loki_range": [
+        10.0,
+        22.0
+      ],
+      "odin_range": [
+        35.0,
+        55.0
+      ],
+      "status": "resolved",
+      "rationale": "Adjudicated exposure [35.0, 55.0] directly supported by established claim THOR-C3-VAN-WHE.",
+      "established_claim_ids": [
+        "THOR-C3-VAN-WHE",
+        "LOKI-C3-VAN-WHE"
+      ],
+      "contested_claim_ids": [],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    },
+    {
+      "country": "Vanaheim",
+      "sector": "maize",
+      "thor_range": [
+        35.0,
+        55.0
+      ],
+      "loki_range": [
+        10.0,
+        22.0
+      ],
+      "odin_range": [
+        35.0,
+        55.0
+      ],
+      "status": "resolved",
+      "rationale": "Adjudicated exposure [35.0, 55.0] directly supported by established claim THOR-C4-VAN-MAI.",
+      "established_claim_ids": [
+        "THOR-C4-VAN-MAI",
+        "LOKI-C4-VAN-MAI"
+      ],
+      "contested_claim_ids": [],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    }
+  ],
+  "next_quarter_outlook": "### 1. Established Facts & Baseline Trajectory\n- Midgard (wheat): Admissible records and official trade data substantiate THOR-C1-MID-WHE.\n- Midgard (maize): Admissible records and official trade data substantiate THOR-C2-MID-MAI.\n- Vanaheim (wheat): Admissible records and official trade data substantiate THOR-C3-VAN-WHE.\n- Vanaheim (maize): Admissible records and official trade data substantiate THOR-C4-VAN-MAI.\n- Midgard (wheat): Admissible records and official trade data substantiate LOKI-C1-MID-WHE.\n- Midgard (maize): Admissible records and official trade data substantiate LOKI-C2-MID-MAI.\n- Vanaheim (wheat): Admissible records and official trade data substantiate LOKI-C3-VAN-WHE.\n- Vanaheim (maize): Admissible records and official trade data substantiate LOKI-C4-VAN-MAI.\n\n### 2. Inferences Supported by Admissible Evidence\n- No secondary inferences have been validated as established.\n\n### 3. Contested Issues & Critical Sensitivities\n- No contested disputes remain unresolved.\n\n### 4. Important Unknowns\n- All required baseline data and event verifications are accounted for on record.",
+  "assumptions": [],
+  "verification_summary": {
+    "rulings_count": 8,
+    "verdict_breakdown": {
+      "established": 8,
+      "contested": 0,
+      "conceded": 0,
+      "rejected": 0
+    },
+    "total_citations_checked": 8,
+    "valid_citations_count": 8,
+    "invalid_citations_count": 0,
+    "citation_failures": [],
+    "sources_used_count": 2,
+    "reliability_tier_distribution": {
+      "Tier 1": 4,
+      "Tier 2": 4,
+      "Tier 3": 0,
+      "Tier 4": 0
+    },
+    "as_of_date_compliance": true,
+    "as_of_date": "2027-01-25",
+    "trial_completion_status": "ready_for_briefing",
+    "incomplete_reason": null,
+    "execution_metrics": {
+      "runs_executed": 1,
+      "max_runs": 3,
+      "token_usage": 3556,
+      "tool_call_counts": {
+        "loki": 1,
+        "thor": 1,
+        "odin": 1
+      }
+    },
+    "advocate_status": {
+      "thor": "normal",
+      "loki": "normal"
+    }
+  },
+  "traps_and_data_quality": {
+    "prompt_injections_detected": [],
+    "retractions_caught": [],
+    "superseded_corrections": [],
+    "duplicates_detected": [],
+    "damaged_records_excluded": [],
+    "clock_violations_rejected": [],
+    "tier_4_only_rejections": []
+  },
+  "sources": [
+    {
+      "doc_id": "ATL-E6-0001",
+      "title": "Document ATL-E6-0001",
+      "pub_date": "2026-05-10",
+      "reliability_tier": 1,
+      "source_name": "High Realm Cartographic Bureau",
+      "country": "Vanaheim",
+      "sector": "timber"
+    },
+    {
+      "doc_id": "ENC-E6-0010",
+      "title": "Document ENC-E6-0010",
+      "pub_date": "2026-12-20",
+      "reliability_tier": 2,
+      "source_name": "Glacial Railway Log",
+      "country": "Vanaheim",
+      "sector": "timber"
+    }
+  ],
+  "markdown_content": "# TRIAL OF THE NINE REALMS \u2014 JUDICIAL INTELLIGENCE BRIEFING\n**Case ID**: `CASE-E6-UNSEEN-01` | **As-of Date**: `2027-01-25` | **Target Query**: As of 25 January 2027, evaluate commercial exposure from the Winter Sluice Collapse across Vanaheim and Midgard timber.\n**Event Verification**: `REAL` | **Trial Status**: `READY_FOR_BRIEFING`\n\n---\n## A. Executive Summary\n\nInvestigation of supply chain disruption event 'CASE-E6-UNSEEN-01' (As of 25 January 2027, evaluate commercial exposure from the Winter Sluice Collapse across Vanaheim and Midgard timber.) as of 2027-01-25.\n\nTrial Status: The trial reached evidence sufficiency and concluded successfully.\n\nJudicial Outcomes: Odin issued 8 binding rulings (8 established, 0 contested, 0 conceded, 0 rejected).\n\nKey Established Findings: Severe commercial disruption for Midgard wheat: imports face...; Severe commercial disruption for Midgard maize: imports face...; Severe commercial disruption for Vanaheim wheat: imports fac....\n\n---\n## B. Established Findings\n\n### Claim `THOR-C1-MID-WHE` (Midgard - wheat)\n- **Statement**: Severe commercial disruption for Midgard wheat: imports face an estimated 35.0% to 55.0% deficit due to corridor transit cessation and bulk maritime shipping loss.\n- **Basis**: `sourced_fact` | **Admissible Citations**: [ATL-E6-0001 P1, 2026-05-10]\n- **Judicial Rationale**: Admissible records and official trade data substantiate THOR-C1-MID-WHE.\n\n### Claim `THOR-C2-MID-MAI` (Midgard - maize)\n- **Statement**: Severe commercial disruption for Midgard maize: imports face an estimated 35.0% to 55.0% deficit due to corridor transit cessation and bulk maritime shipping loss.\n- **Basis**: `sourced_fact` | **Admissible Citations**: [ATL-E6-0001 P1, 2026-05-10]\n- **Judicial Rationale**: Admissible records and official trade data substantiate THOR-C2-MID-MAI.\n\n### Claim `THOR-C3-VAN-WHE` (Vanaheim - wheat)\n- **Statement**: Severe commercial disruption for Vanaheim wheat: imports face an estimated 35.0% to 55.0% deficit due to corridor transit cessation and bulk maritime shipping loss.\n- **Basis**: `sourced_fact` | **Admissible Citations**: [ATL-E6-0001 P1, 2026-05-10]\n- **Judicial Rationale**: Admissible records and official trade data substantiate THOR-C3-VAN-WHE.\n\n### Claim `THOR-C4-VAN-MAI` (Vanaheim - maize)\n- **Statement**: Severe commercial disruption for Vanaheim maize: imports face an estimated 35.0% to 55.0% deficit due to corridor transit cessation and bulk maritime shipping loss.\n- **Basis**: `sourced_fact` | **Admissible Citations**: [ATL-E6-0001 P1, 2026-05-10]\n- **Judicial Rationale**: Admissible records and official trade data substantiate THOR-C4-VAN-MAI.\n\n### Claim `LOKI-C1-MID-WHE` (Midgard - wheat)\n- **Statement**: Commercial impact for Midgard wheat is strictly limited to an estimated 10.0% to 22.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.\n- **Basis**: `sourced_fact` | **Admissible Citations**: [ENC-E6-0010 P1, 2026-12-20]\n- **Judicial Rationale**: Admissible records and official trade data substantiate LOKI-C1-MID-WHE.\n\n### Claim `LOKI-C2-MID-MAI` (Midgard - maize)\n- **Statement**: Commercial impact for Midgard maize is strictly limited to an estimated 10.0% to 22.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.\n- **Basis**: `sourced_fact` | **Admissible Citations**: [ENC-E6-0010 P1, 2026-12-20]\n- **Judicial Rationale**: Admissible records and official trade data substantiate LOKI-C2-MID-MAI.\n\n### Claim `LOKI-C3-VAN-WHE` (Vanaheim - wheat)\n- **Statement**: Commercial impact for Vanaheim wheat is strictly limited to an estimated 10.0% to 22.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.\n- **Basis**: `sourced_fact` | **Admissible Citations**: [ENC-E6-0010 P1, 2026-12-20]\n- **Judicial Rationale**: Admissible records and official trade data substantiate LOKI-C3-VAN-WHE.\n\n### Claim `LOKI-C4-VAN-MAI` (Vanaheim - maize)\n- **Statement**: Commercial impact for Vanaheim maize is strictly limited to an estimated 10.0% to 22.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.\n- **Basis**: `sourced_fact` | **Admissible Citations**: [ENC-E6-0010 P1, 2026-12-20]\n- **Judicial Rationale**: Admissible records and official trade data substantiate LOKI-C4-VAN-MAI.\n\n---\n## C. Contested Findings\n\n*(Zero claims contested.)*\n\n---\n## D. Conceded Findings\n\n*(Zero explicit concessions on record.)*\n\n---\n## E. Rejected Findings\n\n*(Zero claims rejected.)*\n\n---\n## F. Exposure Analysis Table\n\n| Country | Sector | Thor Range (High) | Loki Range (Limited) | Odin Adjudicated Range | Status | Trade Baselines |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| Midgard | wheat | [35.0, 55.0]% | [10.0, 22.0]% | [35.0, 55.0] | `RESOLVED` | None |\n| Midgard | maize | [35.0, 55.0]% | [10.0, 22.0]% | [35.0, 55.0] | `RESOLVED` | None |\n| Vanaheim | wheat | [35.0, 55.0]% | [10.0, 22.0]% | [35.0, 55.0] | `RESOLVED` | None |\n| Vanaheim | maize | [35.0, 55.0]% | [10.0, 22.0]% | [35.0, 55.0] | `RESOLVED` | None |\n\n---\n## G. Outlook and Implications\n\n### 1. Established Facts & Baseline Trajectory\n- Midgard (wheat): Admissible records and official trade data substantiate THOR-C1-MID-WHE.\n- Midgard (maize): Admissible records and official trade data substantiate THOR-C2-MID-MAI.\n- Vanaheim (wheat): Admissible records and official trade data substantiate THOR-C3-VAN-WHE.\n- Vanaheim (maize): Admissible records and official trade data substantiate THOR-C4-VAN-MAI.\n- Midgard (wheat): Admissible records and official trade data substantiate LOKI-C1-MID-WHE.\n- Midgard (maize): Admissible records and official trade data substantiate LOKI-C2-MID-MAI.\n- Vanaheim (wheat): Admissible records and official trade data substantiate LOKI-C3-VAN-WHE.\n- Vanaheim (maize): Admissible records and official trade data substantiate LOKI-C4-VAN-MAI.\n\n### 2. Inferences Supported by Admissible Evidence\n- No secondary inferences have been validated as established.\n\n### 3. Contested Issues & Critical Sensitivities\n- No contested disputes remain unresolved.\n\n### 4. Important Unknowns\n- All required baseline data and event verifications are accounted for on record.\n\n---\n## H. Verification & Execution Summary\n\n- **Rulings Total**: 8 ({'established': 8, 'contested': 0, 'conceded': 0, 'rejected': 0})\n- **Citations Validated**: 8 valid, 0 invalid (Total: 8)\n- **Sources Used**: 2 documents ({'Tier 1': 4, 'Tier 2': 4, 'Tier 3': 0, 'Tier 4': 0})\n- **As-Of Compliance**: `PASS` (Cutoff: 2027-01-25)\n- **Execution Metrics**: Runs=1/3, Tokens=3556, Advocates: Thor=normal, Loki=normal\n\n---\n## I. Sources & Traps Caught\n\n### Sources on Record\n- `[ATL-E6-0001]` **Document ATL-E6-0001** (Pub: 2026-05-10, Tier 1, High Realm Cartographic Bureau)\n- `[ENC-E6-0010]` **Document ENC-E6-0010** (Pub: 2026-12-20, Tier 2, Glacial Railway Log)\n\n### Traps & Data Quality Exclusions Caught\n- *(Zero adversarial traps or corrupted records detected in evidence corpus.)*"
+}

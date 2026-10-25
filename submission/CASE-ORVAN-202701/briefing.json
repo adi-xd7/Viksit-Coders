@@ -1,0 +1,639 @@
+{
+  "case_id": "CASE-ORVAN-202701",
+  "as_of": "2027-01-25",
+  "event_verification": {
+    "status": "real",
+    "reason": "Disruption confirmed real by Realm Trade Ministry [ORV-0002 P1, 2026-06-15]: 'The Realm Trade Ministry publishes this summary of the Corridor Agreement for th...'",
+    "active_event_id": "E5"
+  },
+  "executive_summary": "Investigation of supply chain disruption event 'CASE-ORVAN-202701' (As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.) as of 2027-01-25.\n\nTrial Status: The investigation was stopped due to execution/resource limits (Send-back research produced no qualifying new admissible evidence for missing gaps.).\n\nJudicial Outcomes: Odin issued 8 binding rulings (4 established, 4 contested, 0 conceded, 0 rejected).\n\nKey Established Findings: Severe commercial disruption for Midgard wheat: imports face...; Severe commercial disruption for Tolan wheat: imports face a...; Commercial impact for Midgard wheat is strictly limited to a....\n\nMaterial Uncertainties: 4 claims remain contested due to conflicting evidence or missing corroboration.",
+  "established_findings": [
+    {
+      "claim_id": "THOR-C1-MID-WHE",
+      "finding": "Severe commercial disruption for Midgard wheat: imports face an estimated 37.4% to 50.6% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "basis": "sourced_fact",
+      "country": "Midgard",
+      "sector": "wheat",
+      "posture": "high",
+      "admissible_citations": [
+        "[TAB-ORV-0009#2]"
+      ],
+      "evidence_excerpts": [],
+      "rationale": "Admissible trade records substantiate baseline and disruption bounds for THOR-C1-MID-WHE."
+    },
+    {
+      "claim_id": "THOR-C3-TOL-WHE",
+      "finding": "Severe commercial disruption for Tolan wheat: imports face an estimated 37.2% to 50.3% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "basis": "sourced_fact",
+      "country": "Tolan",
+      "sector": "wheat",
+      "posture": "high",
+      "admissible_citations": [
+        "[TAB-ORV-0046#2]"
+      ],
+      "evidence_excerpts": [],
+      "rationale": "Admissible trade records substantiate baseline and disruption bounds for THOR-C3-TOL-WHE."
+    },
+    {
+      "claim_id": "LOKI-C1-MID-WHE",
+      "finding": "Commercial impact for Midgard wheat is strictly limited to an estimated 22.1% to 29.5% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "basis": "sourced_fact",
+      "country": "Midgard",
+      "sector": "wheat",
+      "posture": "limited",
+      "admissible_citations": [
+        "[ORV-0002 P4, 2026-06-15]",
+        "[TAB-ORV-0036#2]",
+        "[TAB-ORV-0005#2]"
+      ],
+      "evidence_excerpts": [
+        "The agreement dealt only with the sea corridor. Rail movements and sales by other exporters were outside it...."
+      ],
+      "rationale": "Admissible trade records substantiate baseline and disruption bounds for LOKI-C1-MID-WHE."
+    },
+    {
+      "claim_id": "LOKI-C3-TOL-WHE",
+      "finding": "Commercial impact for Tolan wheat is strictly limited to an estimated 8.0% to 10.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "basis": "sourced_fact",
+      "country": "Tolan",
+      "sector": "wheat",
+      "posture": "limited",
+      "admissible_citations": [
+        "[ORV-0002 P4, 2026-06-15]",
+        "[TAB-ORV-0046#2]",
+        "[TAB-ORV-0005#2]"
+      ],
+      "evidence_excerpts": [
+        "The agreement dealt only with the sea corridor. Rail movements and sales by other exporters were outside it...."
+      ],
+      "rationale": "Admissible trade records substantiate baseline and disruption bounds for LOKI-C3-TOL-WHE."
+    }
+  ],
+  "contested_findings": [
+    {
+      "claim_id": "THOR-C2-MID-MAI",
+      "disputed_statement": "Severe commercial disruption for Midgard maize: imports face an estimated 80.8% to 95.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "basis": "inference",
+      "country": "Midgard",
+      "sector": "maize",
+      "citations": [],
+      "rationale": "Claim THOR-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+      "opposing_arguments": [
+        "Thor's claim THOR-C2-MID-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Midgard."
+      ],
+      "missing_evidence_to_resolve": "Independent corroboration or baseline trade verification required."
+    },
+    {
+      "claim_id": "THOR-C4-TOL-MAI",
+      "disputed_statement": "Severe commercial disruption for Tolan maize: imports face an estimated 80.8% to 95.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "basis": "inference",
+      "country": "Tolan",
+      "sector": "maize",
+      "citations": [],
+      "rationale": "Claim THOR-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+      "opposing_arguments": [
+        "Thor's claim THOR-C4-TOL-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Tolan."
+      ],
+      "missing_evidence_to_resolve": "Independent corroboration or baseline trade verification required."
+    },
+    {
+      "claim_id": "LOKI-C2-MID-MAI",
+      "disputed_statement": "Commercial impact for Midgard maize is strictly limited to an estimated 14.0% to 26.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "basis": "inference",
+      "country": "Midgard",
+      "sector": "maize",
+      "citations": [
+        "[ORV-0002 P4, 2026-06-15]"
+      ],
+      "rationale": "Claim LOKI-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+      "opposing_arguments": [
+        "Loki's mitigation claim for Midgard maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums."
+      ],
+      "missing_evidence_to_resolve": "Independent corroboration or baseline trade verification required."
+    },
+    {
+      "claim_id": "LOKI-C4-TOL-MAI",
+      "disputed_statement": "Commercial impact for Tolan maize is strictly limited to an estimated 16.5% to 29.5% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "basis": "inference",
+      "country": "Tolan",
+      "sector": "maize",
+      "citations": [
+        "[ORV-0002 P4, 2026-06-15]"
+      ],
+      "rationale": "Claim LOKI-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.",
+      "opposing_arguments": [
+        "Loki's mitigation claim for Tolan maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums."
+      ],
+      "missing_evidence_to_resolve": "Independent corroboration or baseline trade verification required."
+    }
+  ],
+  "conceded_claims": [],
+  "rejected_claims": [],
+  "exposure_table": [
+    {
+      "country": "Midgard",
+      "sector": "wheat",
+      "thor_range": [
+        37.4,
+        50.6
+      ],
+      "loki_range": [
+        22.1,
+        29.5
+      ],
+      "odin_range": [
+        2249984.0,
+        3044096.0
+      ],
+      "status": "resolved",
+      "rationale": "Baseline volume of 6016000.0 tonnes established from rows: TAB-ORV-0009#2, TAB-ORV-0009#3, TAB-ORV-0009#4, TAB-ORV-0009#5, TAB-ORV-0009#6, TAB-ORV-0009#7, TAB-ORV-0009#8, TAB-ORV-0009#9, TAB-ORV-0009#10, TAB-ORV-0009#11, TAB-ORV-0009#12, TAB-ORV-0009#13, TAB-ORV-0027#2, TAB-ORV-0027#3, TAB-ORV-0027#4, TAB-ORV-0027#5, TAB-ORV-0027#6, TAB-ORV-0027#7, TAB-ORV-0027#8, TAB-ORV-0027#9, TAB-ORV-0027#10, TAB-ORV-0027#11, TAB-ORV-0027#12, TAB-ORV-0027#13, TAB-ORV-0030#2, TAB-ORV-0030#3, TAB-ORV-0030#4, TAB-ORV-0030#5, TAB-ORV-0030#6, TAB-ORV-0030#7, TAB-ORV-0030#8, TAB-ORV-0030#9, TAB-ORV-0030#10, TAB-ORV-0030#11, TAB-ORV-0030#12, TAB-ORV-0030#13, TAB-ORV-0036#2, TAB-ORV-0036#3. Adjudicated exposure bounds [2249984.0, 3044096.0] tonnes derived from established drop range [37.4%, 50.6%] less offset 0.0.",
+      "established_claim_ids": [
+        "THOR-C1-MID-WHE",
+        "LOKI-C1-MID-WHE"
+      ],
+      "contested_claim_ids": [],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [
+        "TAB-ORV-0009#2",
+        "TAB-ORV-0009#3",
+        "TAB-ORV-0009#4",
+        "TAB-ORV-0009#5",
+        "TAB-ORV-0009#6",
+        "TAB-ORV-0009#7",
+        "TAB-ORV-0009#8",
+        "TAB-ORV-0009#9",
+        "TAB-ORV-0009#10",
+        "TAB-ORV-0009#11",
+        "TAB-ORV-0009#12",
+        "TAB-ORV-0009#13",
+        "TAB-ORV-0027#2",
+        "TAB-ORV-0027#3",
+        "TAB-ORV-0027#4",
+        "TAB-ORV-0027#5",
+        "TAB-ORV-0027#6",
+        "TAB-ORV-0027#7",
+        "TAB-ORV-0027#8",
+        "TAB-ORV-0027#9",
+        "TAB-ORV-0027#10",
+        "TAB-ORV-0027#11",
+        "TAB-ORV-0027#12",
+        "TAB-ORV-0027#13",
+        "TAB-ORV-0030#2",
+        "TAB-ORV-0030#3",
+        "TAB-ORV-0030#4",
+        "TAB-ORV-0030#5",
+        "TAB-ORV-0030#6",
+        "TAB-ORV-0030#7",
+        "TAB-ORV-0030#8",
+        "TAB-ORV-0030#9",
+        "TAB-ORV-0030#10",
+        "TAB-ORV-0030#11",
+        "TAB-ORV-0030#12",
+        "TAB-ORV-0030#13",
+        "TAB-ORV-0036#2",
+        "TAB-ORV-0036#3"
+      ],
+      "assumptions": []
+    },
+    {
+      "country": "Midgard",
+      "sector": "maize",
+      "thor_range": [
+        80.8,
+        95.0
+      ],
+      "loki_range": [
+        14.0,
+        26.0
+      ],
+      "odin_range": null,
+      "status": "unresolved",
+      "rationale": "Submitted claims (THOR-C2-MID-MAI, LOKI-C2-MID-MAI) remain contested with insufficient corroboration.",
+      "established_claim_ids": [],
+      "contested_claim_ids": [
+        "THOR-C2-MID-MAI",
+        "LOKI-C2-MID-MAI"
+      ],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    },
+    {
+      "country": "Tolan",
+      "sector": "wheat",
+      "thor_range": [
+        37.2,
+        50.3
+      ],
+      "loki_range": [
+        8.0,
+        10.0
+      ],
+      "odin_range": [
+        664392.0,
+        898358.0
+      ],
+      "status": "resolved",
+      "rationale": "Baseline volume of 1786000.0 tonnes established from rows: TAB-ORV-0044#2, TAB-ORV-0044#3, TAB-ORV-0044#4, TAB-ORV-0044#5, TAB-ORV-0044#6, TAB-ORV-0044#7, TAB-ORV-0044#8, TAB-ORV-0044#9, TAB-ORV-0044#10, TAB-ORV-0044#11, TAB-ORV-0044#12, TAB-ORV-0044#13, TAB-ORV-0046#2, TAB-ORV-0046#3, TAB-ORV-0046#4, TAB-ORV-0046#5, TAB-ORV-0046#6, TAB-ORV-0046#7, TAB-ORV-0046#8, TAB-ORV-0046#9, TAB-ORV-0046#10, TAB-ORV-0046#11, TAB-ORV-0046#12, TAB-ORV-0046#13. Adjudicated exposure bounds [664392.0, 898358.0] tonnes derived from established drop range [37.2%, 50.3%] less offset 0.0.",
+      "established_claim_ids": [
+        "THOR-C3-TOL-WHE",
+        "LOKI-C3-TOL-WHE"
+      ],
+      "contested_claim_ids": [],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [
+        "TAB-ORV-0044#2",
+        "TAB-ORV-0044#3",
+        "TAB-ORV-0044#4",
+        "TAB-ORV-0044#5",
+        "TAB-ORV-0044#6",
+        "TAB-ORV-0044#7",
+        "TAB-ORV-0044#8",
+        "TAB-ORV-0044#9",
+        "TAB-ORV-0044#10",
+        "TAB-ORV-0044#11",
+        "TAB-ORV-0044#12",
+        "TAB-ORV-0044#13",
+        "TAB-ORV-0046#2",
+        "TAB-ORV-0046#3",
+        "TAB-ORV-0046#4",
+        "TAB-ORV-0046#5",
+        "TAB-ORV-0046#6",
+        "TAB-ORV-0046#7",
+        "TAB-ORV-0046#8",
+        "TAB-ORV-0046#9",
+        "TAB-ORV-0046#10",
+        "TAB-ORV-0046#11",
+        "TAB-ORV-0046#12",
+        "TAB-ORV-0046#13"
+      ],
+      "assumptions": []
+    },
+    {
+      "country": "Tolan",
+      "sector": "maize",
+      "thor_range": [
+        80.8,
+        95.0
+      ],
+      "loki_range": [
+        16.5,
+        29.5
+      ],
+      "odin_range": null,
+      "status": "unresolved",
+      "rationale": "Submitted claims (THOR-C4-TOL-MAI, LOKI-C4-TOL-MAI) remain contested with insufficient corroboration.",
+      "established_claim_ids": [],
+      "contested_claim_ids": [
+        "THOR-C4-TOL-MAI",
+        "LOKI-C4-TOL-MAI"
+      ],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    },
+    {
+      "country": "Orvan",
+      "sector": "wheat",
+      "thor_range": null,
+      "loki_range": null,
+      "odin_range": null,
+      "status": "unresolved",
+      "rationale": "Baseline volume of 9988000.0 tonnes established from rows: TAB-ORV-0005#2, TAB-ORV-0005#3, TAB-ORV-0005#4, TAB-ORV-0005#5, TAB-ORV-0005#6, TAB-ORV-0005#7, TAB-ORV-0005#8, TAB-ORV-0005#9, TAB-ORV-0005#10, TAB-ORV-0005#11, TAB-ORV-0005#12, TAB-ORV-0005#13, TAB-ORV-0009#2, TAB-ORV-0009#3, TAB-ORV-0009#4, TAB-ORV-0009#5, TAB-ORV-0009#6, TAB-ORV-0009#7, TAB-ORV-0009#8, TAB-ORV-0009#9, TAB-ORV-0009#10, TAB-ORV-0009#11, TAB-ORV-0009#12, TAB-ORV-0009#13, TAB-ORV-0019#2, TAB-ORV-0019#3, TAB-ORV-0019#4, TAB-ORV-0019#5, TAB-ORV-0019#6, TAB-ORV-0019#7, TAB-ORV-0019#8, TAB-ORV-0019#9, TAB-ORV-0019#10, TAB-ORV-0019#11, TAB-ORV-0019#12, TAB-ORV-0019#13, TAB-ORV-0029#2, TAB-ORV-0029#3, TAB-ORV-0029#4, TAB-ORV-0029#5, TAB-ORV-0029#6, TAB-ORV-0029#7, TAB-ORV-0029#8, TAB-ORV-0029#9, TAB-ORV-0029#10, TAB-ORV-0029#11, TAB-ORV-0029#12, TAB-ORV-0029#13, TAB-ORV-0030#2, TAB-ORV-0030#3, TAB-ORV-0030#4, TAB-ORV-0030#5, TAB-ORV-0030#6, TAB-ORV-0030#7, TAB-ORV-0030#8, TAB-ORV-0030#9, TAB-ORV-0030#10, TAB-ORV-0030#11, TAB-ORV-0030#12, TAB-ORV-0030#13, TAB-ORV-0036#2, TAB-ORV-0036#3, TAB-ORV-0046#2, TAB-ORV-0046#3, TAB-ORV-0046#4, TAB-ORV-0046#5, TAB-ORV-0046#6, TAB-ORV-0046#7, TAB-ORV-0046#8, TAB-ORV-0046#9, TAB-ORV-0046#10, TAB-ORV-0046#11, TAB-ORV-0046#12, TAB-ORV-0046#13. No established quantitative disruption claims on record.",
+      "established_claim_ids": [],
+      "contested_claim_ids": [],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [
+        "TAB-ORV-0005#2",
+        "TAB-ORV-0005#3",
+        "TAB-ORV-0005#4",
+        "TAB-ORV-0005#5",
+        "TAB-ORV-0005#6",
+        "TAB-ORV-0005#7",
+        "TAB-ORV-0005#8",
+        "TAB-ORV-0005#9",
+        "TAB-ORV-0005#10",
+        "TAB-ORV-0005#11",
+        "TAB-ORV-0005#12",
+        "TAB-ORV-0005#13",
+        "TAB-ORV-0009#2",
+        "TAB-ORV-0009#3",
+        "TAB-ORV-0009#4",
+        "TAB-ORV-0009#5",
+        "TAB-ORV-0009#6",
+        "TAB-ORV-0009#7",
+        "TAB-ORV-0009#8",
+        "TAB-ORV-0009#9",
+        "TAB-ORV-0009#10",
+        "TAB-ORV-0009#11",
+        "TAB-ORV-0009#12",
+        "TAB-ORV-0009#13",
+        "TAB-ORV-0019#2",
+        "TAB-ORV-0019#3",
+        "TAB-ORV-0019#4",
+        "TAB-ORV-0019#5",
+        "TAB-ORV-0019#6",
+        "TAB-ORV-0019#7",
+        "TAB-ORV-0019#8",
+        "TAB-ORV-0019#9",
+        "TAB-ORV-0019#10",
+        "TAB-ORV-0019#11",
+        "TAB-ORV-0019#12",
+        "TAB-ORV-0019#13",
+        "TAB-ORV-0029#2",
+        "TAB-ORV-0029#3",
+        "TAB-ORV-0029#4",
+        "TAB-ORV-0029#5",
+        "TAB-ORV-0029#6",
+        "TAB-ORV-0029#7",
+        "TAB-ORV-0029#8",
+        "TAB-ORV-0029#9",
+        "TAB-ORV-0029#10",
+        "TAB-ORV-0029#11",
+        "TAB-ORV-0029#12",
+        "TAB-ORV-0029#13",
+        "TAB-ORV-0030#2",
+        "TAB-ORV-0030#3",
+        "TAB-ORV-0030#4",
+        "TAB-ORV-0030#5",
+        "TAB-ORV-0030#6",
+        "TAB-ORV-0030#7",
+        "TAB-ORV-0030#8",
+        "TAB-ORV-0030#9",
+        "TAB-ORV-0030#10",
+        "TAB-ORV-0030#11",
+        "TAB-ORV-0030#12",
+        "TAB-ORV-0030#13",
+        "TAB-ORV-0036#2",
+        "TAB-ORV-0036#3",
+        "TAB-ORV-0046#2",
+        "TAB-ORV-0046#3",
+        "TAB-ORV-0046#4",
+        "TAB-ORV-0046#5",
+        "TAB-ORV-0046#6",
+        "TAB-ORV-0046#7",
+        "TAB-ORV-0046#8",
+        "TAB-ORV-0046#9",
+        "TAB-ORV-0046#10",
+        "TAB-ORV-0046#11",
+        "TAB-ORV-0046#12",
+        "TAB-ORV-0046#13"
+      ],
+      "assumptions": []
+    },
+    {
+      "country": "Orvan",
+      "sector": "maize",
+      "thor_range": null,
+      "loki_range": null,
+      "odin_range": null,
+      "status": "unresolved",
+      "rationale": "Zero admissible evidence on record for this country-sector pair.",
+      "established_claim_ids": [],
+      "contested_claim_ids": [],
+      "conceded_claim_ids": [],
+      "rejected_claim_ids": [],
+      "trade_row_refs": [],
+      "assumptions": []
+    }
+  ],
+  "next_quarter_outlook": "### 1. Established Facts & Baseline Trajectory\n- Midgard (wheat): Admissible trade records substantiate baseline and disruption bounds for THOR-C1-MID-WHE.\n- Tolan (wheat): Admissible trade records substantiate baseline and disruption bounds for THOR-C3-TOL-WHE.\n- Midgard (wheat): Admissible trade records substantiate baseline and disruption bounds for LOKI-C1-MID-WHE.\n- Tolan (wheat): Admissible trade records substantiate baseline and disruption bounds for LOKI-C3-TOL-WHE.\n\n### 2. Inferences Supported by Admissible Evidence\n- No secondary inferences have been validated as established.\n\n### 3. Contested Issues & Critical Sensitivities\n- Claim THOR-C2-MID-MAI remains contested: Claim THOR-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.\n- Claim THOR-C4-TOL-MAI remains contested: Claim THOR-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.\n- Claim LOKI-C2-MID-MAI remains contested: Claim LOKI-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.\n- Claim LOKI-C4-TOL-MAI remains contested: Claim LOKI-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.\n\n### 4. Important Unknowns\n- Execution limitation: Obtain valid pre-cutoff trade baseline observations for country 'Midgard' and sector 'maize' prior to 2027-01-25.\n- Execution limitation: Obtain valid pre-cutoff trade baseline observations for country 'Tolan' and sector 'maize' prior to 2027-01-25.\n- Execution limitation: Find quantitative disruption evidence establishing verified exposure bounds for Orvan (wheat).\n- Execution limitation: Obtain valid pre-cutoff trade baseline observations for country 'Orvan' and sector 'maize' prior to 2027-01-25.\n- Execution limitation: Retrieve official evidence to resolve material contradiction between THOR-C2-MID-MAI ('Severe commercial disruption for Midgard') and LOKI-C2-MID-MAI ('Commercial impact for Midgard maize is s') for Midgard-maize.\n- Execution limitation: Retrieve official evidence to resolve material contradiction between THOR-C4-TOL-MAI ('Severe commercial disruption for Tolan m') and LOKI-C4-TOL-MAI ('Commercial impact for Tolan maize is str') for Tolan-maize.",
+  "assumptions": [],
+  "verification_summary": {
+    "rulings_count": 8,
+    "verdict_breakdown": {
+      "established": 4,
+      "contested": 4,
+      "conceded": 0,
+      "rejected": 0
+    },
+    "total_citations_checked": 14,
+    "valid_citations_count": 10,
+    "invalid_citations_count": 4,
+    "citation_failures": [
+      {
+        "citation": "[ORV-0002 P5, 2026-06-15]",
+        "claim_id": "THOR-C1-MID-WHE",
+        "reasons": [
+          "Evidence paragraph P5 in document 'ORV-0002' lacks supporting content for claim 'THOR-C1-MID-WHE': zero substantive keyword or sector overlap with claim statement."
+        ]
+      },
+      {
+        "citation": "[ORV-0002 P5, 2026-06-15]",
+        "claim_id": "THOR-C2-MID-MAI",
+        "reasons": [
+          "Evidence paragraph P5 in document 'ORV-0002' lacks supporting content for claim 'THOR-C2-MID-MAI': zero substantive keyword or sector overlap with claim statement."
+        ]
+      },
+      {
+        "citation": "[ORV-0002 P5, 2026-06-15]",
+        "claim_id": "THOR-C3-TOL-WHE",
+        "reasons": [
+          "Evidence paragraph P5 in document 'ORV-0002' lacks supporting content for claim 'THOR-C3-TOL-WHE': zero substantive keyword or sector overlap with claim statement."
+        ]
+      },
+      {
+        "citation": "[ORV-0002 P5, 2026-06-15]",
+        "claim_id": "THOR-C4-TOL-MAI",
+        "reasons": [
+          "Evidence paragraph P5 in document 'ORV-0002' lacks supporting content for claim 'THOR-C4-TOL-MAI': zero substantive keyword or sector overlap with claim statement."
+        ]
+      }
+    ],
+    "sources_used_count": 1,
+    "reliability_tier_distribution": {
+      "Tier 1": 8,
+      "Tier 2": 0,
+      "Tier 3": 0,
+      "Tier 4": 0
+    },
+    "as_of_date_compliance": true,
+    "as_of_date": "2027-01-25",
+    "trial_completion_status": "incomplete",
+    "incomplete_reason": "Send-back research produced no qualifying new admissible evidence for missing gaps.",
+    "execution_metrics": {
+      "runs_executed": 3,
+      "max_runs": 3,
+      "token_usage": 7674,
+      "tool_call_counts": {
+        "loki": 2,
+        "thor": 2,
+        "odin": 2
+      }
+    },
+    "advocate_status": {
+      "thor": "normal",
+      "loki": "normal"
+    }
+  },
+  "traps_and_data_quality": {
+    "prompt_injections_detected": [],
+    "retractions_caught": [],
+    "superseded_corrections": [],
+    "duplicates_detected": [],
+    "damaged_records_excluded": [],
+    "clock_violations_rejected": [],
+    "tier_4_only_rejections": []
+  },
+  "sources": [
+    {
+      "doc_id": "ORV-0002",
+      "title": "Document ORV-0002",
+      "pub_date": "2026-06-15",
+      "reliability_tier": 1,
+      "source_name": "Realm Trade Ministry",
+      "country": "Orvan",
+      "sector": "Wheat"
+    }
+  ],
+  "cross_examination": [
+    {
+      "attack_id": "ATT-THOR-1",
+      "target_claim_id": "LOKI-C1-MID-WHE",
+      "target_statement": "Commercial impact for Midgard wheat is strictly limited to an estimated 22.1% to 29.5% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "challenger": "THOR",
+      "challenge_argument": "Loki's mitigation claim for Midgard wheat unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+      "counter_citations": [
+        "[ORV-0002 P4, 2026-06-15]"
+      ],
+      "defender": "LOKI",
+      "counter_argument": "Loki stands by LOKI-C1-MID-WHE: operational bulletins confirm freight forwarders are rerouting cargoes via land corridors, dampening consumer price inflation.",
+      "defense_citations": [
+        "[ORV-0002 P4, 2026-06-15]",
+        "[TAB-ORV-0036#2, 2027-01]",
+        "[TAB-ORV-0005#2, 2026-07]"
+      ],
+      "conceded": false,
+      "concession_rationale": null
+    },
+    {
+      "attack_id": "ATT-THOR-2",
+      "target_claim_id": "LOKI-C2-MID-MAI",
+      "target_statement": "Commercial impact for Midgard maize is strictly limited to an estimated 14.0% to 26.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "challenger": "THOR",
+      "challenge_argument": "Loki's mitigation claim for Midgard maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+      "counter_citations": [
+        "[ORV-0002 P4, 2026-06-15]"
+      ],
+      "defender": "LOKI",
+      "counter_argument": "Loki stands by LOKI-C2-MID-MAI: operational bulletins confirm freight forwarders are rerouting cargoes via land corridors, dampening consumer price inflation.",
+      "defense_citations": [
+        "[ORV-0002 P4, 2026-06-15]"
+      ],
+      "conceded": false,
+      "concession_rationale": null
+    },
+    {
+      "attack_id": "ATT-THOR-3",
+      "target_claim_id": "LOKI-C3-TOL-WHE",
+      "target_statement": "Commercial impact for Tolan wheat is strictly limited to an estimated 8.0% to 10.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "challenger": "THOR",
+      "challenge_argument": "Loki's mitigation claim for Tolan wheat unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+      "counter_citations": [
+        "[ORV-0002 P4, 2026-06-15]"
+      ],
+      "defender": "LOKI",
+      "counter_argument": "Loki stands by LOKI-C3-TOL-WHE: operational bulletins confirm freight forwarders are rerouting cargoes via land corridors, dampening consumer price inflation.",
+      "defense_citations": [
+        "[ORV-0002 P4, 2026-06-15]",
+        "[TAB-ORV-0046#2, 2026-07]",
+        "[TAB-ORV-0005#2, 2026-07]"
+      ],
+      "conceded": false,
+      "concession_rationale": null
+    },
+    {
+      "attack_id": "ATT-THOR-4",
+      "target_claim_id": "LOKI-C4-TOL-MAI",
+      "target_statement": "Commercial impact for Tolan maize is strictly limited to an estimated 16.5% to 29.5% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.",
+      "challenger": "THOR",
+      "challenge_argument": "Loki's mitigation claim for Tolan maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.",
+      "counter_citations": [
+        "[ORV-0002 P4, 2026-06-15]"
+      ],
+      "defender": "LOKI",
+      "counter_argument": "Loki stands by LOKI-C4-TOL-MAI: operational bulletins confirm freight forwarders are rerouting cargoes via land corridors, dampening consumer price inflation.",
+      "defense_citations": [
+        "[ORV-0002 P4, 2026-06-15]"
+      ],
+      "conceded": false,
+      "concession_rationale": null
+    },
+    {
+      "attack_id": "ATT-LOKI-1",
+      "target_claim_id": "THOR-C1-MID-WHE",
+      "target_statement": "Severe commercial disruption for Midgard wheat: imports face an estimated 37.4% to 50.6% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "challenger": "LOKI",
+      "challenge_argument": "Thor's claim THOR-C1-MID-WHE inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Midgard.",
+      "counter_citations": [
+        "[ORV-0002 P4, 2026-06-15]"
+      ],
+      "defender": "THOR",
+      "counter_argument": "Thor stands by THOR-C1-MID-WHE: port index records and customs filings confirm bulk cargo volumes have fallen by more than half, which secondary routes cannot compensate within the current quarter.",
+      "defense_citations": [
+        "[ORV-0002 P5, 2026-06-15]",
+        "[TAB-ORV-0009#2, 2026-07]"
+      ],
+      "conceded": false,
+      "concession_rationale": null
+    },
+    {
+      "attack_id": "ATT-LOKI-2",
+      "target_claim_id": "THOR-C2-MID-MAI",
+      "target_statement": "Severe commercial disruption for Midgard maize: imports face an estimated 80.8% to 95.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "challenger": "LOKI",
+      "challenge_argument": "Thor's claim THOR-C2-MID-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Midgard.",
+      "counter_citations": [
+        "[ORV-0002 P4, 2026-06-15]"
+      ],
+      "defender": "THOR",
+      "counter_argument": "Thor stands by THOR-C2-MID-MAI: port index records and customs filings confirm bulk cargo volumes have fallen by more than half, which secondary routes cannot compensate within the current quarter.",
+      "defense_citations": [
+        "[ORV-0002 P5, 2026-06-15]"
+      ],
+      "conceded": false,
+      "concession_rationale": null
+    },
+    {
+      "attack_id": "ATT-LOKI-3",
+      "target_claim_id": "THOR-C3-TOL-WHE",
+      "target_statement": "Severe commercial disruption for Tolan wheat: imports face an estimated 37.2% to 50.3% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "challenger": "LOKI",
+      "challenge_argument": "Thor's claim THOR-C3-TOL-WHE inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Tolan.",
+      "counter_citations": [
+        "[ORV-0002 P4, 2026-06-15]"
+      ],
+      "defender": "THOR",
+      "counter_argument": "Thor stands by THOR-C3-TOL-WHE: port index records and customs filings confirm bulk cargo volumes have fallen by more than half, which secondary routes cannot compensate within the current quarter.",
+      "defense_citations": [
+        "[ORV-0002 P5, 2026-06-15]",
+        "[TAB-ORV-0046#2, 2026-07]"
+      ],
+      "conceded": false,
+      "concession_rationale": null
+    },
+    {
+      "attack_id": "ATT-LOKI-4",
+      "target_claim_id": "THOR-C4-TOL-MAI",
+      "target_statement": "Severe commercial disruption for Tolan maize: imports face an estimated 80.8% to 95.0% deficit due to corridor transit cessation and bulk maritime shipping loss.",
+      "challenger": "LOKI",
+      "challenge_argument": "Thor's claim THOR-C4-TOL-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Tolan.",
+      "counter_citations": [
+        "[ORV-0002 P4, 2026-06-15]"
+      ],
+      "defender": "THOR",
+      "counter_argument": "Thor stands by THOR-C4-TOL-MAI: port index records and customs filings confirm bulk cargo volumes have fallen by more than half, which secondary routes cannot compensate within the current quarter.",
+      "defense_citations": [
+        "[ORV-0002 P5, 2026-06-15]"
+      ],
+      "conceded": false,
+      "concession_rationale": null
+    }
+  ],
+  "markdown_content": "# TRIAL OF THE NINE REALMS \u2014 JUDICIAL INTELLIGENCE BRIEFING\n**Case ID**: `CASE-ORVAN-202701` | **As-of Date**: `2027-01-25` | **Target Query**: As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.\n**Event Verification**: `REAL` | **Trial Status**: `INCOMPLETE`\n\n---\n## A. Executive Summary\n\nInvestigation of supply chain disruption event 'CASE-ORVAN-202701' (As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.) as of 2027-01-25.\n\nTrial Status: The investigation was stopped due to execution/resource limits (Send-back research produced no qualifying new admissible evidence for missing gaps.).\n\nJudicial Outcomes: Odin issued 8 binding rulings (4 established, 4 contested, 0 conceded, 0 rejected).\n\nKey Established Findings: Severe commercial disruption for Midgard wheat: imports face...; Severe commercial disruption for Tolan wheat: imports face a...; Commercial impact for Midgard wheat is strictly limited to a....\n\nMaterial Uncertainties: 4 claims remain contested due to conflicting evidence or missing corroboration.\n\n---\n## B. Established Findings\n\n### Claim `THOR-C1-MID-WHE` (Midgard - wheat)\n- **Statement**: Severe commercial disruption for Midgard wheat: imports face an estimated 37.4% to 50.6% deficit due to corridor transit cessation and bulk maritime shipping loss.\n- **Basis**: `sourced_fact` | **Admissible Citations**: [TAB-ORV-0009#2]\n- **Judicial Rationale**: Admissible trade records substantiate baseline and disruption bounds for THOR-C1-MID-WHE.\n\n### Claim `THOR-C3-TOL-WHE` (Tolan - wheat)\n- **Statement**: Severe commercial disruption for Tolan wheat: imports face an estimated 37.2% to 50.3% deficit due to corridor transit cessation and bulk maritime shipping loss.\n- **Basis**: `sourced_fact` | **Admissible Citations**: [TAB-ORV-0046#2]\n- **Judicial Rationale**: Admissible trade records substantiate baseline and disruption bounds for THOR-C3-TOL-WHE.\n\n### Claim `LOKI-C1-MID-WHE` (Midgard - wheat)\n- **Statement**: Commercial impact for Midgard wheat is strictly limited to an estimated 22.1% to 29.5% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.\n- **Basis**: `sourced_fact` | **Admissible Citations**: [ORV-0002 P4, 2026-06-15] [TAB-ORV-0036#2] [TAB-ORV-0005#2]\n- **Judicial Rationale**: Admissible trade records substantiate baseline and disruption bounds for LOKI-C1-MID-WHE.\n\n### Claim `LOKI-C3-TOL-WHE` (Tolan - wheat)\n- **Statement**: Commercial impact for Tolan wheat is strictly limited to an estimated 8.0% to 10.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.\n- **Basis**: `sourced_fact` | **Admissible Citations**: [ORV-0002 P4, 2026-06-15] [TAB-ORV-0046#2] [TAB-ORV-0005#2]\n- **Judicial Rationale**: Admissible trade records substantiate baseline and disruption bounds for LOKI-C3-TOL-WHE.\n\n---\n## C. Contested Findings\n\n### Claim `THOR-C2-MID-MAI` (Midgard - maize)\n- **Disputed Statement**: Severe commercial disruption for Midgard maize: imports face an estimated 80.8% to 95.0% deficit due to corridor transit cessation and bulk maritime shipping loss.\n- **Citations on Record**: [No Citation]\n- **Judicial Rationale**: Claim THOR-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.\n- **Opposing Arguments**: Thor's claim THOR-C2-MID-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Midgard.\n- **Resolution Gap**: Independent corroboration or baseline trade verification required.\n\n### Claim `THOR-C4-TOL-MAI` (Tolan - maize)\n- **Disputed Statement**: Severe commercial disruption for Tolan maize: imports face an estimated 80.8% to 95.0% deficit due to corridor transit cessation and bulk maritime shipping loss.\n- **Citations on Record**: [No Citation]\n- **Judicial Rationale**: Claim THOR-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.\n- **Opposing Arguments**: Thor's claim THOR-C4-TOL-MAI inflates gross maritime losses into net exposure, failing to credit active rail substitute loadings through Ravik and existing grain stock drawdowns in Tolan.\n- **Resolution Gap**: Independent corroboration or baseline trade verification required.\n\n### Claim `LOKI-C2-MID-MAI` (Midgard - maize)\n- **Disputed Statement**: Commercial impact for Midgard maize is strictly limited to an estimated 14.0% to 26.0% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.\n- **Citations on Record**: [ORV-0002 P4, 2026-06-15]\n- **Judicial Rationale**: Claim LOKI-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.\n- **Opposing Arguments**: Loki's mitigation claim for Midgard maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.\n- **Resolution Gap**: Independent corroboration or baseline trade verification required.\n\n### Claim `LOKI-C4-TOL-MAI` (Tolan - maize)\n- **Disputed Statement**: Commercial impact for Tolan maize is strictly limited to an estimated 16.5% to 29.5% net deficit due to alternative rail transit through Ravik, secondary Vanir supplies, and existing domestic inventories.\n- **Citations on Record**: [ORV-0002 P4, 2026-06-15]\n- **Judicial Rationale**: Claim LOKI-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.\n- **Opposing Arguments**: Loki's mitigation claim for Tolan maize unreliably assumes unlimited substitute transport; documentary evidence confirms alternative rail corridors suffer severe rolling stock shortages and price premiums.\n- **Resolution Gap**: Independent corroboration or baseline trade verification required.\n\n---\n## D. Conceded Findings\n\n*(Zero explicit concessions on record.)*\n\n---\n## E. Rejected Findings\n\n*(Zero claims rejected.)*\n\n---\n## F. Exposure Analysis Table\n\n| Country | Sector | Thor Range (High) | Loki Range (Limited) | Odin Adjudicated Range | Status | Trade Baselines |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| Midgard | wheat | [37.4, 50.6]% | [22.1, 29.5]% | [2249984.0, 3044096.0] | `RESOLVED` | TAB-ORV-0009#2, TAB-ORV-0009#3, TAB-ORV-0009#4, TAB-ORV-0009#5, TAB-ORV-0009#6, TAB-ORV-0009#7, TAB-ORV-0009#8, TAB-ORV-0009#9, TAB-ORV-0009#10, TAB-ORV-0009#11, TAB-ORV-0009#12, TAB-ORV-0009#13, TAB-ORV-0027#2, TAB-ORV-0027#3, TAB-ORV-0027#4, TAB-ORV-0027#5, TAB-ORV-0027#6, TAB-ORV-0027#7, TAB-ORV-0027#8, TAB-ORV-0027#9, TAB-ORV-0027#10, TAB-ORV-0027#11, TAB-ORV-0027#12, TAB-ORV-0027#13, TAB-ORV-0030#2, TAB-ORV-0030#3, TAB-ORV-0030#4, TAB-ORV-0030#5, TAB-ORV-0030#6, TAB-ORV-0030#7, TAB-ORV-0030#8, TAB-ORV-0030#9, TAB-ORV-0030#10, TAB-ORV-0030#11, TAB-ORV-0030#12, TAB-ORV-0030#13, TAB-ORV-0036#2, TAB-ORV-0036#3 |\n| Midgard | maize | [80.8, 95.0]% | [14.0, 26.0]% | **UNRESOLVED** | `UNRESOLVED` | None |\n| Tolan | wheat | [37.2, 50.3]% | [8.0, 10.0]% | [664392.0, 898358.0] | `RESOLVED` | TAB-ORV-0044#2, TAB-ORV-0044#3, TAB-ORV-0044#4, TAB-ORV-0044#5, TAB-ORV-0044#6, TAB-ORV-0044#7, TAB-ORV-0044#8, TAB-ORV-0044#9, TAB-ORV-0044#10, TAB-ORV-0044#11, TAB-ORV-0044#12, TAB-ORV-0044#13, TAB-ORV-0046#2, TAB-ORV-0046#3, TAB-ORV-0046#4, TAB-ORV-0046#5, TAB-ORV-0046#6, TAB-ORV-0046#7, TAB-ORV-0046#8, TAB-ORV-0046#9, TAB-ORV-0046#10, TAB-ORV-0046#11, TAB-ORV-0046#12, TAB-ORV-0046#13 |\n| Tolan | maize | [80.8, 95.0]% | [16.5, 29.5]% | **UNRESOLVED** | `UNRESOLVED` | None |\n| Orvan | wheat | None (Failed/Missing) | None (Failed/Missing) | **UNRESOLVED** | `UNRESOLVED` | TAB-ORV-0005#2, TAB-ORV-0005#3, TAB-ORV-0005#4, TAB-ORV-0005#5, TAB-ORV-0005#6, TAB-ORV-0005#7, TAB-ORV-0005#8, TAB-ORV-0005#9, TAB-ORV-0005#10, TAB-ORV-0005#11, TAB-ORV-0005#12, TAB-ORV-0005#13, TAB-ORV-0009#2, TAB-ORV-0009#3, TAB-ORV-0009#4, TAB-ORV-0009#5, TAB-ORV-0009#6, TAB-ORV-0009#7, TAB-ORV-0009#8, TAB-ORV-0009#9, TAB-ORV-0009#10, TAB-ORV-0009#11, TAB-ORV-0009#12, TAB-ORV-0009#13, TAB-ORV-0019#2, TAB-ORV-0019#3, TAB-ORV-0019#4, TAB-ORV-0019#5, TAB-ORV-0019#6, TAB-ORV-0019#7, TAB-ORV-0019#8, TAB-ORV-0019#9, TAB-ORV-0019#10, TAB-ORV-0019#11, TAB-ORV-0019#12, TAB-ORV-0019#13, TAB-ORV-0029#2, TAB-ORV-0029#3, TAB-ORV-0029#4, TAB-ORV-0029#5, TAB-ORV-0029#6, TAB-ORV-0029#7, TAB-ORV-0029#8, TAB-ORV-0029#9, TAB-ORV-0029#10, TAB-ORV-0029#11, TAB-ORV-0029#12, TAB-ORV-0029#13, TAB-ORV-0030#2, TAB-ORV-0030#3, TAB-ORV-0030#4, TAB-ORV-0030#5, TAB-ORV-0030#6, TAB-ORV-0030#7, TAB-ORV-0030#8, TAB-ORV-0030#9, TAB-ORV-0030#10, TAB-ORV-0030#11, TAB-ORV-0030#12, TAB-ORV-0030#13, TAB-ORV-0036#2, TAB-ORV-0036#3, TAB-ORV-0046#2, TAB-ORV-0046#3, TAB-ORV-0046#4, TAB-ORV-0046#5, TAB-ORV-0046#6, TAB-ORV-0046#7, TAB-ORV-0046#8, TAB-ORV-0046#9, TAB-ORV-0046#10, TAB-ORV-0046#11, TAB-ORV-0046#12, TAB-ORV-0046#13 |\n| Orvan | maize | None (Failed/Missing) | None (Failed/Missing) | **UNRESOLVED** | `UNRESOLVED` | None |\n\n---\n## G. Outlook and Implications\n\n### 1. Established Facts & Baseline Trajectory\n- Midgard (wheat): Admissible trade records substantiate baseline and disruption bounds for THOR-C1-MID-WHE.\n- Tolan (wheat): Admissible trade records substantiate baseline and disruption bounds for THOR-C3-TOL-WHE.\n- Midgard (wheat): Admissible trade records substantiate baseline and disruption bounds for LOKI-C1-MID-WHE.\n- Tolan (wheat): Admissible trade records substantiate baseline and disruption bounds for LOKI-C3-TOL-WHE.\n\n### 2. Inferences Supported by Admissible Evidence\n- No secondary inferences have been validated as established.\n\n### 3. Contested Issues & Critical Sensitivities\n- Claim THOR-C2-MID-MAI remains contested: Claim THOR-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.\n- Claim THOR-C4-TOL-MAI remains contested: Claim THOR-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.\n- Claim LOKI-C2-MID-MAI remains contested: Claim LOKI-C2-MID-MAI remains contested under cross-examination without direct primary trade table corroboration.\n- Claim LOKI-C4-TOL-MAI remains contested: Claim LOKI-C4-TOL-MAI remains contested under cross-examination without direct primary trade table corroboration.\n\n### 4. Important Unknowns\n- Execution limitation: Obtain valid pre-cutoff trade baseline observations for country 'Midgard' and sector 'maize' prior to 2027-01-25.\n- Execution limitation: Obtain valid pre-cutoff trade baseline observations for country 'Tolan' and sector 'maize' prior to 2027-01-25.\n- Execution limitation: Find quantitative disruption evidence establishing verified exposure bounds for Orvan (wheat).\n- Execution limitation: Obtain valid pre-cutoff trade baseline observations for country 'Orvan' and sector 'maize' prior to 2027-01-25.\n- Execution limitation: Retrieve official evidence to resolve material contradiction between THOR-C2-MID-MAI ('Severe commercial disruption for Midgard') and LOKI-C2-MID-MAI ('Commercial impact for Midgard maize is s') for Midgard-maize.\n- Execution limitation: Retrieve official evidence to resolve material contradiction between THOR-C4-TOL-MAI ('Severe commercial disruption for Tolan m') and LOKI-C4-TOL-MAI ('Commercial impact for Tolan maize is str') for Tolan-maize.\n\n---\n## H. Verification & Execution Summary\n\n- **Rulings Total**: 8 ({'established': 4, 'contested': 4, 'conceded': 0, 'rejected': 0})\n- **Citations Validated**: 10 valid, 4 invalid (Total: 14)\n- **Sources Used**: 1 documents ({'Tier 1': 8, 'Tier 2': 0, 'Tier 3': 0, 'Tier 4': 0})\n- **As-Of Compliance**: `PASS` (Cutoff: 2027-01-25)\n- **Execution Metrics**: Runs=3/3, Tokens=7674, Advocates: Thor=normal, Loki=normal\n\n---\n## I. Sources & Traps Caught\n\n### Sources on Record\n- `[ORV-0002]` **Document ORV-0002** (Pub: 2026-06-15, Tier 1, Realm Trade Ministry)\n\n### Traps & Data Quality Exclusions Caught\n- *(Zero adversarial traps or corrupted records detected in evidence corpus.)*"
+}
