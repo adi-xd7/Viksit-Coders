@@ -55,6 +55,7 @@ export interface Claim {
   exposure: Estimate | null;
   limitations: string[];
   revises_claim_id?: string | null;
+  calculation_ids?: string[];
 }
 
 export interface Attack {
@@ -165,6 +166,9 @@ export interface CaseStatus {
   as_of?: string;
   history?: string[];
   runs_completed?: number;
+  attempt?: number;
+  calls_used?: number | null;
+  calls_limit?: number | null;
   notes?: string[];
   stop_reason?: string | null;
   limitations?: string;
@@ -258,6 +262,7 @@ export const EVENT_TYPES = [
   "QUERY", "RETRIEVED", "CLAIM", "ATTACK", "DEFENSE", "CONCESSION", "RULING", "SENDBACK", "MEMORY_READ", "MEMORY_WRITE",
   "MEMORY_APPLIED", "TRAP_INJECTION", "CLOCK_VIOLATION_BLOCKED", "LIMIT_HIT", "ERROR", "INGEST", "DAMAGED_INPUT",
   "RUN_START", "RUN_END", "BRIEFING", "CASE_FILE", "STAGE", "SUFFICIENCY", "PRECHECK", "RESEARCH_PLAN", "NEW_EVIDENCE",
+  "LLM_USAGE", "LLM_CACHE_HIT",
 ];
 
 /** Row IDs are "<table_id>#R<n>"; returns [table_id, row_id]. */
