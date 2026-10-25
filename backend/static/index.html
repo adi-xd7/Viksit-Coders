@@ -891,7 +891,7 @@
         const trialRes = await fetch(`/api/cases/${caseId}/trials`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ background: false, max_runs: 2 })
+          body: JSON.stringify({ background: false, max_runs: 3 })
         });
 
         if (!trialRes.ok) {
@@ -1045,6 +1045,31 @@
           lokiList.appendChild(card);
         }
       });
+
+      // Render Thor and Loki Theses on Overview Tab
+      const allFindings = (briefing.established_findings || []).concat(briefing.contested_findings || []);
+      const thorClaims = allFindings.filter(f => f.claim_id && f.claim_id.startsWith('THOR'));
+      const lokiClaims = allFindings.filter(f => f.claim_id && f.claim_id.startsWith('LOKI'));
+
+      if (thorClaims.length) {
+        document.getElementById('thorSummaryBadge').innerText = 'Advocated';
+        document.getElementById('thorSummaryBadge').className = 'badge badge-contested';
+        document.getElementById('thorSummaryText').innerText = thorClaims.map(c => c.statement || c.finding).slice(0, 2).join(' | ');
+      } else if (briefing.exposure_table && briefing.exposure_table.some(e => e.thor_range)) {
+        document.getElementById('thorSummaryBadge').innerText = 'Evaluated';
+        document.getElementById('thorSummaryBadge').className = 'badge badge-contested';
+        document.getElementById('thorSummaryText').innerText = briefing.exposure_table.map(e => `${e.country} ${e.sector}: ${e.thor_range[0]}%-${e.thor_range[1]}%`).join(', ');
+      }
+
+      if (lokiClaims.length) {
+        document.getElementById('lokiSummaryBadge').innerText = 'Advocated';
+        document.getElementById('lokiSummaryBadge').className = 'badge badge-conceded';
+        document.getElementById('lokiSummaryText').innerText = lokiClaims.map(c => c.statement || c.finding).slice(0, 2).join(' | ');
+      } else if (briefing.exposure_table && briefing.exposure_table.some(e => e.loki_range)) {
+        document.getElementById('lokiSummaryBadge').innerText = 'Evaluated';
+        document.getElementById('lokiSummaryBadge').className = 'badge badge-conceded';
+        document.getElementById('lokiSummaryText').innerText = briefing.exposure_table.map(e => `${e.country} ${e.sector}: ${e.loki_range[0]}%-${e.loki_range[1]}%`).join(', ');
+      }
     }
 
     function downloadBriefingJson() {

@@ -140,7 +140,7 @@ class LLMClient:
         if not gemini_key:
             raise ValueError("GEMINI_API_KEY not configured.")
 
-        gemini_model = model if (model and "gemini" in model.lower()) else os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+        gemini_model = model if (model and "gemini" in model.lower()) else os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
         try:
             from google import genai
@@ -150,11 +150,24 @@ class LLMClient:
                 system_instruction=system_prompt,
                 temperature=temperature,
             )
-            response = client.models.generate_content(
-                model=gemini_model,
-                contents=user_prompt,
-                config=config,
-            )
+            try:
+                response = client.models.generate_content(
+                    model=gemini_model,
+                    contents=user_prompt,
+                    config=config,
+                )
+            except Exception as gen_err:
+                # If model name was deprecated or 404, fallback to gemini-flash-latest
+                if "404" in str(gen_err) or "not found" in str(gen_err).lower():
+                    logger.warning("Gemini model '%s' not found; retrying with 'gemini-flash-latest'...", gemini_model)
+                    response = client.models.generate_content(
+                        model="gemini-flash-latest",
+                        contents=user_prompt,
+                        config=config,
+                    )
+                else:
+                    raise gen_err
+
             text = getattr(response, "text", str(response))
             tokens = (len(system_prompt) + len(user_prompt) + len(text)) // 4
             self.total_tokens_used += tokens
@@ -163,12 +176,21 @@ class LLMClient:
             logger.warning("google.genai call failed (%s), attempting google.generativeai fallback...", e)
             import google.generativeai as legacy_genai
             legacy_genai.configure(api_key=gemini_key)
-            g_model = legacy_genai.GenerativeModel(
-                model_name=gemini_model,
-                system_instruction=system_prompt,
-                generation_config={"temperature": temperature},
-            )
-            res = g_model.generate_content(user_prompt)
+            try:
+                g_model = legacy_genai.GenerativeModel(
+                    model_name=gemini_model,
+                    system_instruction=system_prompt,
+                    generation_config={"temperature": temperature},
+                )
+                res = g_model.generate_content(user_prompt)
+            except Exception:
+                g_model = legacy_genai.GenerativeModel(
+                    model_name="gemini-1.5-flash",
+                    system_instruction=system_prompt,
+                    generation_config={"temperature": temperature},
+                )
+                res = g_model.generate_content(user_prompt)
+
             text = res.text
             tokens = (len(system_prompt) + len(user_prompt) + len(text)) // 4
             self.total_tokens_used += tokens
