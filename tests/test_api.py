@@ -101,6 +101,22 @@ def test_partial_and_failed_cases_are_reported_as_such(settings, service):
     assert st2["results"]["briefing"] is None
 
 
+def test_failed_case_resumes_via_api_and_reports_call_usage(settings, service):
+    c, app = client(settings, service, {("odin", "OdinVerdict"): broken})
+    st = run_via_api(c, app)
+    assert st["status"] == "failed" and st["calls_used"] >= 1 and st["calls_limit"] == settings.max_llm_calls_per_case
+    used_first = st["calls_used"]
+    c2, app2 = client(settings, service)  # e.g. the quota is back
+    r = c2.post(f"/cases/{st['case_id']}/resume")
+    assert r.status_code == 202 and r.json()["resumed"] is True
+    app2.state.runner.join(st["case_id"], 300)
+    st2 = c2.get(f"/cases/{st['case_id']}").json()
+    assert st2["status"] == "complete" and st2["attempt"] == 2
+    assert st2["calls_used"] == 1 < used_first  # only Odin's step needed a model request; the rest replayed
+    assert c2.post(f"/cases/{st['case_id']}/resume").status_code == 409  # complete: nothing to resume
+    assert c2.post("/cases/case-nope/resume").status_code == 404
+
+
 def test_request_validation(settings, service):
     c, _ = client(settings, service)
     assert c.post("/cases", json={"question": "Hi", "as_of": AS_OF}).status_code == 422

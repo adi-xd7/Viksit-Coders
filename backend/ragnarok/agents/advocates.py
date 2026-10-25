@@ -6,16 +6,25 @@ Code-enforced rules:
 - estimate bounds must equal results of trade_calc records the advocate produced;
 - an attack must target an opponent claim and carry counter-evidence or a concrete gap;
 - a defense must bring a new, valid citation not already used by the attacked claim,
-  otherwise it is recorded as an invalid defense (the attack stands undefended).
+  otherwise it is recorded as an invalid defense (the attack stands undefended);
+- run n >= 2 (DELTA_RUN): a revised or new claim must cite evidence first retrieved in
+  that run, otherwise code drops it (re-summaries are not new claims).
+
+Cross-examination searches (CROSS_EXAM_CODE_SEARCH) are derived in code and run
+through the advocate's own as_of-gated, logged, query-deduplicated tools: for
+attacks, from each targeted opponent claim and the attacker's side; for defenses,
+from the attack's objection and evidence gap, plus a re-read of the attacked
+claim's own cited document. One structured call then writes the attacks or
+responses from that evidence.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from ragnarok.agents.common import AgentEnv, load_prompt, research
+from ragnarok.agents.common import AgentEnv, load_prompt, research, run_requests
 from ragnarok.agents.estimates import bound_problems, calc_row_refs, load_calcs, norm_unit
-from ragnarok.agents.schemas import AdvocateBrief, AdvocateRevision, AttackSet, ClaimDraft, ResponseSet
+from ragnarok.agents.schemas import AdvocateBrief, AdvocateRevision, AttackSet, ClaimDraft, ResponseSet, ToolRequest
 from ragnarok.memory.store import render_lessons
 from ragnarok.models import (
     AgentName,
@@ -30,6 +39,9 @@ from ragnarok.models import (
 )
 
 SIDE = {AgentName.THOR: "HIGH", AgentName.LOKI: "LIMITED"}
+# Generic words added to code-derived counter-evidence searches (no case specifics).
+COUNTER_CUE = {AgentName.THOR: "shortfall disruption no substitute limited capacity delay",
+               AgentName.LOKI: "alternative supplier substitute route rerouted stocks inventory"}
 PREFIX = {AgentName.THOR: "T", AgentName.LOKI: "L"}
 
 
@@ -130,10 +142,25 @@ def _research_own(env: AgentEnv, system: str, task: str, context: str, lessons, 
     return None
 
 
-def run_brief(env: AgentEnv, case_text: str) -> Submission:
+def receive_case_start(env: AgentEnv, seeds: list[dict], table_ids: list[str]) -> None:
+    """Run 1: start from Heimdall's seed search results (read from the query cache) and the
+    rows of the Case File's trade tables (as_of-gated reads). Neither counts as the
+    advocate's own search; the advocate must still search for itself."""
+    if not env.ctx.settings.share_seeds_with_advocates:
+        return
+    if seeds:
+        env.receive_seed(seeds, "Heimdall's seed searches for this case (shared with the Case File; not your own searches)")
+    rows = [r.row_id for t in table_ids if (tab := env.service.store.get_trade_table(t)) for r in tab.rows]
+    if rows:
+        env.receive_case_evidence(rows, "trade rows of the Case File's trade tables (use their row IDs in trade_calc)")
+
+
+def run_brief(env: AgentEnv, case_text: str, seeds: list[dict] | None = None,
+              table_ids: list[str] | None = None) -> Submission:
     ctx = env.ctx
     agent = env.agent
     system = load_prompt(agent)
+    receive_case_start(env, seeds or [], table_ids or [])
     task = (f"Research and argue that exposure is {SIDE[agent]}. Make at least one search of your own, fetch the trade rows "
             "you need and compute every estimate with trade_calc. For EVERY exposure pair in the case file that has trade "
             "data, give one claim with an estimate whose low and high come from two different defensible trade_calc "
@@ -153,11 +180,14 @@ def run_brief(env: AgentEnv, case_text: str) -> Submission:
             p.append(f"at most {ctx.settings.max_claims_per_advocate} claims")
         return p + _claim_problems(env, b.claims)
 
+    def essential(b: AdvocateBrief) -> list[str]:  # the brief is usable if at least one claim survives the code checks
+        return [] if any(env.citations(c.citations)[0] for c in b.claims) else ["no claim has a valid citation"]
+
     user = (f"{case_text}\n\n{render_lessons(lessons)}\n\n<task>\n{task}\nNow write your claims (at most "
             f"{ctx.settings.max_claims_per_advocate}). Cite only paragraphs/rows shown in your evidence; estimate bounds "
             f"must be calc results.\n</task>\n\n<evidence>\n{env.evidence_text()}\n</evidence>")
     brief = ctx.llm.structured(agent, system, user, AdvocateBrief, effort=ctx.settings.effort_advocate,
-                               validate=validate, label=f"{agent.value} brief", allow_residual=True)
+                               validate=validate, essential=essential, label=f"{agent.value} brief", allow_residual=True)
     env.report_injections(brief.injection_reports)
     _build_claims(env, brief.claims, sub, {})
     if not sub.claims:
@@ -178,14 +208,18 @@ def run_revision(env: AgentEnv, case_text: str, previous: list[Claim], verdicts:
     agent = env.agent
     system = load_prompt(agent)
     own = {c.claim_id: c for c in previous}
+    before = set(env.retrieved)  # evidence this advocate had before this run
     env.receive_case_evidence(new_refs, f"Heimdall's new evidence for run {ctx.run_number}, delivered with the Case File")
     context = (f"{case_text}\n\n{new_evidence_text}\n\n<your_previous_claims>\n{render_previous(previous, verdicts)}\n"
                "</your_previous_claims>")
+    delta = ctx.settings.delta_run
     task = (f"Run {ctx.run_number}: Odin sent the case back and Heimdall found new evidence (above). Argue that exposure is "
             f"{SIDE[agent]}. Make at least one new search of your own, then reconsider each earlier claim the new evidence "
             "affects: revise it (new claim with revises_claim_id), withdraw it if the new evidence undermines it, or leave "
-            "it unchanged (it stands and is re-ruled). Add new claims where the new evidence supports them. Compute every "
-            "estimate with trade_calc.")
+            + ("it out (an unaffected claim stands with its earlier ruling). Only claims affected by the new evidence may be "
+               "revised, and every revised or new claim must cite evidence first retrieved in this run. "
+               if delta else "it unchanged (it stands and is re-ruled). ")
+            + "Add new claims where the new evidence supports them. Compute every estimate with trade_calc.")
     lessons = env.recall(["research", "brief"], f"reconsidering claims in run {ctx.run_number}")
     sub = Submission()
     sub.failed = _research_own(env, system, task, context, lessons, f"{agent.value} run {ctx.run_number} research")
@@ -199,13 +233,29 @@ def run_revision(env: AgentEnv, case_text: str, previous: list[Claim], verdicts:
         p += [f"revises_claim_id {c.revises_claim_id} is not one of your earlier claims ({', '.join(own)})"
               for c in b.claims if c.revises_claim_id and c.revises_claim_id not in own]
         p += [f"withdrawn {w.claim_id} is not one of your earlier claims" for w in b.withdrawn if w.claim_id not in own]
+        if delta:
+            p += [f"claim {i} cites no evidence first retrieved in run {ctx.run_number} (a re-summary is not a revision)"
+                  for i, c in enumerate(b.claims, 1) if not _cites_new(c)]
         return p + _claim_problems(env, b.claims)
+
+    def _cites_new(c) -> bool:
+        good, _ = env.citations(c.citations)
+        return any((x.row_id or f"{x.doc_id}#{x.paragraph_ref}") not in before for x in good)
 
     user = (f"{context}\n\n{render_lessons(lessons)}\n\n<task>\n{task}\nNow write your run-{ctx.run_number} claims and "
             "withdrawals. Cite only paragraphs/rows shown in your evidence; estimate bounds must be calc results.\n"
             f"</task>\n\n<evidence>\n{env.evidence_text()}\n</evidence>")
     rev = ctx.llm.structured(agent, system, user, AdvocateRevision, effort=ctx.settings.effort_advocate,
                              validate=validate, label=f"{agent.value} run {ctx.run_number} revision", allow_residual=True)
+    if delta:
+        keep = [c for c in rev.claims if _cites_new(c)]
+        for c in rev.claims:
+            if c not in keep:
+                sub.rejected.append({"claim_id": None, "text": c.text, "reason": f"cites no evidence new in run "
+                                     f"{ctx.run_number} (delta run: not a revision)"})
+                env.log(LogEventType.ERROR, f"run-{ctx.run_number} claim dropped by code: it cites no evidence first "
+                        f"retrieved in this run: {c.text}"[:500])
+        rev = rev.model_copy(update={"claims": keep})
     env.report_injections(rev.injection_reports)
     for w in rev.withdrawn:
         if w.claim_id not in own or any(k.claim_id == w.claim_id for k in sub.withdrawn):
@@ -272,15 +322,28 @@ def run_attacks(env: AgentEnv, case_text: str, own: list[Claim], opponent: list[
     ids = {c.claim_id: c for c in opponent}
     context = (f"{case_text}\n\n<your_claims>\n{render_claims(own, False)}\n</your_claims>\n\n"
                f"<opponent_claims>\n{render_claims(opponent)}\n</opponent_claims>")
+    code_search = ctx.settings.cross_exam_code_search
     task = ("Cross-examination: attack the opponent's weakest claims. For each attack give the target claim ID, a specific "
-            "objection, counter-evidence citations and/or the concrete evidence gap, and why it matters. Search for "
-            "counter-evidence if needed.")
+            "objection, counter-evidence citations and/or the concrete evidence gap, and why it matters. "
+            + ("The system has already searched for counter-evidence to each opponent claim (results in your evidence); "
+               "cite from the evidence shown." if code_search else "Search for counter-evidence if needed."))
     if round_number > 1:
         task += (f" This is rebuttal round {round_number}: the claims listed were defended with new evidence in the round "
                  "before; attack only if that defense leaves a real problem.")
     lessons = env.recall(["cross_exam"], f"cross-examination round {round_number}")
     context += ("\n\n" + render_lessons(lessons)) if lessons else ""
-    research(env, system, task, context, 1, effort=ctx.settings.effort_advocate, label=f"{agent.value} cross-exam research")
+    if code_search:
+        reqs = [ToolRequest(tool="search", purpose=f"cross-exam: counter-evidence to {c.claim_id}",
+                            query=f"{' '.join(c.text.split()[:30])} {COUNTER_CUE[agent]}",
+                            countries=[c.country] if c.country else [])
+                for c in opponent[: ctx.settings.max_attacks_per_advocate]]
+        env.log(LogEventType.RESEARCH_PLAN, f"{agent.value} cross-exam round {round_number}: {len(reqs)} counter-evidence "
+                "search(es) derived in code from the targeted claims", {"cross_exam": "attack", "searches":
+                [{"query": r.query, "countries": r.countries, "purpose": r.purpose} for r in reqs]},
+                [c.claim_id for c in opponent[: ctx.settings.max_attacks_per_advocate]])
+        run_requests(env, reqs)
+    else:
+        research(env, system, task, context, 1, effort=ctx.settings.effort_advocate, label=f"{agent.value} cross-exam research")
 
     def check(a, n) -> list[str]:
         p = []
@@ -300,10 +363,16 @@ def run_attacks(env: AgentEnv, case_text: str, own: list[Claim], opponent: list[
             p += check(a, n)
         return p
 
+    def essential(s: AttackSet) -> list[str]:  # at least one attack must survive the code checks
+        ok = [a for n, a in enumerate(s.attacks[: ctx.settings.max_attacks_per_advocate], 1)
+              if a.target_claim_id in ids and not [x for x in check(a, n) if "invalid counter-evidence" not in x]]
+        return [] if ok else ["no attack is valid: each needs an opponent target, a specific objection and valid "
+                              "counter-evidence or a concrete evidence gap"]
+
     user = (f"{context}\n\n<task>\n{task}\nWrite at most {ctx.settings.max_attacks_per_advocate} attacks.\n</task>\n\n"
             f"<evidence>\n{env.evidence_text()}\n</evidence>")
     s = ctx.llm.structured(agent, system, user, AttackSet, effort=ctx.settings.effort_advocate, validate=validate,
-                           label=f"{agent.value} attacks", allow_residual=True)
+                           essential=essential, label=f"{agent.value} attacks", allow_residual=True)
     env.report_injections(s.injection_reports)
     attacks, rejected = [], []
     for n, a in enumerate(s.attacks[: ctx.settings.max_attacks_per_advocate], 1):
@@ -342,11 +411,30 @@ def run_responses(env: AgentEnv, case_text: str, own: list[Claim], attacks: list
                   for c in a.counter_evidence) for a in attacks)
     context = (f"{case_text}\n\n<your_claims>\n{render_claims(list(claims.values()))}\n</your_claims>\n\n"
                f"<attacks_on_your_claims>\n{att_text}\n</attacks_on_your_claims>")
+    code_search = ctx.settings.cross_exam_code_search
     task = ("Respond to every attack: defend with NEW evidence (a paragraph or trade row not already cited by the attacked "
-            "claim) or concede. A concession can be partial (give the revised claim). Search for new evidence if needed.")
+            "claim) or concede. A concession can be partial (give the revised claim). "
+            + ("The system has already searched for evidence on each objection and re-read your cited documents (results in "
+               "your evidence); defend only with evidence shown." if code_search else "Search for new evidence if needed."))
     lessons = env.recall(["cross_exam"], "answering attacks")
     context += ("\n\n" + render_lessons(lessons)) if lessons else ""
-    research(env, system, task, context, 1, effort=ctx.settings.effort_advocate, label=f"{agent.value} defense research")
+    if code_search:
+        reqs = []
+        for a in attacks:
+            c = claims.get(a.target_claim_id)
+            reqs.append(ToolRequest(tool="search", purpose=f"defense: evidence on the objection of {a.attack_id}",
+                                    query=" ".join(f"{a.objection} {a.evidence_gap or ''}".split()[:40]),
+                                    countries=[c.country] if c and c.country else []))
+            docs = list(dict.fromkeys(x.doc_id for x in (c.citations if c else []) if x.paragraph_ref))
+            reqs += [ToolRequest(tool="read_doc", purpose=f"defense: re-read cited document for {a.attack_id}", doc_id=d)
+                     for d in docs[: ctx.settings.cross_exam_reads_per_attack]]
+        env.log(LogEventType.RESEARCH_PLAN, f"{agent.value} defense: {len(reqs)} request(s) derived in code from "
+                f"{len(attacks)} attack(s) and the attacked claims' citations", {"cross_exam": "defense", "requests":
+                [{"tool": r.tool, "query": r.query, "doc_id": r.doc_id, "purpose": r.purpose} for r in reqs]},
+                [a.attack_id for a in attacks])
+        run_requests(env, reqs)
+    else:
+        research(env, system, task, context, 1, effort=ctx.settings.effort_advocate, label=f"{agent.value} defense research")
 
     def new_refs(a, drafts) -> tuple[list, list[str]]:
         good, bad = env.citations(drafts)

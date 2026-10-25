@@ -128,7 +128,7 @@ def default_handlers() -> dict[tuple[str, str], Handler]:
         return h
 
     def odin(user: str, n: int):
-        ids = re.search(r"Rule on every claim \(IDs: ([^)]*)\)", user).group(1).split(", ")
+        ids = [i for i in re.search(r"Rule on every claim \(IDs: ([^)]*)\)", user).group(1).split(", ") if i != "none"]
         conceded = set(re.findall(r"CONCEDES (\S+)", user))
         rulings = [S.RulingDraft(claim_id=c, verdict="conceded" if c in conceded else "established" if c.startswith("T")
                                  else "contested", claim_type="fact", rationale="Supported by the cited passages as checked.")
@@ -186,10 +186,21 @@ class ScriptedBackend:
         n = self.counts.get(key, 0)
         self.counts[key] = n + 1
         self.calls.append({"agent": agent.value, "schema": schema.__name__, "system": system, "user": user, "n": n})
-        if schema in (S.OdinRulings, S.OdinAssessment):  # Odin's two calls are scripted as one judgment
+        if key in self.handlers:
+            out = self.handlers[key](user, n)
+        elif schema in (S.OdinRulings, S.OdinAssessment, S.OdinVerdict):  # Odin's calls are scripted as one judgment
             j = self.handlers[("odin", "OdinJudgment")](user, n)
             out = (S.OdinRulings(rulings=j.rulings, injection_reports=j.injection_reports) if schema is S.OdinRulings
-                   else S.OdinAssessment(**j.model_dump(exclude={"rulings", "injection_reports"})))
+                   else S.OdinAssessment(**j.model_dump(exclude={"rulings", "injection_reports"})) if schema is S.OdinAssessment
+                   else S.OdinVerdict(**j.model_dump()))
+        elif schema is S.DualResearchTurn:  # combined memory plan: same plan with and without memory by default
+            base = self.handlers[(agent.value, "ResearchTurn")](user, n)
+            out = S.DualResearchTurn(**base.model_dump(), plan_without_memory=S.ResearchPlan(
+                **base.model_dump(exclude={"done", "note"})), memory_used=[], memory_effect="")
+        elif schema is S.DualSendBackPlan:
+            base = self.handlers[("heimdall", "SendBackPlan")](user, n)
+            out = S.DualSendBackPlan(**base.model_dump(), searches_without_memory=list(base.searches), memory_used=[],
+                                     memory_effect="")
         elif key not in self.handlers and schema in (S.MemoryResearchTurn, S.SendBackPlanM):
             # memory-aware variants: same plan as without memory unless a test scripts otherwise
             base = S.ResearchTurn if schema is S.MemoryResearchTurn else S.SendBackPlan

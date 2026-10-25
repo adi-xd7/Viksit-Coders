@@ -8,6 +8,9 @@ Security properties enforced here (not in prompts):
 - Distinct evidence (paragraphs/rows) retrieved per case is capped; over -> LIMIT_HIT.
 - A search identical to a query from an earlier run can be refused (send-back research).
 - Memory is private: an AgentEnv reads and writes only its own agent's lessons.
+- Evidence shared with the Case File (Heimdall's code-run seed searches, read back
+  from the query cache; the case file's trade rows) passes the same as_of gate and
+  is logged for the receiving agent; it never counts as that agent's own search.
 - Retrieved text is always wrapped in <document> tags with "<"/">" escaped,
   so a document cannot close its own wrapper or fake a system block.
 - Citations are resolved against the store; dates come from the store, never
@@ -24,17 +27,25 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from ragnarok.agents.schemas import CalcOp, CitationDraft, InjectionReport, MemoryResearchTurn, ResearchTurn, ToolRequest
+from ragnarok.agents.schemas import (
+    CalcOp,
+    CitationDraft,
+    DualResearchTurn,
+    InjectionReport,
+    MemoryResearchTurn,
+    ResearchTurn,
+    ToolRequest,
+)
 from ragnarok.config import Settings
 from ragnarok.ingest.injection import evidence_text, scan_text
 from ragnarok.llm.client import LimitHit, LLMClient
 from ragnarok.memory.lessons import LessonDraft
-from ragnarok.memory.store import AgentMemory, memory_payload, render_lessons
+from ragnarok.memory.store import AgentMemory, lesson_key, memory_payload, render_lessons
 from ragnarok.models import AgentName, Citation, LogEvent, LogEventType, MemoryEntry, RowStatus
 from ragnarok.retrieval.citations import validate_citation
 from ragnarok.retrieval.service import RetrievalService
 from ragnarok.retrieval.text import normalise_query
-from ragnarok.retrieval.types import SearchFilters, TradeQuery
+from ragnarok.retrieval.types import SearchFilters, SearchResult, TradeQuery
 
 PROMPTS = Path(__file__).parent / "prompts"
 
@@ -44,7 +55,7 @@ TOOL_PERMISSIONS: dict[AgentName, frozenset[str]] = {
     AgentName.LOKI: frozenset({"search", "read_doc", "get_trade_rows", "trade_calc"}),
     AgentName.ODIN: frozenset({"read_doc", "trade_calc", "validate_citation"}),
 }
-MAX_REQUESTS_PER_ROUND = 5
+MAX_REQUESTS_PER_ROUND = 5  # legacy default; the limit used is settings.max_requests_per_round
 MAX_EVIDENCE_CHARS = 60_000
 RETRIEVAL_TOOLS = frozenset({"search", "read_doc", "get_trade_rows"})
 
@@ -89,6 +100,10 @@ class CaseContext:
     settings: Settings
     llm: LLMClient
     run_number: int = 1
+    # resume of an earlier attempt of this case: events before this seq belong to that attempt
+    replay_before_seq: int = 0
+    replay_recalls: dict[tuple, list[list[dict]]] = field(default_factory=dict)  # (agent, run, purpose) -> recalled lessons
+    replay_writes: set[tuple] = field(default_factory=set)  # (agent, run, memory_id) written by the earlier attempt
     tool_calls: dict[str, int] = field(default_factory=dict)
     evidence: set[str] = field(default_factory=set)  # distinct paragraph/row refs retrieved in the case (all agents)
     lock: threading.Lock = field(default_factory=threading.Lock)
@@ -133,6 +148,7 @@ class AgentEnv:
         self.outcomes: list[ToolOutcome] = []
         self.searches = 0
         self.forbidden_queries: set[str] = set()  # normalised queries this agent may not send again (earlier runs)
+        self._requests_seen: set[str] = set()  # search requests made in this attempt (resume replay detection)
         self.memory = AgentMemory(service.store, agent)  # this agent's own lessons only
 
     # ---------------------------------------------------------- logging ---
@@ -199,23 +215,75 @@ class AgentEnv:
         self.retrieved.update(got)
         return out
 
+    def receive_seed(self, seeds: list[dict], note: str) -> ToolOutcome | None:
+        """Heimdall's code-run seed searches, read back from the query cache (no new search):
+        the hits are re-checked against the as_of gate and logged as RETRIEVED for this agent
+        (reused, with the seed query's seq). Not this agent's own search or tool call."""
+        blocks, got = [], []
+        for sd in seeds:
+            cached = self.service.store.cache_get(sd["cache_key"])
+            if cached is None:
+                continue
+            res = SearchResult.model_validate_json(cached[0])
+            hits = [h for h in res.hits if h.pub_date is not None and h.pub_date <= self.ctx.as_of]
+            refs = [h.chunk_id for h in hits]
+            self.log(LogEventType.RETRIEVED, f"{self.agent.value} received {len(hits)} paragraph(s) from Heimdall's seed "
+                     f"search {sd['query']!r} (query cache, no new search)",
+                     {"seed": True, "reused": True, "from_agent": "heimdall", "query_seq": sd.get("query_seq"),
+                      "query": sd["query"], "filters": sd.get("filters", {})}, refs)
+            flagged = [h.chunk_id for h in hits if h.injection_flagged]
+            if flagged:
+                self.log(LogEventType.TRAP_INJECTION, f"{self.agent.value} received flagged paragraph(s) {', '.join(flagged)}"
+                         "; instruction text withheld from the agent", {"query": sd["query"], "seed": True}, flagged)
+            blocks.append(f"seed search {sd['query']!r} filters={sd.get('filters', {})} -> {len(hits)} hit(s)\n"
+                          + "\n".join(self._hit_block(h) for h in hits))
+            got += refs
+        if not blocks:
+            return None
+        out = ToolOutcome("case_file_seed", True, f"[{note}]\n" + "\n".join(blocks), refs=got)
+        self.outcomes.append(out)
+        self.retrieved.update(got)
+        self.ctx.add_evidence(got)
+        return out
+
     # ----------------------------------------------------------- memory ---
 
     def recall(self, stages: list[str], purpose: str) -> list[MemoryEntry]:
         """Recall this agent's own lessons for a stage (always logged, also when there are none)."""
         if not self.ctx.settings.memory_enabled:
             return []
-        lessons = self.memory.recall(stages, self.ctx.settings.memory_recall_limit)
+        key = (self.agent.value, self.ctx.run_number, purpose)
+        if self.ctx.replay_recalls.get(key):
+            lessons = self._replayed(self.ctx.replay_recalls[key].pop(0))
+        else:
+            lessons = self.memory.recall(stages, self.ctx.settings.memory_recall_limit)
         self.log(LogEventType.MEMORY_READ, f"{self.agent.value} recalled {len(lessons)} lesson(s) before {purpose}"
                  + (": " + " | ".join(m.lesson[:90] for m in lessons[:3]) if lessons else ""),
                  {"stages": stages, "purpose": purpose, "memory": memory_payload(lessons)}, [m.memory_id for m in lessons])
         return lessons
+
+    def _replayed(self, recorded: list[dict]) -> list[MemoryEntry]:
+        """Resume: the lessons this recall returned in the earlier attempt, as they were then
+        (so a replayed step sees the same prompt). Own memory only."""
+        out = []
+        for rec in recorded:
+            m = self.memory.get(rec["memory_id"])
+            if m is not None:
+                out.append(m.model_copy(update={"times_seen": rec.get("times_seen", m.times_seen),
+                                                "confidence": rec.get("confidence", m.confidence)}))
+        return out
 
     def remember(self, drafts: list[LessonDraft]) -> list[MemoryEntry]:
         out = []
         for d in drafts:
             if d.agent != self.agent:
                 raise PermissionError(f"{self.agent.value} cannot write {d.agent.value}'s memory")
+            mid = f"M-{self.agent.value}-{lesson_key(d.lesson)[:10]}"
+            if (self.agent.value, self.ctx.run_number, mid) in self.ctx.replay_writes:
+                self.log(LogEventType.MEMORY_WRITE, f"{self.agent.value} lesson {mid} was already written for run "
+                         f"{self.ctx.run_number} by the earlier attempt of this case; not reinforced again",
+                         {"memory_id": mid, "replayed": True}, [mid])
+                continue
             entry, created = self.memory.write(d.lesson, kind=d.kind, stages=d.stages, context=d.context,
                                                confidence=d.confidence, source_case=self.ctx.case_id,
                                                source_run=self.ctx.run_number)
@@ -234,25 +302,32 @@ class AgentEnv:
         f = SearchFilters(country=req.countries, sector=req.sectors, event_id=req.event_ids, source_type=req.source_types,
                           max_reliability=req.max_reliability if 1 <= req.max_reliability <= 4 else None)
         res = self.service.search(req.query, self.ctx.as_of, self.agent, f, **self._cid())
-        if not res.reused:  # a cached repeat of an identical request is not a new search of the agent's own
+        rkey = json.dumps([res.query_norm, f.model_dump(mode="json")], sort_keys=True)
+        replay = (res.reused and rkey not in self._requests_seen and res.first_query_seq is not None
+                  and res.first_query_seq < self.ctx.replay_before_seq)  # resumed case: replays the earlier attempt
+        self._requests_seen.add(rkey)
+        reused = res.reused and not replay
+        if not reused:  # a cached repeat of an identical request is not a new search of the agent's own
             self.searches += 1
         flagged = [h.chunk_id for h in res.hits if h.injection_flagged]
         if flagged:
             self.log(LogEventType.TRAP_INJECTION, f"{self.agent.value} retrieved flagged paragraph(s) {', '.join(flagged)}; "
                      "instruction text withheld from the agent", {"query": req.query}, flagged)
-        blocks = []
-        for h in res.hits:
-            fl = list(h.damage) + (["injection-flagged"] if h.injection_flagged else [])
-            fl += [f"possible-duplicate-of:{d}" for d in h.possible_duplicate_of]
-            fl += [f"corrected-by:{d}" for d in h.corrected_by] + [f"corrects:{d}" for d in h.corrects]
-            title = f"[{h.title}] " if h.title else ""
-            blocks.append(wrap_document(h.doc_id, title + h.text, ref=h.paragraph_ref, tier=h.reliability_tier,
-                                        date_=h.pub_date, source=h.source_name, source_type=h.source_type, flags=fl))
+        blocks = [self._hit_block(h) for h in res.hits]
         head = (f"search {req.query!r} filters={ {k: v for k, v in f.model_dump(mode='json').items() if v not in (None, False)} }"
-                f" -> {len(res.hits)} hit(s){' (reused identical earlier query)' if res.reused else ''}")
+                f" -> {len(res.hits)} hit(s){' (reused identical earlier query)' if reused else ''}")
         if not res.hits:
             head += "\n" + self._empty_search_hint(f)
         return ToolOutcome("search", True, head + "\n" + "\n".join(blocks), refs=[h.chunk_id for h in res.hits])
+
+    @staticmethod
+    def _hit_block(h) -> str:
+        fl = list(h.damage) + (["injection-flagged"] if h.injection_flagged else [])
+        fl += [f"possible-duplicate-of:{d}" for d in h.possible_duplicate_of]
+        fl += [f"corrected-by:{d}" for d in h.corrected_by] + [f"corrects:{d}" for d in h.corrects]
+        title = f"[{h.title}] " if h.title else ""
+        return wrap_document(h.doc_id, title + h.text, ref=h.paragraph_ref, tier=h.reliability_tier,
+                             date_=h.pub_date, source=h.source_name, source_type=h.source_type, flags=fl)
 
     def _empty_search_hint(self, f: SearchFilters) -> str:
         """Why a filtered search found nothing: which filter matches no in-window document, and the
@@ -444,7 +519,8 @@ def describe_request(r: ToolRequest) -> str:
 
 
 def log_memory_effect(env: AgentEnv, lessons: list[MemoryEntry], original: list[ToolRequest] | None,
-                      changed: list[ToolRequest], used_ids: list[str], effect: str, label: str) -> bool:
+                      changed: list[ToolRequest], used_ids: list[str], effect: str, label: str,
+                      baseline_kind: str = "separate") -> bool:
     """Log whether recalled lessons changed what the agent did. `original` is the plan the
     agent made WITHOUT its memory (None when no baseline was taken). Influence is recorded
     as MEMORY_APPLIED only when the agent attributes its plan to specific recalled lessons
@@ -456,7 +532,8 @@ def log_memory_effect(env: AgentEnv, lessons: list[MemoryEntry], original: list[
     orig = [describe_request(r) for r in original] if original is not None else None
     added = [x for x in chg if orig is not None and x not in orig]
     removed = [x for x in (orig or []) if x not in chg]
-    payload = {"label": label, "baseline": original is not None, "original_action": orig, "changed_action": chg,
+    payload = {"label": label, "baseline": original is not None,
+               "baseline_kind": baseline_kind if original is not None else "none", "original_action": orig, "changed_action": chg,
                "added": added, "removed": removed, "memory_used": memory_payload([known[i] for i in used]),
                "agent_stated_effect": effect[:600], "unknown_memory_ids": unknown}
     if used and (orig is None or added or removed):
@@ -473,31 +550,64 @@ def log_memory_effect(env: AgentEnv, lessons: list[MemoryEntry], original: list[
 
 
 def plan_with_memory(env: AgentEnv, system: str, user: str, lessons: list[MemoryEntry], effort: str, label: str,
-                     schema=ResearchTurn, schema_m=MemoryResearchTurn, to_requests=None, validate=None, baseline: bool = True):
-    """First planning step with memory: optionally a baseline plan without memory (not executed),
-    then the plan with the agent's lessons, and the logged difference. Returns the memory plan."""
+                     schema=ResearchTurn, schema_m=MemoryResearchTurn, schema_dual=DualResearchTurn, to_requests=None,
+                     baseline_requests=None, validate=None, essential=None, baseline: bool = True):
+    """First planning step with memory, and the logged difference to a no-memory plan.
+
+    MEMORY_BASELINE_MODE=combined (default): ONE call whose schema holds both the plan
+    without memory (recorded, never executed) and the executed plan. separate: an extra
+    baseline call without the lessons first (the older, costlier path). Baseline off (or
+    baseline=False): the plan with memory only; influence is then agent-stated."""
     llm = env.ctx.llm
+    st = env.ctx.settings
     to_requests = to_requests or (lambda t: t.to_requests())
-    plan0 = None
-    if baseline and env.ctx.settings.memory_baseline:
-        plan0 = llm.structured(env.agent, system, user, schema, effort=effort, validate=validate,
-                                  label=f"{label} baseline without memory", allow_residual=True)
+    baseline_requests = baseline_requests or (lambda t: t.plan_without_memory.to_requests())
+    want = baseline and st.memory_baseline
     mem_user = (f"{render_lessons(lessons)}\n\n{user}\n\nYour memory is listed above. If a lesson applies, let it shape "
                 "your requests and name its ID in memory_used, saying in memory_effect what it changed; otherwise leave "
                 "memory_used empty.")
-    turn = llm.structured(env.agent, system, mem_user, schema_m, effort=effort, validate=validate,
+    if want and st.memory_baseline_mode == "combined":
+        mem_user += (" Also fill the no-memory plan field with the requests you would make if you had NO memory at all "
+                     "(it is recorded for comparison and never executed).")
+        turn = llm.structured(env.agent, system, mem_user, schema_dual, effort=effort, validate=validate,
+                              essential=essential, label=f"{label} with memory (+ no-memory plan)", allow_residual=True)
+        log_memory_effect(env, lessons, baseline_requests(turn), to_requests(turn), turn.memory_used, turn.memory_effect,
+                          label, baseline_kind="combined")
+        return turn
+    plan0 = None
+    if want:
+        plan0 = llm.structured(env.agent, system, user, schema, effort=effort, validate=validate, essential=essential,
+                               label=f"{label} baseline without memory", allow_residual=True)
+    turn = llm.structured(env.agent, system, mem_user, schema_m, effort=effort, validate=validate, essential=essential,
                           label=f"{label} with memory", allow_residual=True)
     log_memory_effect(env, lessons, to_requests(plan0) if plan0 is not None else None, to_requests(turn),
-                      turn.memory_used, turn.memory_effect, label)
+                      turn.memory_used, turn.memory_effect, label, baseline_kind="separate" if plan0 is not None else "none")
     return turn
+
+
+def run_requests(env: AgentEnv, requests: list[ToolRequest]) -> bool:
+    """Execute tool requests in code (permission- and budget-checked). False = budget exhausted."""
+    for req in requests:
+        try:
+            env.run_tool(req)
+        except ToolPermissionError as exc:
+            env.outcomes.append(ToolOutcome(req.tool, False, f"[refused by the system: {exc}]", error="permission"))
+        except LimitHit:
+            env.outcomes.append(ToolOutcome(req.tool, False, "[tool budget exhausted; finish with the evidence you have]",
+                                            error="limit"))
+            return False
+    return True
 
 
 def research(env: AgentEnv, system: str, task: str, context: str, rounds: int, min_searches: int = 0,
              effort: str = "medium", label: str = "research", lessons: list[MemoryEntry] | None = None,
              memory_baseline: bool = True) -> None:
-    """Up to `rounds` rounds of agent-chosen tool requests, executed in code. With `lessons`,
-    the first round is planned with the agent's memory (see plan_with_memory)."""
+    """Up to `rounds` planning turns of agent-chosen tool requests (at most
+    MAX_REQUESTS_PER_ROUND each), executed in code; one extra turn only while the
+    required own searches are unmet. With `lessons`, the first turn is planned with
+    the agent's memory (see plan_with_memory)."""
     llm = env.ctx.llm
+    cap = env.ctx.settings.max_requests_per_round
     r = 0
     extra_round_used = False
     while r < rounds or (env.searches < min_searches and not extra_round_used):
@@ -505,26 +615,21 @@ def research(env: AgentEnv, system: str, task: str, context: str, rounds: int, m
             extra_round_used = True
         must = (f"\nYou have made {env.searches} search(es); at least {min_searches} search(es) in total is required "
                 "before you can finish." if env.searches < min_searches else "")
+        only = (" This is your only planning turn: request everything you need now (searches, reads, trade rows, and "
+                "trade_calc on rows already shown above)." if rounds == 1 and r == 0 else "")
         user = (f"{context}\n\n<task>\n{task}\n</task>\n\n<evidence_so_far>\n{env.evidence_text()}\n</evidence_so_far>\n\n"
-                f"Research round {r + 1} of {rounds}. Request up to {MAX_REQUESTS_PER_ROUND} tool calls "
+                f"Research round {r + 1} of {rounds}. Request up to {cap} tool calls "
                 f"(permitted: {', '.join(sorted(TOOL_PERMISSIONS[env.agent]))}), or set done=true when you have enough "
-                f"evidence.{must}")
+                f"evidence.{only}{must}")
         if r == 0 and lessons:
             turn = plan_with_memory(env, system, user, lessons, effort, f"{label} round 1", baseline=memory_baseline)
         else:
             turn = llm.structured(env.agent, system, user, ResearchTurn, effort=effort, label=f"{label} round {r + 1}")
         r += 1
-        requests = turn.to_requests()[:MAX_REQUESTS_PER_ROUND]
+        requests = turn.to_requests()[:cap]
         if not requests and (turn.done and env.searches >= min_searches):
             break
-        for req in requests:
-            try:
-                env.run_tool(req)
-            except ToolPermissionError as exc:
-                env.outcomes.append(ToolOutcome(req.tool, False, f"[refused by the system: {exc}]", error="permission"))
-            except LimitHit:
-                env.outcomes.append(ToolOutcome(req.tool, False, "[tool budget exhausted; finish with the evidence you have]",
-                                                error="limit"))
-                return
+        if not run_requests(env, requests):
+            return
         if turn.done and env.searches >= min_searches:
             break

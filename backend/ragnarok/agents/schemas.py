@@ -135,6 +135,34 @@ class MemoryResearchTurn(ResearchTurn):
     memory_effect: str = Field("", description="how those lessons changed your requests; empty if none")
 
 
+class ResearchPlan(_LLM):
+    """Tool requests only (the no-memory plan inside DualResearchTurn)."""
+
+    searches: list[SearchReq] = Field(default_factory=list)
+    reads: list[ReadReq] = Field(default_factory=list)
+    trade_rows: list[TradeReq] = Field(default_factory=list)
+    calcs: list[CalcReq] = Field(default_factory=list)
+    citation_checks: list[CheckReq] = Field(default_factory=list)
+
+    def to_requests(self) -> list[ToolRequest]:
+        return ResearchTurn(done=True, **self.model_dump()).to_requests()
+
+
+class DualResearchTurn(MemoryResearchTurn):
+    """One planning call that records both plans: plan_without_memory (what the agent would
+    request if it had no memory; recorded, never executed) and the executed requests above."""
+
+    plan_without_memory: ResearchPlan = Field(description="the requests you would make WITHOUT your memory (not executed)")
+
+    @classmethod
+    def dual(cls, executed: list[ToolRequest], baseline: list[ToolRequest], memory_used: list[str] | None = None,
+             memory_effect: str = "", done: bool = True) -> "DualResearchTurn":
+        """Build from ToolRequests (tests and scripted backends)."""
+        ex = ResearchTurn.of(executed, done=done).model_dump()
+        b = ResearchTurn.of(baseline).model_dump(exclude={"done", "note"})
+        return cls(**ex, plan_without_memory=ResearchPlan(**b), memory_used=memory_used or [], memory_effect=memory_effect)
+
+
 class TargetedSearch(_LLM):
     missing_item: int = Field(description="number of the missing-evidence item this search targets (1-based)")
     purpose: str
@@ -159,6 +187,12 @@ class SendBackPlanM(SendBackPlan):
 
     memory_used: list[str] = Field(default_factory=list, description="IDs of your lessons (M-...) that shaped this plan")
     memory_effect: str = Field("", description="how those lessons changed the plan; empty if none")
+
+
+class DualSendBackPlan(SendBackPlanM):
+    """SendBackPlanM that also records the plan Heimdall would make without memory (not executed)."""
+
+    searches_without_memory: list[TargetedSearch] = Field(description="the searches you would plan WITHOUT your memory (not executed)")
 
 
 class CitationDraft(_LLM):
@@ -349,6 +383,21 @@ class OdinAssessment(_LLM):
     outlook_text: str = Field(description="next-quarter outlook")
     outlook_assumptions: list[str]
     evidence_quality_notes: list[str] = Field(default_factory=list)
+
+
+class OdinVerdict(_LLM):
+    """Odin's single merged call: rulings on every claim, ranges, sufficiency, summary, outlook."""
+
+    rulings: list[RulingDraft]
+    ranges: list[OdinRange]
+    sufficiency: SufficiencyDraft
+    executive_summary: str
+    outlook_text: str = Field(description="next-quarter outlook")
+    outlook_assumptions: list[str]
+    evidence_quality_notes: list[str] = Field(default_factory=list)
+    injection_reports: list[InjectionReport] = Field(default_factory=list)
+    memory_used: list[str] = Field(default_factory=list, description="IDs of your lessons (M-...) that shaped your rulings; empty if none")
+    memory_effect: str = Field("", description="how those lessons changed your rulings; empty if none")
 
 
 class OdinJudgment(BaseModel):

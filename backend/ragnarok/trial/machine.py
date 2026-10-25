@@ -8,6 +8,11 @@
     THOR || LOKI -> BRIEFING       (run n >= 2 only: both advocates failed; last rulings stand)
     any -> FAILED                  (unrecoverable error; completed work is kept and reported)
 
+Resume: a Trial created with the case ID of an earlier, unfinished attempt replays
+the finished steps from the case's own LLM response cache (no API requests); tool
+calls are re-run deterministically, memory recalls return what that attempt saw, and
+lessons it already wrote are not reinforced twice.
+
 Transitions are checked against ALLOWED in code, and BRIEFING additionally needs a
 completed Odin ruling (no briefing is ever produced from unruled claims). Agent
 output never selects the next stage: the send-back is decided here from Odin's
@@ -39,7 +44,7 @@ from ragnarok.agents.heimdall import (
 from ragnarok.agents.odin import OdinResult, run_odin
 from ragnarok.briefing.build import build_briefing
 from ragnarok.config import Settings, get_settings
-from ragnarok.llm.client import Backend, LimitHit, LLMClient, LLMError, TokenLedger
+from ragnarok.llm.client import Backend, LimitHit, LLMClient, LLMError, ResponseCache, TokenLedger
 from ragnarok.memory.lessons import (
     Masker,
     advocate_lessons,
@@ -163,8 +168,14 @@ class Trial:
         self.store = store
         self.service = service or RetrievalService(store, self.settings)
         self.case_id = case_id or new_case_id(question, as_of)
-        self.ledger = TokenLedger(self.settings.max_tokens_per_agent, self.settings.max_tokens_per_case)
-        self.llm = LLMClient(self.settings, self.ledger, backend, on_event=self._llm_event)
+        self.ledger = TokenLedger(self.settings.max_tokens_per_agent, self.settings.max_tokens_per_case,
+                                  call_limit=self.settings.max_llm_calls_per_case)
+        # an earlier attempt of the same case (same case ID) -> this run resumes it
+        self.attempt = 1 + sum(1 for e in store.events(self.case_id) if e.type == LogEventType.RUN_START)
+        cache = (ResponseCache(store.path, self.case_id, reading=self.attempt > 1)
+                 if self.settings.llm_response_cache else None)
+        self.llm = LLMClient(self.settings, self.ledger, backend, on_event=self._llm_event, cache=cache,
+                             context=lambda: {"stage": self.stage.value, "run": self.ctx.run_number})
         self.ctx = CaseContext(case_id=self.case_id, question=question, as_of=as_of, settings=self.settings, llm=self.llm)
         self.stage = Stage.START
         self.case_dir = self.settings.cases_dir / self.case_id
@@ -174,13 +185,21 @@ class Trial:
         self.active: list[Claim] = []  # claims Odin rules on in the current run
         self.final: RunRecord | None = None  # the last run whose rulings completed
         self.pending_sendback: SendBack | None = None
+        self.start_seq = 0  # seq of this attempt's RUN_START (set in run())
 
     # ------------------------------------------------------------ helpers ---
 
+    def _usage(self) -> dict[str, Any]:
+        return {"tokens": self.ledger.snapshot(), "tool_calls": dict(self.ctx.tool_calls),
+                "evidence_refs": len(self.ctx.evidence), "runs": self.result.runs_completed,
+                "llm_calls": {"used": self.ledger.calls_used, "limit": self.ledger.call_limit,
+                              "cached": len(self.ledger.records) - self.ledger.calls_used}}
+
     def _llm_event(self, kind: str, agent: AgentName, summary: str, payload: dict) -> None:
+        type_ = LogEventType.LLM_CACHE_HIT if kind == "cache_hit" else LogEventType.ERROR
         with Store(self.store.path) as s:  # own connection: may be called from an advocate thread
             s.append_event(LogEvent(case_id=self.case_id, run_number=self.ctx.run_number, agent=agent,
-                                    type=LogEventType.ERROR, summary=summary[:500], payload={"llm": kind, **payload}))
+                                    type=type_, summary=summary[:500], payload={"llm": kind, **payload}))
 
     def log(self, type_: LogEventType, summary: str, payload: dict | None = None, refs: list[str] | None = None,
             agent: AgentName = AgentName.SYSTEM) -> None:
@@ -235,8 +254,15 @@ class Trial:
         self.stop_after = stop_after
         self.case_dir.mkdir(parents=True, exist_ok=True)
         self.service.index.refresh(store=self.store)
-        self.log(LogEventType.RUN_START, f"trial started: {self.ctx.question} (as of {self.ctx.as_of})",
-                 {"question": self.ctx.question, "as_of": self.ctx.as_of.isoformat(), "config": self.settings.public_summary()})
+        resumed = self.attempt > 1
+        self.start_seq = self.store.append_event(LogEvent(
+            case_id=self.case_id, run_number=self.ctx.run_number, agent=AgentName.SYSTEM, type=LogEventType.RUN_START,
+            summary=(f"trial {'resumed (attempt ' + str(self.attempt) + ')' if resumed else 'started'}: "
+                     f"{self.ctx.question} (as of {self.ctx.as_of})")[:500],
+            payload={"question": self.ctx.question, "as_of": self.ctx.as_of.isoformat(), "attempt": self.attempt,
+                     "resume": resumed, "config": self.settings.public_summary()}))
+        if resumed:
+            self._prepare_replay()
         try:
             self._run(stop_after)
         except IllegalTransition:
@@ -249,10 +275,13 @@ class Trial:
                 self.result.stage = Stage.FAILED
                 self.result.history.append(Stage.FAILED.value)
         finally:
-            self.result.usage = {"tokens": self.ledger.snapshot(), "tool_calls": dict(self.ctx.tool_calls),
-                                 "evidence_refs": len(self.ctx.evidence), "runs": self.result.runs_completed}
+            self.result.usage = self._usage()
             if self.stage == Stage.FAILED:
                 self._limitation_report()
+            summ = self.ledger.call_summary()
+            self.log(LogEventType.LLM_USAGE, f"{summ['calls_used']} model request(s) (limit {summ['calls_limit']}), "
+                     f"{summ['repairs']} repair(s), {summ['cached_replays']} replayed from the case cache; by agent "
+                     + ", ".join(f"{k} {v}" for k, v in summ["by_agent"].items()), summ)
             self.log(LogEventType.RUN_END, f"trial ended at {self.stage.value} after {self.result.runs_completed} "
                      f"completed run(s)", {"usage": self.result.usage})
             self.save(final=True)
@@ -260,6 +289,25 @@ class Trial:
                 if e.service is not self.service:
                     e.service.store.close()
         return self.result
+
+    def _prepare_replay(self) -> None:
+        """Resume: what the latest earlier attempt recalled (per agent, run and purpose, in
+        order) and which lessons any earlier attempt already wrote."""
+        evs = [e for e in self.store.events(self.case_id) if e.seq < self.start_seq]
+        starts = [e.seq for e in evs if e.type == LogEventType.RUN_START]
+        last = max(starts) if starts else 0
+        self.ctx.replay_before_seq = self.start_seq
+        for e in evs:
+            p = e.payload
+            if e.type == LogEventType.MEMORY_READ and e.seq > last and "purpose" in p and "stages" in p:
+                self.ctx.replay_recalls.setdefault((e.agent.value, e.run_number, p["purpose"]), []).append(p.get("memory", []))
+            elif e.type == LogEventType.MEMORY_WRITE:
+                mid = (p.get("memory") or {}).get("memory_id") or p.get("memory_id")
+                if mid:
+                    self.ctx.replay_writes.add((e.agent.value, e.run_number, mid))
+        self.log(LogEventType.STAGE, f"resuming case {self.case_id} (attempt {self.attempt}): finished steps replay from "
+                 "the case's response cache", {"attempt": self.attempt, "replay_recalls": len(self.ctx.replay_recalls),
+                                               "replay_writes": len(self.ctx.replay_writes)})
 
     def _run(self, stop_after: Stage | None) -> None:
         self.go(Stage.HEIMDALL)
@@ -300,7 +348,9 @@ class Trial:
         self.go(Stage.ADVOCATES, f"run {n}")
         case_text = render_case_file(run.case_file)
         if n == 1:
-            jobs = {a: (lambda a=a: run_brief(self.env(a), case_text)) for a in (THOR, LOKI)}
+            seeds = self.result.heimdall.seeds if self.result.heimdall else []
+            jobs = {a: (lambda a=a: run_brief(self.env(a), case_text, seeds, run.case_file.trade_table_ids))
+                    for a in (THOR, LOKI)}
         else:
             verdicts = {r.claim_id: r.verdict.value for r in self.final.odin.rulings}
             new_text = render_new_evidence(run.research)
@@ -372,8 +422,17 @@ class Trial:
             self.go(Stage.ODIN, f"run {n}")
         ids = {c.claim_id for c in self.active}
         view = cx_view(self.cx_all, ids, cx.failures + [m for m in run.notes if m not in cx.failures])
+        to_rule, standing = list(self.active), []
+        if n >= 2 and self.settings.delta_run:  # only new / revised claims are ruled; earlier rulings of the rest stand
+            prior = {x.claim_id: x for x in self.final.odin.rulings}
+            standing = [(c, prior[c.claim_id]) for c in self.active if c.run_number < n and c.claim_id in prior]
+            held = {c.claim_id for c, _ in standing}
+            to_rule = [c for c in self.active if c.claim_id not in held]
+            self.note(f"run {n}: Odin rules on the {len(to_rule)} new or revised claim(s); the earlier rulings of "
+                      f"{len(standing)} unchanged claim(s) stand", run)
         try:
-            odin = run_odin(self.env(AgentName.ODIN), run.case_file, self.active, view, run.notes, self._run_history(run))
+            odin = run_odin(self.env(AgentName.ODIN), run.case_file, to_rule, view, run.notes, self._run_history(run),
+                            standing=standing)
         except (LLMError, LimitHit) as exc:
             self._fail(AgentName.ODIN, exc, "judgment")
             if self.final is None:
@@ -468,7 +527,7 @@ class Trial:
         seen = set().union(*(e.retrieved for e in self.envs.values()))
         seen = {r for r in seen if not r.startswith("CALC-")}
         earlier = {e.payload["query_norm"] for e in self.store.events(self.case_id)
-                   if e.type == LogEventType.QUERY and e.payload.get("query_norm")}
+                   if e.type == LogEventType.QUERY and e.payload.get("query_norm") and e.seq >= self.start_seq}
         self.ctx.run_number = n + 1
         nxt = RunRecord(run_number=n + 1, case_file=run.case_file)
         self.result.runs.append(nxt)
@@ -560,7 +619,8 @@ class Trial:
         claims = fin.ruled_claims
         ids = {c.claim_id for c in claims}
         concessions = {c.claim_id: c for c in self.cx_all.concessions if c.claim_id in ids}
-        traps = [e.summary for e in self.store.events(self.case_id) if e.type == LogEventType.TRAP_INJECTION]
+        traps = [e.summary for e in self.store.events(self.case_id) if e.type == LogEventType.TRAP_INJECTION
+                 and e.seq >= self.start_seq]
         runs = []
         for r in self.result.runs:
             runs.append(RunSummary(
@@ -656,7 +716,8 @@ class Trial:
                                 "runs_completed": r.runs_completed, "max_runs": self.settings.max_runs,
                                 "stop_after": getattr(self, "stop_after", None),
                                 "briefing_status": r.briefing_status, "notes": r.notes, "stop_reason": r.stop_reason,
-                                "superseded": r.superseded, "usage": r.usage})
+                                "superseded": r.superseded, "usage": self._usage(), "attempt": self.attempt})
+        dump(d / "llm_calls.json", {"summary": self.ledger.call_summary(), "calls": list(self.ledger.records)})
         if r.heimdall:
             dump(d / "case_file.json", (self.final.case_file if self.final else r.heimdall.case_file).model_dump(mode="json"))
             dump(d / "heimdall_report.json", {"report": r.heimdall.report.model_dump(mode="json"), "dropped": r.heimdall.dropped})

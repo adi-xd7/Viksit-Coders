@@ -136,7 +136,6 @@ def test_sendback_second_run_with_new_evidence(world, settings):
     q2 = [e.payload["query_norm"] for e in events(store, t.case_id, LogEventType.QUERY, "heimdall") if e.run_number == 2
           and "query_norm" in e.payload]
     assert q2 and not set(q2) & q1
-    assert any("repeated a query from an earlier run" in e.summary for e in events(store, t.case_id, LogEventType.ERROR, "heimdall"))
     # both advocates searched again in run 2, reconsidered, and Odin re-ruled every active claim
     for a in ("thor", "loki"):
         assert [e for e in events(store, t.case_id, LogEventType.QUERY, a) if e.run_number == 2 and not e.payload.get("reused")]
@@ -219,9 +218,11 @@ def test_sendback_query_repeating_an_earlier_query_is_refused(world, settings):
     t, b = trial(world, settings, TWO_RUNS | {("heimdall", "SendBackPlan"): plan_repeat})
     r = t.run()
     store = world[0]
-    plans = [c for c in b.calls if c["schema"] in ("SendBackPlan", "SendBackPlanM") and "<repair_request>" in c["user"]]
-    assert plans and "repeats an earlier query" in plans[0]["user"]  # one repair attempt was asked for
-    rp = events(store, t.case_id, LogEventType.RESEARCH_PLAN)[0]
+    plans = [c for c in b.calls if c["schema"].endswith("SendBackPlan") or c["schema"] == "SendBackPlanM"]
+    assert len(plans) == 1 and "<repair_request>" not in plans[0]["user"]  # item 1 still has a new query: no repair
+    residual = [e for e in events(store, t.case_id, LogEventType.ERROR, "heimdall") if e.payload.get("llm") == "residual"]
+    assert residual and any("repeats an earlier query" in p for p in residual[0].payload["problems"])
+    rp = next(e for e in events(store, t.case_id, LogEventType.RESEARCH_PLAN) if "refused" in e.payload)
     assert [x["reason"] for x in rp.payload["refused"]] == ["repeats an earlier query"]
     run2_q = [e.payload["query_norm"] for e in events(store, t.case_id, LogEventType.QUERY) if e.run_number == 2 and "query_norm" in e.payload]
     assert normalise_query("lock closure grain loadings alpha") not in run2_q
@@ -288,16 +289,18 @@ def test_memory_read_changes_a_query(world, settings):
     def thor_memory_turn(user, n):  # the scripted model follows its lesson when it sees it
         ids = memory_ids(user)
         assert ids == [lesson.memory_id]
-        base = default_handlers()[("thor", "ResearchTurn")](user, n).to_requests()[1:]  # keep rows and calcs
-        return S.MemoryResearchTurn.of([S.ToolRequest(tool="search", purpose="reliable first", query="official grain loadings report",
-                                                      max_reliability=2)] + base, done=True).model_copy(
-            update={"memory_used": ids, "memory_effect": "restricted the first search to tier 1-2 sources"})
-    t, b = trial(world, settings, {("thor", "MemoryResearchTurn"): thor_memory_turn})
+        plain = default_handlers()[("thor", "ResearchTurn")](user, n).to_requests()
+        changed = [S.ToolRequest(tool="search", purpose="reliable first", query="official grain loadings report",
+                                 max_reliability=2)] + plain[1:]  # keep rows and calcs
+        return S.DualResearchTurn.dual(changed, plain, memory_used=ids,
+                                       memory_effect="restricted the first search to tier 1-2 sources")
+    t, b = trial(world, settings, {("thor", "DualResearchTurn"): thor_memory_turn})
     r = t.run()
     ev = [e for e in events(store, t.case_id, LogEventType.MEMORY_APPLIED, "thor")]
     assert len(ev) == 1
     p = ev[0].payload
-    assert p["baseline"] is True and any("grain loadings fell sharply lock closed" in x for x in p["original_action"])
+    assert p["baseline"] is True and p["baseline_kind"] == "combined"
+    assert any("grain loadings fell sharply lock closed" in x for x in p["original_action"])
     assert any("official grain loadings report" in x and '"max_reliability": 2' in x for x in p["changed_action"])
     assert p["memory_used"][0]["memory_id"] == lesson.memory_id and p["added"] and p["removed"]
     # the changed plan is what ran; the baseline plan was never executed
@@ -314,9 +317,9 @@ def test_recalled_lesson_without_change_is_not_claimed_as_influence(world, setti
                                                          kind="x", stages=["research"])
 
     def loki_turn(user, n):  # names the lesson but plans exactly what it would have done anyway
-        base = default_handlers()[("loki", "ResearchTurn")](user, n)
-        return S.MemoryResearchTurn(**base.model_dump(), memory_used=[lesson.memory_id], memory_effect="none really")
-    t, b = trial(world, settings, {("loki", "MemoryResearchTurn"): loki_turn})
+        plain = default_handlers()[("loki", "ResearchTurn")](user, n).to_requests()
+        return S.DualResearchTurn.dual(plain, plain, memory_used=[lesson.memory_id], memory_effect="none really")
+    t, b = trial(world, settings, {("loki", "DualResearchTurn"): loki_turn})
     t.run()
     assert not events(store, t.case_id, LogEventType.MEMORY_APPLIED, "loki")
     assert any("matched the no-memory baseline" in e.summary for e in events(store, t.case_id, LogEventType.MEMORY_READ, "loki"))
@@ -330,8 +333,22 @@ def test_memory_persists_into_a_later_case(world, settings):
     reads = [e for e in events(world[0], t2.case_id, LogEventType.MEMORY_READ, "heimdall") if e.payload.get("memory")]
     assert reads and any(m["source_case"] == t1.case_id for m in reads[0].payload["memory"])
     first = next(c for c in b2.calls if c["agent"] == "heimdall")
-    assert first["schema"] == "ResearchTurn" and "<your_memory>" not in first["user"]  # the no-memory baseline
-    assert any(c["schema"] == "MemoryResearchTurn" and "<your_memory>" in c["user"] for c in b2.calls if c["agent"] == "heimdall")
+    # one combined call holds both the no-memory plan and the memory plan (no separate baseline request)
+    assert first["schema"] == "DualResearchTurn" and "<your_memory>" in first["user"]
+    assert not [c for c in b2.calls if c["agent"] == "heimdall" and c["schema"] in ("ResearchTurn", "MemoryResearchTurn")]
+
+
+def test_separate_memory_baseline_mode_keeps_the_extra_call(world, settings):
+    store = world[0]
+    AgentMemory(store, AgentName.HEIMDALL).write("Search official notices before rumours.", kind="x", stages=["research"])
+    t, b = trial(world, settings.model_copy(update={"memory_baseline_mode": "separate"}))
+    t.run()
+    h = [c for c in b.calls if c["agent"] == "heimdall"]
+    assert [c["schema"] for c in h[:2]] == ["ResearchTurn", "MemoryResearchTurn"] and "<your_memory>" not in h[0]["user"]
+    t2, b2 = trial(world, settings.model_copy(update={"memory_baseline": False}))
+    t2.run()
+    first = next(c for c in b2.calls if c["agent"] == "heimdall")
+    assert first["schema"] == "MemoryResearchTurn"  # baseline off: the memory plan only (agent-stated influence)
 
 
 # --------------------------------------------------- budgets / failures ---

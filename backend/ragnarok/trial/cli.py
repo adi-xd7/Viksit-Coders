@@ -1,11 +1,13 @@
 """Run a trial from the command line.
 
     python -m backend.trial "<question>" --as-of YYYY-MM-DD [--db PATH] [--stop-after HEIMDALL|THOR_LOKI] [--save-demo]
+    python -m backend.trial --resume <case_id>   (finished steps replay from the case's own response cache)
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import sys
 from collections import Counter
@@ -20,8 +22,9 @@ from ragnarok.trial.runner import run_case
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m backend.trial", description="Run one Trial of the Nine Realms case.")
-    ap.add_argument("question")
-    ap.add_argument("--as-of", type=date.fromisoformat, required=True)
+    ap.add_argument("question", nargs="?")
+    ap.add_argument("--as-of", type=date.fromisoformat)
+    ap.add_argument("--resume", metavar="CASE_ID", help="resume an unfinished case (question and as-of from its state.json)")
     ap.add_argument("--db", type=Path)
     ap.add_argument("--case-id")
     ap.add_argument("--stop-after", choices=[Stage.HEIMDALL.value, Stage.ADVOCATES.value, Stage.CROSS_EXAM.value])
@@ -35,6 +38,15 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     if args.db:
         settings = settings.model_copy(update={"db_path": args.db.resolve()})
+    if args.resume:
+        try:
+            state = json.loads((settings.cases_dir / args.resume / "state.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            print(f"error: no saved case {args.resume} in {settings.cases_dir}", file=sys.stderr)
+            return 2
+        args.question, args.as_of, args.case_id = state["question"], date.fromisoformat(state["as_of"]), args.resume
+    if not args.question or not args.as_of:
+        ap.error("a question and --as-of are required (or --resume CASE_ID)")
     case_id = args.case_id or new_case_id(args.question, args.as_of)
     print(f"case {case_id}: running (logs in {settings.cases_dir / case_id})", flush=True)
     r = run_case(args.question, args.as_of, settings, case_id=case_id,  # same core function as POST /cases
@@ -78,6 +90,9 @@ def main(argv: list[str] | None = None) -> int:
     for n in r.notes:
         print(f"note: {n}")
     print(f"usage: {r.usage}")
+    llm = r.usage.get("llm_calls", {})
+    print(f"model requests: {llm.get('used')} (limit {llm.get('limit')}; {llm.get('cached', 0)} replayed from the case "
+          f"cache); details in llm_calls.json")
     print(f"files: {r.case_dir}")
     if args.save_demo:
         dest = settings.log_dir / "demo" / r.case_id

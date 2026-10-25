@@ -79,16 +79,33 @@ class Settings(BaseSettings):
 
     # Trial
     llm_refusal_fallback: bool = True  # server-side refusal fallback on Opus 5.5 / Sonnet 5.5
-    max_research_rounds: int = Field(3, ge=1, le=6)  # tool-request rounds per agent per step
+    # Planning turns per agent per step. A further turn is allowed only while the agent's
+    # required own searches are unmet (bounded: one extra).
+    max_research_rounds: int = Field(1, ge=1, le=6)
+    max_requests_per_round: int = Field(8, ge=1, le=12)  # tool requests one planning turn may make
     max_claims_per_advocate: int = Field(8, ge=1, le=12)
     max_attacks_per_advocate: int = Field(3, ge=1, le=6)
     effort_advocate: str = Field("medium", pattern="^(low|medium|high|xhigh|max)$")
     effort_judge: str = Field("high", pattern="^(low|medium|high|xhigh|max)$")
     max_sendback_queries_per_item: int = Field(2, ge=1, le=4)
+    # LLM request economy (each keeps the official behaviour; false restores the older, costlier path)
+    max_llm_calls_per_case: int = Field(30, ge=1, le=500)  # hard cap on model requests per case -> LIMIT_HIT
+    heimdall_seed_searches: int = Field(4, ge=0, le=8)  # code-run searches from the parsed question (0 = off)
+    share_seeds_with_advocates: bool = True  # advocates start from Heimdall's seed results (query cache) + case-file rows
+    cross_exam_code_search: bool = True  # cross-exam searches derived in code, not a planning call
+    cross_exam_reads_per_attack: int = Field(1, ge=0, le=3)  # defense: cited documents re-read in full
+    odin_merged_call: bool = True  # rulings + assessment in one call (two-step fallback on failure)
+    odin_research_round: bool = False  # Odin planning turn before ruling (citations/calcs are checked in code anyway)
+    delta_run: bool = True  # run n >= 2: only revised/new claims are cross-examined and re-ruled
+    sendback_followup_llm: bool = False  # send-back follow-up planning turn (default: code fetches the found tables)
+    repair_mode: Literal["residual_first", "always"] = "residual_first"  # repair only what code cannot drop
+    llm_response_cache: bool = True  # same-case reply cache: a resumed case replays finished steps
     # Private agent memory
     memory_enabled: bool = True
     memory_recall_limit: int = Field(5, ge=0, le=20)
-    memory_baseline: bool = True  # plan once without memory, so a memory-driven change is observable
+    memory_baseline: bool = True  # record a no-memory plan too, so a memory-driven change is observable
+    # combined: one call returns both the no-memory and the memory plan; separate: an extra baseline call
+    memory_baseline_mode: Literal["combined", "separate"] = "combined"
     cases_dir: Path = Path("logs/cases")
 
     # API

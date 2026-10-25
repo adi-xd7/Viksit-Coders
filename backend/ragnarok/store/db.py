@@ -150,6 +150,18 @@ CREATE TABLE IF NOT EXISTS agent_memory (
     UNIQUE (agent, lesson_key)
 );
 CREATE INDEX IF NOT EXISTS ix_agent_memory_agent ON agent_memory(agent);
+CREATE TABLE IF NOT EXISTS llm_cache (
+    case_id TEXT NOT NULL,
+    cache_key TEXT NOT NULL,
+    agent TEXT NOT NULL,
+    label TEXT NOT NULL,
+    schema_name TEXT NOT NULL,
+    result_json TEXT NOT NULL,
+    input_tokens INTEGER NOT NULL,
+    output_tokens INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (case_id, cache_key)
+);
 CREATE TRIGGER IF NOT EXISTS audit_log_no_update BEFORE UPDATE ON audit_log
 BEGIN SELECT RAISE(ABORT, 'audit_log is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS audit_log_no_delete BEFORE DELETE ON audit_log
@@ -409,6 +421,21 @@ class Store:
                 " VALUES (?,?,?,?,?,?,?,?)",
                 (key, case_id, agent, query_norm, request_json, result_json, first_seq, _now()),
             )
+
+    # --------------------------------------------------- LLM response cache ---
+    # Scoped to one case: a lookup always names the case, so replies never cross cases.
+
+    def llm_cache_get(self, case_id: str, key: str) -> tuple[str, int, int] | None:
+        r = self.conn.execute("SELECT result_json, input_tokens, output_tokens FROM llm_cache WHERE case_id=? AND cache_key=?",
+                              (case_id, key)).fetchone()
+        return (r["result_json"], r["input_tokens"], r["output_tokens"]) if r else None
+
+    def llm_cache_put(self, case_id: str, key: str, agent: str, label: str, schema_name: str, result_json: str,
+                      input_tokens: int, output_tokens: int) -> None:
+        with self.tx() as c:
+            c.execute("INSERT OR REPLACE INTO llm_cache(case_id, cache_key, agent, label, schema_name, result_json, "
+                      "input_tokens, output_tokens, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+                      (case_id, key, agent, label, schema_name, result_json, input_tokens, output_tokens, _now()))
 
     # ------------------------------------------------------ calculations ---
 

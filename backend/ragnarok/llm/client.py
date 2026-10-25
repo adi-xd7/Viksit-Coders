@@ -1,19 +1,29 @@
 """LLM wrapper used by every agent (provider: Gemini or Anthropic, see make_backend).
 
 - Structured output only: every call returns a validated Pydantic object.
-  Schema validation plus an optional semantic validator; on failure ONE repair
-  call is made with the errors, then a controlled LLMOutputError.
+  Schema validation plus an optional semantic validator. Schema failures (and
+  "essential" semantic problems) get ONE repair call, then a controlled
+  LLMOutputError. With allow_residual and REPAIR_MODE=residual_first, problems
+  in optional parts are not repaired: the output is returned at once and the
+  caller drops the invalid parts in code (logged).
 - Bounded retries (SDK retries transient errors MAX_RETRIES times), a request
   timeout, and refusals reported as errors (never parsed as content).
-- Token accounting per agent and per case; budgets are checked before every
-  call and LimitHit is raised when a call would start over budget.
+- Token accounting per agent and per case, and a hard cap on model requests per
+  case (MAX_LLM_CALLS_PER_CASE); budgets are checked before every call and
+  LimitHit is raised when a call would start over budget.
+- Every request is recorded (agent, label, stage, repair, tokens) in the ledger.
+- Optional response cache scoped to ONE case: replies are stored per case and
+  read back only when the same case is resumed, so finished steps replay
+  without API calls. Never shared across cases.
 - The backend is injectable so tests run with a scripted (mocked) model.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import threading
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, Generic, Protocol, TypeVar
@@ -61,6 +71,7 @@ class BackendResult(Generic[T]):
     stop_reason: str | None
     model: str
     error: str | None = None  # validation error text when parsing failed
+    cached: bool = False  # replayed from the case's response cache (no API request)
 
 
 class Backend(Protocol):
@@ -123,12 +134,19 @@ def make_backend(settings: Settings) -> Backend:
 class TokenLedger:
     per_agent_limit: int
     per_case_limit: int
+    call_limit: int | None = None  # model requests per case (cache replays do not count)
     by_agent: dict[str, Usage] = field(default_factory=dict)
+    records: list[dict] = field(default_factory=list)  # one per request, in order
     lock: threading.Lock = field(default_factory=threading.Lock)
 
     @property
     def case_total(self) -> int:
         return sum(u.total for u in self.by_agent.values())
+
+    @property
+    def calls_used(self) -> int:
+        with self.lock:
+            return sum(1 for r in self.records if not r["cached"])
 
     def check(self, agent: AgentName) -> None:
         with self.lock:
@@ -137,6 +155,9 @@ class TokenLedger:
                 raise LimitHit(f"token budget for {agent.value}", used, self.per_agent_limit)
             if self.case_total >= self.per_case_limit:
                 raise LimitHit("token budget for the case", self.case_total, self.per_case_limit)
+            calls = sum(1 for r in self.records if not r["cached"])
+            if self.call_limit is not None and calls >= self.call_limit:
+                raise LimitHit("LLM calls for the case", calls, self.call_limit)
 
     def add(self, agent: AgentName, inp: int, out: int) -> None:
         with self.lock:
@@ -145,44 +166,138 @@ class TokenLedger:
             u.output_tokens += out
             u.calls += 1
 
+    def record(self, rec: dict) -> dict:
+        with self.lock:
+            rec = {"n": len(self.records) + 1, **rec}
+            self.records.append(rec)
+            return rec
+
     def snapshot(self) -> dict[str, dict[str, int]]:
         with self.lock:
             return {k: {"input": v.input_tokens, "output": v.output_tokens, "calls": v.calls} for k, v in self.by_agent.items()}
 
+    def call_summary(self) -> dict[str, Any]:
+        """Requests by agent, stage and label (cache replays counted separately)."""
+        with self.lock:
+            recs = list(self.records)
+        real = [r for r in recs if not r["cached"]]
+
+        def count(key) -> dict[str, int]:
+            out: dict[str, int] = {}
+            for r in real:
+                k = key(r)
+                out[k] = out.get(k, 0) + 1
+            return dict(sorted(out.items()))
+        return {"calls_used": len(real), "calls_limit": self.call_limit, "cached_replays": len(recs) - len(real),
+                "repairs": sum(1 for r in real if r["repair"]),
+                "input_tokens": sum(r["input_tokens"] for r in real), "output_tokens": sum(r["output_tokens"] for r in real),
+                "by_agent": count(lambda r: r["agent"]), "by_stage": count(lambda r: f"run {r['run']} {r['stage']}"),
+                "by_label": count(lambda r: r["label"] + (" [repair]" if r["repair"] else ""))}
+
+
+class ResponseCache:
+    """Stage-level reply cache for ONE case (SQLite table llm_cache), keyed by
+    sha256(model, system, user, schema name). Replies are always written; they are
+    read only when `reading` is on, i.e. when the same case is resumed."""
+
+    def __init__(self, db_path, case_id: str, reading: bool = False) -> None:
+        self.db_path = db_path
+        self.case_id = case_id
+        self.reading = reading
+
+    @staticmethod
+    def key(model: str, system: str, user: str, schema_name: str) -> str:
+        return hashlib.sha256(json.dumps([model, system, user, schema_name]).encode()).hexdigest()
+
+    def get(self, key: str) -> tuple[str, int, int] | None:
+        if not self.reading:
+            return None
+        from ragnarok.store.db import Store  # own connection: called from advocate threads
+
+        with Store(self.db_path) as s:
+            return s.llm_cache_get(self.case_id, key)
+
+    def put(self, key: str, agent: str, label: str, schema_name: str, result_json: str, inp: int, out: int) -> None:
+        from ragnarok.store.db import Store
+
+        with Store(self.db_path) as s:
+            s.llm_cache_put(self.case_id, key, agent, label, schema_name, result_json, inp, out)
+
 
 class LLMClient:
     def __init__(self, settings: Settings, ledger: TokenLedger, backend: Backend | None = None,
-                 on_event: Callable[[str, AgentName, str, dict], None] | None = None) -> None:
+                 on_event: Callable[[str, AgentName, str, dict], None] | None = None,
+                 cache: ResponseCache | None = None, context: Callable[[], dict] | None = None) -> None:
         self.settings = settings
         self.ledger = ledger
         self.backend = backend or make_backend(settings)
         self.on_event = on_event or (lambda *a: None)
+        self.cache = cache
+        self.context = context or (lambda: {"stage": "", "run": 0})  # trial stage/run at call time (for the records)
         if hasattr(self.backend, "on_retry"):  # make provider retries visible in the audit log
             self.backend.on_retry = lambda summary, payload: self.on_event("retry", AgentName.SYSTEM, summary, payload)
 
     def model_for(self, agent: AgentName) -> str:
         return self.settings.model_for("judge" if agent == AgentName.ODIN else "advocate")
 
-    def _once(self, agent: AgentName, system: str, user: str, schema: type[T], effort: str) -> BackendResult[T]:
+    def _once(self, agent: AgentName, system: str, user: str, schema: type[T], effort: str, label: str = "",
+              repair: bool = False) -> BackendResult[T]:
+        model = self.model_for(agent)
+        ctx = self.context()
+        base = {"agent": agent.value, "label": label or schema.__name__, "schema": schema.__name__, "repair": repair,
+                "stage": ctx.get("stage", ""), "run": ctx.get("run", 0), "model": model}
+        key = ResponseCache.key(model, system, user, schema.__name__) if self.cache is not None else None
+        hit = self.cache.get(key) if key else None
+        if hit is not None:
+            try:
+                parsed = schema.model_validate_json(hit[0])
+            except (ValidationError, ValueError):
+                parsed = None
+            if parsed is not None:
+                rec = self.ledger.record(base | {"cached": True, "input_tokens": 0, "output_tokens": 0,
+                                                 "cached_tokens": hit[1] + hit[2], "stop_reason": "end_turn", "ms": 0})
+                self.on_event("cache_hit", agent, f"{rec['label']}: reply replayed from this case's response cache "
+                              "(no API request)", {"call": rec, "cache_key": key})
+                return BackendResult(parsed=parsed, raw_text=hit[0], input_tokens=0, output_tokens=0,
+                                     stop_reason="end_turn", model=model, cached=True)
         self.ledger.check(agent)
-        res = self.backend.call(model=self.model_for(agent), system=system, user=user, schema=schema, effort=effort,
+        t0 = time.monotonic()
+        res = self.backend.call(model=model, system=system, user=user, schema=schema, effort=effort,
                                 max_tokens=self.settings.llm_max_output_tokens, agent=agent)
         self.ledger.add(agent, res.input_tokens, res.output_tokens)
+        self.ledger.record(base | {"cached": False, "input_tokens": res.input_tokens, "output_tokens": res.output_tokens,
+                                   "stop_reason": res.stop_reason, "ms": int((time.monotonic() - t0) * 1000)})
         if res.stop_reason == "refusal":
             raise LLMError(f"{agent.value}: the model refused the request")
+        if key and res.parsed is not None and res.stop_reason not in ("max_tokens", "invalid"):
+            try:
+                self.cache.put(key, agent.value, base["label"], schema.__name__, res.parsed.model_dump_json(),
+                               res.input_tokens, res.output_tokens)
+            except Exception as exc:  # noqa: BLE001 - the cache is an optimisation; never break a call
+                self.on_event("cache_error", agent, f"{base['label']}: response cache write failed: {exc}"[:500], {})
         return res
 
     def structured(self, agent: AgentName, system: str, user: str, schema: type[T], *, effort: str = "medium",
-                   validate: Validator | None = None, label: str = "", allow_residual: bool = False) -> T:
+                   validate: Validator | None = None, label: str = "", allow_residual: bool = False,
+                   essential: Validator | None = None) -> T:
         """One call, validated; at most one repair call; then LLMOutputError.
 
-        allow_residual=True: if the repaired output parses but still has semantic
-        problems, return it anyway; the caller must then drop the invalid parts
-        (and log them). Schema failures always raise."""
-        res = self._once(agent, system, user, schema, effort)
+        allow_residual=True: semantic problems may remain; the caller must then drop the
+        invalid parts (and log them). With REPAIR_MODE=residual_first such output is
+        returned without a repair call unless `essential` reports a problem (a part the
+        caller cannot drop, e.g. a missing ruling). Schema failures always get the one
+        repair, then raise."""
+        res = self._once(agent, system, user, schema, effort, label)
         problems = self._problems(res, validate)
         if not problems:
             return res.parsed  # type: ignore[return-value]
+        if (allow_residual and self.settings.repair_mode == "residual_first" and res.parsed is not None
+                and res.stop_reason != "max_tokens"):
+            fatal = essential(res.parsed) if essential else []
+            if not fatal:
+                self.on_event("residual", agent, f"{label}: {len(problems)} problem(s) in optional parts; no repair call, "
+                              "invalid parts will be dropped by code", {"problems": problems[:20], "repaired": False})
+                return res.parsed  # type: ignore[return-value]
         self.on_event("repair", agent, f"{label}: output invalid, one repair attempt", {"problems": problems[:20]})
         previous = res.parsed.model_dump_json() if res.parsed is not None else res.raw_text[:6000]
         repair = (
@@ -191,11 +306,11 @@ class LLMClient:
             + f"\n\nYour previous answer was:\n{previous}\n\nReturn a corrected answer in the same schema. "
             "Fix only what the problems require; do not invent citations or numbers.\n</repair_request>"
         )
-        res2 = self._once(agent, system, repair, schema, effort)
+        res2 = self._once(agent, system, repair, schema, effort, label, repair=True)
         problems2 = self._problems(res2, validate)
         if problems2 and allow_residual and res2.parsed is not None and res2.stop_reason != "max_tokens":
             self.on_event("residual", agent, f"{label}: {len(problems2)} problem(s) remain after repair; invalid parts "
-                          "will be dropped by code", {"problems": problems2[:20]})
+                          "will be dropped by code", {"problems": problems2[:20], "repaired": True})
             return res2.parsed  # type: ignore[return-value]
         if problems2:
             raise LLMOutputError(f"{agent.value} {label}: output invalid after one repair attempt: "

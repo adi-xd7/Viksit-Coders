@@ -5,6 +5,7 @@ The model is scripted (tests/fake_llm.py): isolated tests only, never the demo."
 
 from __future__ import annotations
 
+import json
 from datetime import date
 
 import pytest
@@ -98,9 +99,38 @@ def test_repair_succeeds(settings):
 
 
 def test_residual_allowed_returns_repaired_output(settings):
-    c, _, _ = client(settings, [br(Out(x=-1)), br(Out(x=-2))])
+    s = settings.model_copy(update={"repair_mode": "always"})
+    c, _, _ = client(s, [br(Out(x=-1)), br(Out(x=-2))])
     out = c.structured(AgentName.THOR, "s", "u", Out, validate=lambda o: ["bad"], allow_residual=True)
     assert out.x == -2
+
+
+def test_residual_first_skips_the_repair_for_droppable_problems(settings):
+    c, b, led = client(settings, [br(Out(x=-1)), br(Out(x=-2))])  # default REPAIR_MODE=residual_first
+    out = c.structured(AgentName.THOR, "s", "u", Out, validate=lambda o: ["bad"], allow_residual=True)
+    assert out.x == -1 and len(b.users) == 1 and led.calls_used == 1  # code drops the invalid parts; no second call
+    c2, b2, _ = client(settings, [br(Out(x=-1)), br(Out(x=3))])
+    out2 = c2.structured(AgentName.THOR, "s", "u", Out, validate=lambda o: [] if o.x > 0 else ["x must be positive"],
+                         essential=lambda o: [] if o.x > 0 else ["x must be positive"], allow_residual=True)
+    assert out2.x == 3 and len(b2.users) == 2  # an essential problem still gets the one repair
+    c3, b3, _ = client(settings, [br(None, stop="invalid", error="bad json"), br(Out(x=4))])
+    assert c3.structured(AgentName.THOR, "s", "u", Out, allow_residual=True).x == 4 and len(b3.users) == 2  # schema failure
+
+
+def test_every_request_is_recorded_and_the_call_cap_is_enforced(settings):
+    c, b, led = client(settings, [br(Out(x=1)), br(Out(x=-1)), br(Out(x=2)), br(Out(x=3))])
+    led.call_limit = 3
+    c.context = lambda: {"stage": "ODIN", "run": 1}
+    c.structured(AgentName.THOR, "s", "u", Out, label="thor brief")
+    c.structured(AgentName.ODIN, "s", "u", Out, label="odin verdict", validate=lambda o: [] if o.x > 0 else ["neg"])
+    assert [(r["agent"], r["label"], r["repair"], r["stage"]) for r in led.records] == [
+        ("thor", "thor brief", False, "ODIN"), ("odin", "odin verdict", False, "ODIN"), ("odin", "odin verdict", True, "ODIN")]
+    assert all(r["input_tokens"] == 100 and r["output_tokens"] == 100 and not r["cached"] for r in led.records)
+    summ = led.call_summary()
+    assert summ["calls_used"] == 3 and summ["repairs"] == 1 and summ["by_label"]["odin verdict [repair]"] == 1
+    with pytest.raises(LimitHit) as exc:
+        c.structured(AgentName.THOR, "s", "u", Out)
+    assert exc.value.what == "LLM calls for the case" and len(b.users) == 3  # refused before any request is sent
 
 
 def test_refusal_and_truncation_are_errors(settings):
@@ -212,8 +242,11 @@ def test_happy_path_runs_every_stage_and_persists(world, settings):
         assert (r.case_dir / f).exists(), f
     md = (r.case_dir / "briefing.md").read_text(encoding="utf-8")
     assert "## Exposure" in md and "[SYN-0003 P1, 2030-03-14]" in md
-    odin_prompt = next(c["user"] for c in t.llm.backend.calls if c["schema"] == "OdinRulings")
+    odin_prompt = next(c["user"] for c in t.llm.backend.calls if c["schema"] == "OdinVerdict")
     assert "<calculations>" in odin_prompt and "replay from source rows: OK" in odin_prompt
+    calls = json.loads((r.case_dir / "llm_calls.json").read_text(encoding="utf-8"))
+    assert calls["summary"]["calls_used"] == len(t.llm.backend.calls) == len(calls["calls"])
+    assert [e for e in t.store.events(t.case_id) if e.type == LogEventType.LLM_USAGE]
 
 
 def test_each_advocate_searched_independently(world, settings):
@@ -234,7 +267,7 @@ def test_uncited_claim_rejected_before_odin(world, settings):
     t, r, b = run(world, settings, {("thor", "AdvocateBrief"): thor_brief})
     thor = r.submissions["thor"]
     assert len(thor.claims) == 1 and len(thor.rejected) == 2
-    odin_prompt = next(c["user"] for c in b.calls if c["agent"] == "odin" and c["schema"] == "OdinRulings")
+    odin_prompt = next(c["user"] for c in b.calls if c["agent"] == "odin" and c["schema"] == "OdinVerdict")
     assert "run out of bread" not in odin_prompt and "Prices tripled" not in odin_prompt
     assert {x.claim_id for x in r.odin.rulings} == {c.claim_id for s in r.submissions.values() for c in s.claims}
 
@@ -265,8 +298,8 @@ def test_defense_without_new_evidence_is_invalid(world, settings):
     inv = [i for i in cx.invalid_defenses if i.agent == AgentName.THOR]
     assert inv and "no new valid evidence" in inv[0].reason
     calls = [c for c in b.calls if c["agent"] == "thor" and c["schema"] == "ResponseSet"]
-    assert len(calls) == 2  # rejected once, one repair attempt, then recorded as invalid
-    odin_prompt = next(c["user"] for c in b.calls if c["schema"] == "OdinRulings")
+    assert len(calls) == 1  # residual-first: no repair call; code records the defense as invalid (attack stands)
+    odin_prompt = next(c["user"] for c in b.calls if c["schema"] == "OdinVerdict")
     assert "[invalid defense]" in odin_prompt and "stands undefended" in odin_prompt
     _ = thor_responses
 
@@ -290,7 +323,7 @@ def test_odin_cannot_concede_without_concession_or_skip_claims(world, settings):
     v = {x.claim_id: x.verdict for x in r.odin.rulings}
     assert v["T1-1"] == Verdict.CONTESTED  # no concession recorded for T1-1
     assert set(r.odin.unruled) == {"T1-2", "L1-1", "L1-2"}
-    assert [c for c in b.calls if c["schema"] == "OdinRulings"].__len__() == 2  # one repair attempt
+    assert [c for c in b.calls if c["schema"] == "OdinVerdict"].__len__() == 2  # missing rulings: one repair attempt
     assert "partial" in (r.case_dir / "briefing.json").read_text(encoding="utf-8")
 
 

@@ -2,11 +2,22 @@
 
 from __future__ import annotations
 
+import re
+from collections import Counter
 from dataclasses import dataclass, field
 
-from ragnarok.agents.common import AgentEnv, load_prompt, plan_with_memory, research
+from ragnarok.agents.common import AgentEnv, load_prompt, plan_with_memory, research, run_requests
 from ragnarok.llm.client import LimitHit
-from ragnarok.agents.schemas import HeimdallReport, ResearchFindings, SendBackPlan, SendBackPlanM
+from ragnarok.agents.schemas import (
+    DualSendBackPlan,
+    HeimdallReport,
+    ResearchFindings,
+    SendBackPlan,
+    SendBackPlanM,
+    ToolRequest,
+)
+from ragnarok.retrieval.index import passes
+from ragnarok.retrieval.types import SearchFilters
 from ragnarok.memory.store import render_lessons
 from ragnarok.models import AgentName, CaseFile, Citation, EventStatus, LogEventType, RelationType, SendBack
 from ragnarok.retrieval.text import normalise_query, normalise_quote
@@ -25,10 +36,71 @@ class HeimdallOutcome:
     case_file: CaseFile
     report: HeimdallReport
     dropped: list[str] = field(default_factory=list)  # invalid citations / IDs removed by code
+    seeds: list[dict] = field(default_factory=list)  # code-run seed searches {query, filters, cache_key, query_seq}
 
 
 def case_context(question: str, as_of) -> str:
     return f"<case>\nQuestion: {question}\nAs-of date: {as_of}\n</case>"
+
+
+def _mentioned(question: str, values: set[str]) -> list[str]:
+    q = question.lower()
+    return sorted(v for v in values if v and len(v) > 2 and re.search(rf"\b{re.escape(v.lower())}s?\b", q))
+
+
+def seed_requests(env: AgentEnv, limit: int) -> tuple[list[ToolRequest], dict]:
+    """Searches derived in code from the user's question: the countries and sectors it names
+    (matched against metadata values of in-window evidence), and the candidate event (the
+    most frequent event ID among the hits of the plain question search). Nothing here is
+    read from document text; the question comes from the user."""
+    ctx = env.ctx
+    chunks = [c for c in env.service.index.chunks if passes(c, SearchFilters(), ctx.as_of)]
+    countries = _mentioned(ctx.question, {c.country for c in chunks if c.country})
+    sectors = _mentioned(ctx.question, {(c.sector or "").lower() for c in chunks} | {s for c in chunks for s in c.table_sectors})
+    q = ctx.question
+    reqs = [ToolRequest(tool="search", purpose="seed: the question as asked", query=q)]
+    reqs += [ToolRequest(tool="search", purpose=f"seed: country {c}", query=q, countries=[c]) for c in countries]
+    reqs += [ToolRequest(tool="search", purpose=f"seed: sector {s}", query=f"{s} trade imports values volumes", sectors=[s])
+             for s in sectors]
+    return reqs[:limit], {"countries": countries, "sectors": sectors}
+
+
+def run_seeds(env: AgentEnv) -> list[dict]:
+    """Heimdall's code-run seed searches (normal tools: as_of-gated, logged, counted, cached).
+    Returns the executed searches so the advocates can start from the cached results."""
+    ctx = env.ctx
+    n = ctx.settings.heimdall_seed_searches
+    if n <= 0:
+        return []
+    reqs, derived = seed_requests(env, max(1, n - 1))
+    run_requests(env, reqs[:1])
+    first = next((o for o in reversed(env.outcomes) if o.tool == "search" and o.ok), None)
+    events = Counter()
+    for ref in (first.refs if first else []):
+        doc = env.service.store.get_document(ref.split("#", 1)[0])
+        if doc and doc.meta.event_id and doc.meta.event_id.lower() != "none":
+            events[doc.meta.event_id] += 1
+    event = events.most_common(1)[0][0] if events else None
+    rest = reqs[1:]
+    if event:  # the candidate event, tiers 1-2 only: official notices, wires, corrections
+        rest = [ToolRequest(tool="search", purpose=f"seed: candidate event {event}, tiers 1-2", query=ctx.question,
+                            event_ids=[event], max_reliability=2)] + rest
+    rest = rest[: n - 1]
+    env.log(LogEventType.RESEARCH_PLAN, f"Heimdall seed searches derived in code from the question: countries "
+            f"{derived['countries'] or 'none matched'}, sectors {derived['sectors'] or 'none matched'}, candidate event "
+            f"{event or 'none'}; {1 + len(rest)} search(es)",
+            {"seed": True, **derived, "candidate_event": event,
+             "searches": [{"query": r.query, "purpose": r.purpose, "countries": r.countries, "sectors": r.sectors,
+                           "event_ids": r.event_ids, "max_reliability": r.max_reliability} for r in reqs[:1] + rest]})
+    run_requests(env, rest)
+    seeds = []
+    for e in env.service.store.events(ctx.case_id):
+        if (e.type == LogEventType.QUERY and e.agent == AgentName.HEIMDALL and e.run_number == ctx.run_number
+                and e.payload.get("cache_key") and e.seq >= ctx.replay_before_seq):
+            seeds.append({"query": e.payload["query"], "filters": {k: v for k, v in e.payload.get("filters", {}).items()
+                                                                  if v not in (None, False, [])},
+                          "cache_key": e.payload["cache_key"], "query_seq": e.seq})
+    return list({sd["cache_key"]: sd for sd in seeds}.values())
 
 
 def run_heimdall(env: AgentEnv) -> HeimdallOutcome:
@@ -36,8 +108,12 @@ def run_heimdall(env: AgentEnv) -> HeimdallOutcome:
     system = load_prompt(AgentName.HEIMDALL)
     context = case_context(ctx.question, ctx.as_of)
     lessons = env.recall(["research"], "the investigation")
+    seeds = run_seeds(env)
     research(env, system, TASK, context, ctx.settings.max_research_rounds, min_searches=1,
              effort=ctx.settings.effort_advocate, label="heimdall research", lessons=lessons)
+
+    def essential(r: HeimdallReport) -> list[str]:
+        return [] if r.countries else ["countries must not be empty"]
 
     def validate(r: HeimdallReport) -> list[str]:
         problems = []
@@ -52,7 +128,7 @@ def run_heimdall(env: AgentEnv) -> HeimdallOutcome:
     user = (f"{context}\n\n{render_lessons(lessons)}\n\n<task>\n{TASK}\n</task>\n\n<evidence>\n{env.evidence_text()}\n</evidence>\n\n"
             "Write the Case File report now. Cite only paragraphs or trade rows shown in the evidence above.")
     report = ctx.llm.structured(AgentName.HEIMDALL, system, user, HeimdallReport, effort=ctx.settings.effort_advocate,
-                                validate=validate, label="heimdall report", allow_residual=True)
+                                validate=validate, essential=essential, label="heimdall report", allow_residual=True)
     env.report_injections(report.injection_reports)
 
     good, bad = env.citations(report.event_citations)
@@ -98,7 +174,7 @@ def run_heimdall(env: AgentEnv) -> HeimdallOutcome:
     env.log(LogEventType.CASE_FILE, f"Case File: event {status.value}; countries {', '.join(cf.countries)}; "
             f"sectors {', '.join(cf.sectors)}; {len(cf.trade_table_ids)} trade table(s)",
             {"case_file": cf.model_dump(mode="json")}, [f"{c.doc_id}#{c.paragraph_ref or c.row_id}" for c in cf.event_citations])
-    return HeimdallOutcome(case_file=cf, report=report, dropped=dropped)
+    return HeimdallOutcome(case_file=cf, report=report, dropped=dropped, seeds=seeds)
 
 
 def render_case_file(cf: CaseFile) -> str:
@@ -239,14 +315,22 @@ def run_sendback_research(env: AgentEnv, cf: CaseFile, sb: SendBack, earlier_que
         probs += [f"no search for missing item {i}" for i in range(1, n_items + 1) if i not in covered]
         return probs
 
+    def essential(p: SendBackPlan) -> list[str]:
+        ok = {s.missing_item for s in p.searches if 1 <= s.missing_item <= n_items
+              and normalise_query(s.query) not in earlier_queries}
+        return [f"no new search for missing item {i}" for i in range(1, n_items + 1) if i not in ok]
+
     lessons = env.recall(["sendback", "research"], "the send-back research plan")
     if lessons:
         plan = plan_with_memory(env, system, user, lessons, ctx.settings.effort_advocate, "heimdall send-back plan",
-                                schema=SendBackPlan, schema_m=SendBackPlanM,
-                                to_requests=lambda p: [s.to_request() for s in p.searches], validate=validate)
+                                schema=SendBackPlan, schema_m=SendBackPlanM, schema_dual=DualSendBackPlan,
+                                to_requests=lambda p: [s.to_request() for s in p.searches],
+                                baseline_requests=lambda p: [s.to_request() for s in p.searches_without_memory],
+                                validate=validate, essential=essential)
     else:
         plan = ctx.llm.structured(AgentName.HEIMDALL, system, user, SendBackPlan, effort=ctx.settings.effort_advocate,
-                                  validate=validate, label="heimdall send-back plan", allow_residual=True)
+                                  validate=validate, essential=essential, label="heimdall send-back plan",
+                                  allow_residual=True)
 
     items = [ResearchItem(number=i, description=m.description) for i, m in enumerate(sb.missing, 1)]
     refused, per_item, planned, accepted = [], {i: 0 for i in range(1, n_items + 1)}, set(), []
@@ -266,6 +350,7 @@ def run_sendback_research(env: AgentEnv, cf: CaseFile, sb: SendBack, earlier_que
     env.log(LogEventType.RESEARCH_PLAN, f"Heimdall run {ctx.run_number} plan: {len(accepted)} new targeted search(es) for "
             f"{n_items} missing item(s); {len(refused)} refused",
             {"searches": [s.model_dump() for s in accepted], "refused": refused, "sendback_id": sb.sendback_id})
+    n_before = len(env.outcomes)
     for s in accepted:
         try:
             out = env.run_tool(s.to_request())
@@ -276,9 +361,20 @@ def run_sendback_research(env: AgentEnv, cf: CaseFile, sb: SendBack, earlier_que
                 "countries": s.countries, "sectors": s.sectors, "event_ids": s.event_ids, "source_types": s.source_types,
                 "max_reliability": s.max_reliability}})
 
-    research(env, system, "Follow up the targeted search results: read the most relevant documents and fetch trade rows "
-             "that could fill the missing items. Any search must be a new query.", context, 1,
-             effort=ctx.settings.effort_advocate, label="heimdall send-back follow-up")
+    if ctx.settings.sendback_followup_llm:
+        research(env, system, "Follow up the targeted search results: read the most relevant documents and fetch trade "
+                 "rows that could fill the missing items. Any search must be a new query.", context, 1,
+                 effort=ctx.settings.effort_advocate, label="heimdall send-back follow-up")
+    else:  # follow-up in code: fetch the trade rows of trade tables the targeted searches hit
+        hit_docs = list(dict.fromkeys(r.split("#", 1)[0] for o in env.outcomes[n_before:] if o.tool == "search"
+                                      for r in o.refs))
+        tables = [t.table_id for t in store.all_trade_tables() if t.source_doc_id in hit_docs
+                  and not ({r.row_id for r in t.rows} & seen_refs)]
+        if tables:
+            env.log(LogEventType.RESEARCH_PLAN, f"Heimdall run {ctx.run_number} follow-up in code: trade rows of "
+                    f"{len(tables)} table(s) hit by the targeted searches", {"tables": tables, "followup": "code"})
+            run_requests(env, [ToolRequest(tool="get_trade_rows", purpose="send-back follow-up: tables hit by the "
+                                           "targeted searches", table_ids=tables)])
 
     def validate_findings(f: ResearchFindings) -> list[str]:
         p = []

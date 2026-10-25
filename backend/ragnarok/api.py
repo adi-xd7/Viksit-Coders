@@ -4,7 +4,8 @@ Run: .venv/Scripts/python -m uvicorn ragnarok.api:app --app-dir backend --port 8
 
 Endpoints (the API's whole surface):
     POST /cases                      {question, as_of} -> {case_id}
-    GET  /cases/{case_id}            status (running | complete | partial | failed) + results
+    GET  /cases/{case_id}            status (running | complete | partial | failed) + results, calls_used/calls_limit
+    POST /cases/{case_id}/resume     resume a failed or partial case (finished steps replay from its own cache)
     GET  /cases/{case_id}/events     Server-Sent Events of the real audit log (?after=seq&follow=true)
     GET  /docs/{doc_id}[/{para}]     a document / one paragraph, as_of-gated (?as_of= or ?case_id=)
     GET  /trade/{table_id}[/{row}]   a trade table / one row, as_of-gated (?as_of= or ?case_id=)
@@ -122,6 +123,24 @@ def create_app(settings: Settings | None = None, backend_factory: Callable[[], B
         except RuntimeError:
             raise HTTPException(409, f"a case is already running (limit {settings.max_concurrent_cases}); try again later")
         return {"case_id": case_id, "status": "running", "events": f"/cases/{case_id}/events"}
+
+    @app.post("/cases/{case_id}/resume", status_code=202)
+    def resume_case(case_id: str) -> dict:
+        st = _status(case_id)
+        if st["status"] == "running":
+            raise HTTPException(409, "the case is still running")
+        if st["status"] == "complete":
+            raise HTTPException(409, "the case is already complete; nothing to resume")
+        if backend_factory is None and not settings.has_api_key:
+            raise HTTPException(503, f"{settings.api_key_name} is not set (LLM_PROVIDER={settings.llm_provider})")
+        try:
+            as_of = date.fromisoformat(str(st["as_of"]))
+            runner.start(str(st["question"]), as_of, case_id=case_id)
+        except (TypeError, ValueError):
+            raise HTTPException(400, "the case has no readable question / as-of date to resume from")
+        except RuntimeError:
+            raise HTTPException(409, f"a case is already running (limit {settings.max_concurrent_cases}); try again later")
+        return {"case_id": case_id, "status": "running", "resumed": True, "events": f"/cases/{case_id}/events"}
 
     @app.get("/cases/{case_id}")
     def get_case(case_id: str) -> dict:

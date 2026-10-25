@@ -139,6 +139,8 @@ class LogEventType(StrEnum):
     RESEARCH_PLAN = "RESEARCH_PLAN"  # Heimdall's targeted queries for a send-back
     NEW_EVIDENCE = "NEW_EVIDENCE"  # evidence first found in run n (and, after Odin, its effect)
     MEMORY_APPLIED = "MEMORY_APPLIED"  # a recalled lesson changed what an agent did (original vs changed action)
+    LLM_USAGE = "LLM_USAGE"  # model requests of the case (by agent, stage, label; repairs; tokens)
+    LLM_CACHE_HIT = "LLM_CACHE_HIT"  # a resumed case replayed a finished step from its own response cache
 
 
 class _Model(BaseModel):

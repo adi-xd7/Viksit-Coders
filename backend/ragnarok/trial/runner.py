@@ -76,7 +76,9 @@ def case_status(settings: Settings, case_id: str, running: bool = False) -> dict
     out = {"case_id": case_id, "status": status, "stage": stage, "briefing_status": bstatus,
            "question": state.get("question"), "as_of": state.get("as_of"), "history": state.get("history", []),
            "runs_completed": state.get("runs_completed", 0), "notes": state.get("notes", []),
-           "stop_reason": state.get("stop_reason"), "usage": state.get("usage", {})}
+           "stop_reason": state.get("stop_reason"), "usage": state.get("usage", {}), "attempt": state.get("attempt", 1)}
+    llm = (state.get("usage") or {}).get("llm_calls") or {}
+    out["calls_used"], out["calls_limit"] = llm.get("used"), llm.get("limit", settings.max_llm_calls_per_case)
     if status == "failed" and stage not in TERMINAL:
         out["notes"] = out["notes"] + ["case interrupted before it finished (process stopped)"]
     if (d / "limitations.md").exists():
@@ -112,11 +114,13 @@ class CaseRunner:
         t = self.threads.get(case_id)
         return bool(t and t.is_alive())
 
-    def start(self, question: str, as_of: date) -> str:
+    def start(self, question: str, as_of: date, case_id: str | None = None) -> str:
+        """Start a case; with `case_id` of an earlier, unfinished case it is resumed (finished
+        steps replay from that case's response cache)."""
         with self.lock:
             if sum(t.is_alive() for t in self.threads.values()) >= self.settings.max_concurrent_cases:
                 raise RuntimeError("too many cases running")
-            case_id = new_case_id(question, as_of)
+            case_id = case_id or new_case_id(question, as_of)
             service = self.service_getter()
             backend = self.backend_factory() if self.backend_factory else None
             t = threading.Thread(target=self._run, args=(question, as_of, case_id, service, backend), daemon=True,

@@ -8,6 +8,13 @@ Code guards applied to Odin's output (after one repair attempt):
   calculations, support from flagged instruction text) -> "rejected [code guard]";
 - range bounds must equal results of complete calc records, else the range is
   recorded as insufficient evidence.
+
+Requests: every citation and calculation is validated / replayed in code and the
+results are part of the prompt, so by default there is no planning turn
+(ODIN_RESEARCH_ROUND) and rulings + assessment come from ONE call (ODIN_MERGED_CALL);
+if that output fails validation even after its repair, the two-step path (rulings,
+then assessment) is used. In a delta run only new or revised claims are ruled; the
+earlier rulings of unchanged claims stand (they stay in the audit trail).
 """
 
 from __future__ import annotations
@@ -15,10 +22,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ragnarok.agents.advocates import CrossExam, render_claims
-from ragnarok.agents.common import AgentEnv, load_prompt, research, wrap_document
+from ragnarok.agents.common import AgentEnv, load_prompt, log_memory_effect, research, wrap_document
 from ragnarok.agents.estimates import bound_problems, calc_row_refs, load_calcs, norm_unit
 from ragnarok.agents.heimdall import render_case_file
-from ragnarok.agents.schemas import OdinAssessment, OdinJudgment, OdinRange, OdinRulings
+from ragnarok.agents.schemas import OdinAssessment, OdinJudgment, OdinRange, OdinRulings, OdinVerdict
+from ragnarok.llm.client import LLMError, LLMOutputError
 from ragnarok.memory.store import render_lessons
 from ragnarok.models import (
     DAMAGE_KINDS,
@@ -181,12 +189,22 @@ def _cross_exam_text(cx: CrossExam) -> str:
     return "\n".join(lines) or "(no cross-examination took place)"
 
 
+def _standing_text(standing: list[tuple[Claim, Ruling]]) -> str:
+    return "\n".join(f"[{c.claim_id}] ({c.agent.value}) {c.text}\n  STANDING RULING (run {r.run_number}): {r.verdict.value} - "
+                     f"{r.rationale[:300]}" for c, r in standing)
+
+
 def run_odin(env: AgentEnv, cf: CaseFile, claims: list[Claim], cx: CrossExam, notes: list[str],
-             run_history: str = "") -> OdinResult:
+             run_history: str = "", standing: list[tuple[Claim, Ruling]] | None = None) -> OdinResult:
+    """Rule on `claims`. `standing`: unchanged claims of a delta run with their earlier rulings
+    (not re-ruled; they inform the ranges and the sufficiency assessment)."""
     ctx = env.ctx
+    st = ctx.settings
     store = env.service.store
     calc = env.service.calculator(ctx.as_of)
     system = load_prompt(AgentName.ODIN)
+    standing = list(standing or [])
+    every = claims + [c for c, _ in standing]
     pcs = {c.claim_id: precheck(store, calc, c, ctx.as_of) for c in claims}
     for c in claims:
         env.log(LogEventType.PRECHECK, f"pre-check {c.claim_id}: {pcs[c.claim_id].render()}"[:500],
@@ -197,27 +215,33 @@ def run_odin(env: AgentEnv, cf: CaseFile, claims: list[Claim], cx: CrossExam, no
     pairs = sorted({(country, sector) for country in cf.countries for sector in (cf.sectors or ["all"])})
     advocates_est = "\n".join(
         f"{c.agent.value} {c.claim_id}: {e.country}/{e.sector} {e.metric} {e.low}..{e.high} {e.unit} ({e.period}); calcs "
-        f"{', '.join(e.calculation_ids)}" for c in claims if (e := c.exposure)) or "(none)"
+        f"{', '.join(e.calculation_ids)}" for c in every if (e := c.exposure)) or "(none)"
     context = (
         f"{render_case_file(cf)}\n\n<claims>\n"
         + "\n".join(f"{render_claims([c])}\n  PRE-CHECK: {pcs[c.claim_id].render()}" for c in claims)
         + f"\n</claims>\n\n<cited_evidence>\n{_evidence_for(store, claims)}\n</cited_evidence>\n\n"
         f"<cross_examination>\n{_cross_exam_text(cx)}\n</cross_examination>\n\n"
         f"<advocate_estimates>\n{advocates_est}\n</advocate_estimates>\n\n"
-        f"<calculations>\n{_calcs_text(store, calc, claims)}\n</calculations>\n\n"
+        + (f"<standing_rulings>\nUnchanged claims whose earlier rulings stand (do not rule on them again; use them for "
+           f"ranges and sufficiency):\n{_standing_text(standing)}\n</standing_rulings>\n\n" if standing else "")
+        + f"<calculations>\n{_calcs_text(store, calc, every)}\n</calculations>\n\n"
         f"<trial_notes>\n{chr(10).join(notes) or 'none'}\n</trial_notes>"
         + (f"\n\n<run_history>\n{run_history}\n</run_history>" if run_history else "")
     )
     lessons = env.recall(["ruling"], f"ruling in run {ctx.run_number}")
     if lessons:
         context += "\n\n" + render_lessons(lessons)
-    task = ("Rule on every claim (IDs: " + ", ".join(claim_ids) + "). Give your own exposure range for each of these "
-            "country/sector pairs: " + "; ".join(f"{a}/{b}" for a, b in pairs) + " (or mark insufficient). Assess "
-            "sufficiency. Request read_doc / trade_calc / validate_citation if you need to check passages or compute "
-            "your range bounds.")
-    # Odin's prompt is large, so no baseline plan: memory influence is recorded as agent-stated.
-    research(env, system, task, context, 1, effort=ctx.settings.effort_judge, label="odin research", lessons=lessons,
-             memory_baseline=False)
+    task = ("Rule on every claim (IDs: " + (", ".join(claim_ids) or "none") + "). Give your own exposure range for each of "
+            "these country/sector pairs: " + "; ".join(f"{a}/{b}" for a, b in pairs) + " (or mark insufficient). Assess "
+            "sufficiency. "
+            + ("Request read_doc / trade_calc / validate_citation if you need to check passages or compute your range "
+               "bounds." if st.odin_research_round else
+               "Every citation was validated and every calculation replayed in code (PRE-CHECK and <calculations>); "
+               "range bounds must be results of calc records listed in <calculations>."))
+    if st.odin_research_round:
+        # Odin's prompt is large, so no baseline plan: memory influence is recorded as agent-stated.
+        research(env, system, task, context, 1, effort=st.effort_judge, label="odin research", lessons=lessons,
+                 memory_baseline=False)
 
     def range_probs(r: OdinRange) -> list[str]:
         if r.insufficient_evidence:
@@ -250,20 +274,50 @@ def run_odin(env: AgentEnv, cf: CaseFile, claims: list[Claim], cx: CrossExam, no
             p += range_probs(r)
         return p
 
-    # Call 1: rulings. Call 2: ranges, sufficiency and summary, given the rulings.
-    # (Two calls keep each structured-output grammar small enough for the API.)
-    base = f"{context}\n\n<task>\n{task}\n</task>\n\n<odin_checks>\n{env.evidence_text()}\n</odin_checks>"
-    jr = ctx.llm.structured(AgentName.ODIN, system, base + "\n\nStep 1 of 2: give your ruling on every claim now.",
-                            OdinRulings, effort=ctx.settings.effort_judge, validate=validate_rulings,
-                            label="odin rulings", allow_residual=True)
-    env.report_injections(jr.injection_reports)
-    ruled_text = "\n".join(f"{r.claim_id}: {r.verdict} ({r.claim_type}) - {r.rationale}" for r in jr.rulings)
-    ja = ctx.llm.structured(AgentName.ODIN, system, f"{base}\n\n<your_rulings>\n{ruled_text}\n</your_rulings>\n\n"
-                            "Step 2 of 2: from your rulings and the trade data, give your exposure ranges, sufficiency "
-                            "assessment, executive summary and next-quarter outlook.",
-                            OdinAssessment, effort=ctx.settings.effort_judge, validate=validate_assessment,
-                            label="odin assessment", allow_residual=True)
-    j = OdinJudgment(rulings=jr.rulings, injection_reports=jr.injection_reports, **ja.model_dump())
+    def essential_rulings(j) -> list[str]:  # every claim needs a ruling; everything else code can correct or drop
+        ruled = {r.claim_id for r in j.rulings}
+        return [f"no ruling for claim {c}" for c in claim_ids if c not in ruled]
+
+    base = f"{context}\n\n<task>\n{task}\n</task>"
+    if st.odin_research_round:
+        base += f"\n\n<odin_checks>\n{env.evidence_text()}\n</odin_checks>"
+    elif lessons:
+        base += ("\n\nYour memory is listed above. If a lesson applies, let it shape your rulings and name its ID in "
+                 "memory_used, saying in memory_effect what it changed; otherwise leave memory_used empty.")
+    j = None
+    if st.odin_merged_call:
+        try:
+            v = ctx.llm.structured(AgentName.ODIN, system, base + "\n\nGive your ruling on every claim, then your "
+                                   "exposure ranges, sufficiency assessment, executive summary and next-quarter outlook.",
+                                   OdinVerdict, effort=st.effort_judge,
+                                   validate=lambda x: validate_rulings(x) + validate_assessment(x),
+                                   essential=essential_rulings, label="odin verdict", allow_residual=True)
+            j = OdinJudgment(**v.model_dump(exclude={"memory_used", "memory_effect"}))
+            env.report_injections(v.injection_reports)
+            if lessons and not st.odin_research_round:
+                log_memory_effect(env, lessons, None, [], v.memory_used, v.memory_effect, "odin ruling",
+                                  baseline_kind="none")
+        except LLMOutputError as exc:
+            env.log(LogEventType.ERROR, f"Odin's merged verdict failed validation ({exc}); falling back to two steps"[:500],
+                    {"fallback": "two_step"})
+        except LLMError as exc:
+            if "bad request" not in str(exc).lower() and "400" not in str(exc):
+                raise
+            env.log(LogEventType.ERROR, f"Odin's merged schema was rejected by the API ({exc}); falling back to two "
+                    "steps"[:500], {"fallback": "two_step"})
+    if j is None:
+        # Call 1: rulings. Call 2: ranges, sufficiency and summary, given the rulings.
+        jr = ctx.llm.structured(AgentName.ODIN, system, base + "\n\nStep 1 of 2: give your ruling on every claim now.",
+                                OdinRulings, effort=st.effort_judge, validate=validate_rulings,
+                                essential=essential_rulings, label="odin rulings", allow_residual=True)
+        env.report_injections(jr.injection_reports)
+        ruled_text = "\n".join(f"{r.claim_id}: {r.verdict} ({r.claim_type}) - {r.rationale}" for r in jr.rulings)
+        ja = ctx.llm.structured(AgentName.ODIN, system, f"{base}\n\n<your_rulings>\n{ruled_text}\n</your_rulings>\n\n"
+                                "Step 2 of 2: from your rulings and the trade data, give your exposure ranges, sufficiency "
+                                "assessment, executive summary and next-quarter outlook.",
+                                OdinAssessment, effort=st.effort_judge, validate=validate_assessment,
+                                label="odin assessment", allow_residual=True)
+        j = OdinJudgment(rulings=jr.rulings, injection_reports=jr.injection_reports, **ja.model_dump())
 
     guards: list[str] = []
     rulings: list[Ruling] = []
@@ -296,6 +350,10 @@ def run_odin(env: AgentEnv, cf: CaseFile, claims: list[Claim], cx: CrossExam, no
     unruled = [c for c in claim_ids if c not in done]
     for c in unruled:
         env.log(LogEventType.ERROR, f"Odin gave no ruling on {c}; reported as unruled (no verdict invented)", refs=[c])
+    if standing:  # delta run: earlier rulings of unchanged claims stand as they were recorded
+        rulings = [r for _, r in standing] + rulings
+        for c, _ in standing:
+            pcs[c.claim_id] = precheck(store, calc, c, ctx.as_of)
 
     ranges, insufficient = [], []
     for r in j.ranges:
