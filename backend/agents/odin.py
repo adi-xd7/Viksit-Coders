@@ -22,11 +22,22 @@ from backend.models import (
     Concession,
     Defense,
     Document,
+    EventVerificationStatus,
+    ExposureRange,
     Ruling,
+    SendBack,
+    SufficiencyResult,
+    SufficiencyStatus,
     TradeRow,
     Verdict,
 )
 from backend.llm import LLMClient, default_llm_client, wrap_document_text
+from backend.trade_calc import (
+    calculate_exposure_bounds,
+    calculate_substitute_offset,
+    calculate_sum,
+    filter_valid_trade_rows,
+)
 
 logger = logging.getLogger("odin")
 
@@ -506,3 +517,364 @@ class OdinJudge:
                 )
 
         return final_rulings
+
+    def derive_exposure_ranges(
+        self,
+        case_file: CaseFile,
+        claims: List[Claim],
+        rulings: List[Ruling],
+        trade_store: Optional[Dict[str, List[TradeRow]]] = None,
+    ) -> List[ExposureRange]:
+        """Derives evidence-grounded exposure ranges for each country-sector pair."""
+        return derive_exposure_ranges(
+            case_file=case_file,
+            claims=claims,
+            rulings=rulings,
+            trade_store=trade_store,
+        )
+
+    def assess_sufficiency(
+        self,
+        case_file: CaseFile,
+        rulings: List[Ruling],
+        claims: List[Claim],
+        exposure_ranges: List[ExposureRange],
+        doc_store: Dict[str, Document],
+        trade_store: Optional[Dict[str, List[TradeRow]]] = None,
+        run_count: int = 1,
+        max_runs: int = 3,
+    ) -> SufficiencyResult:
+        """Evaluates trial evidence sufficiency and produces structured send-back requests."""
+        return assess_sufficiency(
+            case_file=case_file,
+            rulings=rulings,
+            claims=claims,
+            exposure_ranges=exposure_ranges,
+            doc_store=doc_store,
+            trade_store=trade_store,
+            run_count=run_count,
+            max_runs=max_runs,
+        )
+
+
+def derive_exposure_ranges(
+    case_file: CaseFile,
+    claims: List[Claim],
+    rulings: List[Ruling],
+    trade_store: Optional[Dict[str, List[TradeRow]]] = None,
+) -> List[ExposureRange]:
+    """Derives evidence-grounded exposure ranges for each country-sector pair.
+    
+    Thor's and Loki's estimates are treated strictly as advocacy positions, not ground truth.
+    Odin's range is derived deterministically from validated rulings and admissible trade data.
+    """
+    # 1. Determine target pairs
+    target_pairs: List[Tuple[str, str]] = list(case_file.target_pairs)
+    if not target_pairs:
+        # Extract from claims if target_pairs was not specified
+        seen = set()
+        for c in claims:
+            if c.country and c.sector and (c.country, c.sector) not in seen:
+                seen.add((c.country, c.sector))
+                target_pairs.append((c.country, c.sector))
+
+    rulings_map = {r.claim_id: r for r in rulings}
+    results: List[ExposureRange] = []
+
+    for country, sector in target_pairs:
+        # Filter claims and rulings for this country-sector pair
+        pair_claims = [
+            c for c in claims
+            if c.country.lower() == country.lower() and c.sector.lower() == sector.lower()
+        ]
+        pair_rulings = [rulings_map[c.claim_id] for c in pair_claims if c.claim_id in rulings_map]
+
+        established_ids = [r.claim_id for r in pair_rulings if r.verdict == Verdict.ESTABLISHED]
+        contested_ids = [r.claim_id for r in pair_rulings if r.verdict == Verdict.CONTESTED]
+        conceded_ids = [r.claim_id for r in pair_rulings if r.verdict == Verdict.CONCEDED]
+        rejected_ids = [r.claim_id for r in pair_rulings if r.verdict == Verdict.REJECTED]
+
+        # Extract Thor's advocacy range
+        thor_claims = [c for c in pair_claims if c.agent == AgentRole.THOR]
+        thor_lows = [c.estimate_low for c in thor_claims if c.estimate_low is not None]
+        thor_highs = [c.estimate_high for c in thor_claims if c.estimate_high is not None]
+        thor_range = (min(thor_lows), max(thor_highs)) if (thor_lows and thor_highs) else None
+
+        # Extract Loki's advocacy range
+        loki_claims = [c for c in pair_claims if c.agent == AgentRole.LOKI]
+        loki_lows = [c.estimate_low for c in loki_claims if c.estimate_low is not None]
+        loki_highs = [c.estimate_high for c in loki_claims if c.estimate_high is not None]
+        loki_range = (min(loki_lows), max(loki_highs)) if (loki_lows and loki_highs) else None
+
+        # Gather admissible trade rows for this country-sector
+        relevant_trade_rows: List[TradeRow] = []
+        if trade_store:
+            for t_id, rows in trade_store.items():
+                v_rows, _ = filter_valid_trade_rows(rows, as_of=case_file.as_of)
+                for r in v_rows:
+                    if country.lower() in r.country_pair.lower() and sector.lower() in r.sector.lower():
+                        relevant_trade_rows.append(r)
+
+        trade_row_refs = [f"{r.table_id}#{r.row_num}" for r in relevant_trade_rows]
+
+        # Determine Odin's adjudicated range deterministically
+        odin_range: Optional[Tuple[float, float]] = None
+        status = "resolved"
+        rationale_parts = []
+        assumptions: List[str] = []
+
+        # If there are established claims providing quantitative bounds
+        est_claims = [c for c in pair_claims if c.claim_id in established_ids]
+        est_with_bounds = [
+            c for c in est_claims
+            if c.estimate_low is not None and c.estimate_high is not None
+        ]
+
+        if relevant_trade_rows:
+            # Baseline calculation from valid trade rows
+            calc_baseline = calculate_sum(relevant_trade_rows, field="volume", as_of=case_file.as_of)
+            if calc_baseline.is_valid and calc_baseline.result is not None:
+                baseline_vol = calc_baseline.result
+                rationale_parts.append(
+                    f"Baseline volume of {baseline_vol} {calc_baseline.unit} established from rows: {', '.join(calc_baseline.input_row_refs)}."
+                )
+
+                # Check if an established claim establishes a percentage drop or volume impact
+                if est_with_bounds:
+                    # Grounded bounds from established claim
+                    c_best = est_with_bounds[0]
+                    drop_low_pct = c_best.estimate_low
+                    drop_high_pct = c_best.estimate_high
+
+                    # Check for established or conceded offset/substitute claims
+                    offset_vol = 0.0
+                    for c in pair_claims:
+                        if (c.claim_id in established_ids or c.claim_id in conceded_ids) and "offset" in c.statement.lower():
+                            if c.estimate_low is not None:
+                                offset_vol = max(offset_vol, c.estimate_low)
+                                assumptions.append(f"Substituted/offset capacity credited: {offset_vol} {c.unit or 'units'} based on {c.claim_id}.")
+
+                    calc_exp, bounds = calculate_exposure_bounds(
+                        baseline_volume=baseline_vol,
+                        drop_pct_range=(drop_low_pct, drop_high_pct),
+                        offset_volume=offset_vol,
+                        unit=calc_baseline.unit,
+                        row_refs=calc_baseline.input_row_refs,
+                    )
+                    odin_range = bounds
+                    rationale_parts.append(
+                        f"Adjudicated exposure bounds [{bounds[0]}, {bounds[1]}] {calc_baseline.unit} derived from established drop range [{drop_low_pct}%, {drop_high_pct}%] less offset {offset_vol}."
+                    )
+                else:
+                    # We have baseline trade rows, but no established claim on disruption severity
+                    if contested_ids:
+                        status = "unresolved"
+                        rationale_parts.append(
+                            f"Baseline trade data is present, but disruption severity claims ({', '.join(contested_ids)}) remain contested without definitive evidence."
+                        )
+                    else:
+                        status = "unresolved"
+                        if rejected_ids:
+                            rationale_parts.append(
+                                f"Baseline trade data is present, but all disruption severity claims ({', '.join(rejected_ids)}) were rejected as inadmissible."
+                            )
+                        else:
+                            rationale_parts.append("No established quantitative disruption claims on record.")
+            else:
+                status = "unresolved"
+                rationale_parts.append(f"Trade calculation failure: {calc_baseline.error_reason}")
+        elif est_with_bounds:
+            # Direct evidence-grounded quantitative range without separate trade table
+            c_best = est_with_bounds[0]
+            odin_range = (c_best.estimate_low, c_best.estimate_high)
+            rationale_parts.append(
+                f"Adjudicated exposure [{c_best.estimate_low}, {c_best.estimate_high}] directly supported by established claim {c_best.claim_id}."
+            )
+        else:
+            # No admissible trade data and no established quantitative claims
+            status = "unresolved"
+            odin_range = None
+            if rejected_ids and not established_ids:
+                rationale_parts.append(
+                    f"All submitted claims ({', '.join(rejected_ids)}) were rejected due to invalid, post-cutoff, or Tier 4 evidence."
+                )
+            elif contested_ids:
+                status = "unresolved"
+                rationale_parts.append(
+                    f"Submitted claims ({', '.join(contested_ids)}) remain contested with insufficient corroboration."
+                )
+            else:
+                status = "unresolved"
+                rationale_parts.append("Zero admissible evidence on record for this country-sector pair.")
+
+        results.append(
+            ExposureRange(
+                country=country,
+                sector=sector,
+                thor_range=thor_range,
+                loki_range=loki_range,
+                odin_range=odin_range,
+                status=status,
+                rationale=" ".join(rationale_parts),
+                established_claim_ids=established_ids,
+                contested_claim_ids=contested_ids,
+                conceded_claim_ids=conceded_ids,
+                rejected_claim_ids=rejected_ids,
+                trade_row_refs=trade_row_refs,
+                assumptions=assumptions,
+            )
+        )
+
+    return results
+
+
+def assess_sufficiency(
+    case_file: CaseFile,
+    rulings: List[Ruling],
+    claims: List[Claim],
+    exposure_ranges: List[ExposureRange],
+    doc_store: Dict[str, Document],
+    trade_store: Optional[Dict[str, List[TradeRow]]] = None,
+    run_count: int = 1,
+    max_runs: int = 3,
+) -> SufficiencyResult:
+    """Evaluates whether the trial has sufficient evidence for a defensible briefing.
+    
+    Distinguishes:
+    - Sufficient: A defensible briefing can be produced (uncertainties disclosed).
+    - Insufficient: Specific actionable evidence is missing; triggers structured SendBack to Heimdall.
+    - Limits exhausted: Maximum runs reached; terminates trial gracefully without infinite loop.
+    """
+    # 1. Resource and run limits check
+    if run_count >= max_runs:
+        return SufficiencyResult(
+            status=SufficiencyStatus.LIMITS_EXHAUSTED,
+            is_sufficient=False,
+            reasons=[
+                f"Trial run limit reached ({run_count} of {max_runs}). Graceful termination enforced; no further research cycles permitted."
+            ],
+            unresolved_gaps=[
+                f"Unresolved gaps remaining at run {run_count} will be disclosed in final briefing as execution limitations."
+            ],
+            send_back=None,
+        )
+
+    # 2. Event verification check
+    if case_file.verification_status == EventVerificationStatus.NOT_REAL:
+        return SufficiencyResult(
+            status=SufficiencyStatus.SUFFICIENT,
+            is_sufficient=True,
+            reasons=[
+                f"Disruption event '{case_file.case_id}' was deterministically verified as NOT REAL. Trial can conclude with zero exposure finding."
+            ],
+            send_back=None,
+        )
+
+    missing_requests: List[str] = []
+    gap_types: List[str] = []
+    disclosed_uncertainties: List[str] = []
+
+    if case_file.verification_status == EventVerificationStatus.UNCERTAIN:
+        missing_requests.append(
+            f"Obtain official Tier 1-2 event verification notice for event '{case_file.case_id}' as of {case_file.as_of}."
+        )
+        gap_types.append("unverified_event")
+
+    # 3. Country-sector exposure assessment checks
+    for er in exposure_ranges:
+        if er.status == "unresolved" or er.odin_range is None:
+            # Check if trade baseline is missing
+            has_trade = bool(er.trade_row_refs)
+            if not has_trade:
+                missing_requests.append(
+                    f"Obtain valid pre-cutoff trade baseline observations for country '{er.country}' and sector '{er.sector}' prior to {case_file.as_of}."
+                )
+                gap_types.append("missing_trade_baseline")
+            else:
+                missing_requests.append(
+                    f"Find quantitative disruption evidence establishing verified exposure bounds for {er.country} ({er.sector})."
+                )
+                gap_types.append("unsupported_exposure_range")
+
+    # 4. Damaged trade data check
+    if trade_store:
+        for t_id, rows in trade_store.items():
+            if rows and all(r.is_damaged for r in rows):
+                missing_requests.append(
+                    f"Replace damaged trade data table '{t_id}': all rows corrupted or unreadable."
+                )
+                gap_types.append("damaged_trade_table")
+
+    # 5. Inadmissible / Tier-4-only support check
+    tier4_rejections = [
+        r for r in rulings
+        if r.verdict == Verdict.REJECTED and r.disqualified_reason and "tier_4" in r.disqualified_reason.lower()
+    ]
+    for tr in tier4_rejections:
+        matching_claim = next((c for c in claims if c.claim_id == tr.claim_id), None)
+        if matching_claim:
+            missing_requests.append(
+                f"Provide Tier 1-3 independent corroboration for claim {tr.claim_id} ('{matching_claim.statement[:50]}...') which currently rests exclusively on Tier 4 sources."
+            )
+            gap_types.append("tier_4_only")
+
+    # 6. Unresolved material contradictions check
+    # Check if opposing claims are both contested on the same country-sector
+    contested_ids = {r.claim_id for r in rulings if r.verdict == Verdict.CONTESTED}
+    for er in exposure_ranges:
+        pair_contested_claims = [c for c in claims if c.claim_id in contested_ids and c.country.lower() == er.country.lower() and c.sector.lower() == er.sector.lower()]
+        thor_contested = [c for c in pair_contested_claims if c.agent == AgentRole.THOR]
+        loki_contested = [c for c in pair_contested_claims if c.agent == AgentRole.LOKI]
+
+        for tc in thor_contested:
+            for lc in loki_contested:
+                # Contradiction: Thor argues severe impact, Loki argues minimal, and it prevents an agreed range
+                if er.status == "unresolved":
+                    missing_requests.append(
+                        f"Retrieve official evidence to resolve material contradiction between {tc.claim_id} ('{tc.statement[:40]}') and {lc.claim_id} ('{lc.statement[:40]}') for {er.country}-{er.sector}."
+                    )
+                    gap_types.append("unresolved_contradiction")
+
+    # 7. Disclosed uncertainties for non-fatal contested claims
+    for r in rulings:
+        if r.verdict == Verdict.CONTESTED:
+            disclosed_uncertainties.append(f"Claim {r.claim_id} remains contested: {r.rationale}")
+
+    # Deduplicate missing requests while preserving order
+    unique_missing: List[str] = []
+    unique_types: List[str] = []
+    seen_req = set()
+    for req, gtype in zip(missing_requests, gap_types):
+        if req not in seen_req:
+            seen_req.add(req)
+            unique_missing.append(req)
+            unique_types.append(gtype)
+
+    if not unique_missing:
+        return SufficiencyResult(
+            status=SufficiencyStatus.SUFFICIENT,
+            is_sufficient=True,
+            reasons=[
+                "Evidence base is sufficient to produce an evidence-grounded briefing. Contested findings can be transparently disclosed."
+            ],
+            send_back=None,
+            disclosed_uncertainties=disclosed_uncertainties,
+        )
+
+    # Insufficient evidence -> generate structured SendBack
+    send_back = SendBack(
+        missing=unique_missing,
+        gap_types=unique_types,
+        iteration=run_count,
+    )
+    return SufficiencyResult(
+        status=SufficiencyStatus.INSUFFICIENT,
+        is_sufficient=False,
+        reasons=[
+            f"Evidence base is insufficient ({len(unique_missing)} actionable gaps identified). Re-research required."
+        ],
+        send_back=send_back,
+        unresolved_gaps=unique_missing,
+        disclosed_uncertainties=disclosed_uncertainties,
+    )
+

@@ -109,15 +109,15 @@ To maintain modularity and isolation:
   - [x] Implement complete claim coverage enforcement (every claim ruled exactly once; deterministic rejections cannot be overridden)
   - [x] Unit tests (`tests/test_odin.py`, `tests/test_odin_evidence.py` - 20/20 passing)
 
-- [ ] **Phase 2 — Odin's Exposure Ranges and Sufficiency Checker**
-  - [ ] Country-sector unit of analysis mapping
-  - [ ] Deterministic trade calculations (no mental arithmetic by LLM)
-  - [ ] Evidence-grounded exposure range determination (`odin_range` based on admissible evidence, not blind averaging)
-  - [ ] Structured sufficiency checker (`assess_sufficiency`):
-    - [ ] Distinguish sufficient vs insufficient vs limits exhausted
-    - [ ] Allow uncertainty disclosure for contested claims without failing trial
-  - [ ] Actionable, specific `SendBack` requests
-  - [ ] Tests (`tests/test_odin_sufficiency.py`)
+- [x] **Phase 2 — Odin's Exposure Ranges and Sufficiency Checker**
+  - [x] Country-sector unit of analysis mapping
+  - [x] Deterministic trade calculations (no mental arithmetic by LLM)
+  - [x] Evidence-grounded exposure range determination (`odin_range` based on admissible evidence, not blind averaging)
+  - [x] Structured sufficiency checker (`assess_sufficiency`):
+    - [x] Distinguish sufficient vs insufficient vs limits exhausted
+    - [x] Allow uncertainty disclosure for contested claims without failing trial
+  - [x] Actionable, specific `SendBack` requests
+  - [x] Tests (`tests/test_odin_sufficiency.py`, `tests/test_trade_calc.py` - 21/21 passing, 41/41 total)
 
 - [ ] **Phase 3 — Odin Memory, Audit Logging, and Resource Budgets**
   - [ ] Private memory isolation (Odin private memory read/write only)
@@ -174,4 +174,28 @@ To maintain modularity and isolation:
   - Duplicate LLM rulings for the same claim ID are ignored to preserve the primary ruling.
 - **Dependencies for Phase 2**:
   - Implementation of country-sector unit of analysis, exposure range derivation from admissible trade data/rulings, and sufficiency evaluation (`assess_sufficiency`) with structured `SendBack`.
+
+---
+
+## Phase 2 Execution Notes
+
+- **Status**: Completed
+- **Files Created / Changed**:
+  - `backend/trade_calc.py`: Deterministic trade calculation engine supporting sums, YoY growth, period-over-period change, substitute-route offset netting, and exposure bounds derivation. Pre-calculation input validation ensures damaged, post-cutoff, duplicate, and unit-incompatible rows are excluded. Zero denominators and non-finite values are handled explicitly, with complete calculation provenance preserved. Zero mental arithmetic by LLM.
+  - `backend/models.py`: Added `SufficiencyStatus`, `SufficiencyResult`, and enriched `ExposureRange` with tracked claim IDs, trade row references, and transparent assumptions.
+  - `backend/agents/odin.py`:
+    - Implemented `derive_exposure_ranges`: Maps country-sector analysis pairs, evaluates Thor and Loki estimates strictly as advocacy bounds rather than ground truth, prevents blind averaging or uncritical union, calculates net exposure deterministically from established trade rows and disruption severity, credits established/conceded substitute offsets, and sets explicit `unresolved` status with rationale when evidence is absent or claims are rejected.
+    - Implemented `assess_sufficiency`: Determines whether evidence supports a defensible final briefing. Evaluates event verification, country-sector baseline presence, damaged trade data, Tier-4-only rejected claims, and unresolved material contradictions. Generates actionable, specific `SendBack` requests when insufficient; allows contested claims to proceed with disclosed uncertainties when sufficient; terminates gracefully under `LIMITS_EXHAUSTED` when `run_count >= max_runs`.
+  - `tests/test_trade_calc.py`: 9 unit tests for all arithmetic operations, provenance, damaged row exclusions, zero denominators, and incompatible units.
+  - `tests/test_odin_sufficiency.py`: 12 unit tests covering all exposure derivation, offset netting, sufficiency checks, send-back generation, limits exhaustion, and event verification cases.
+- **Tests Executed**:
+  - `python -m pytest tests -v`
+  - Result: 41 passed in 0.11s (100% pass rate).
+- **Decisions Made**:
+  - Advocacy vs Truth: Thor and Loki ranges are recorded as party positions; Odin's range is derived strictly from validated rulings and admissible trade rows.
+  - Graceful limit termination: When `run_count >= max_runs`, `assess_sufficiency` returns `LIMITS_EXHAUSTED` without generating an infinite loop of send-back requests.
+  - Actionable SendBack: Requests pinpoint exact countries, sectors, missing baselines, or specific contradictory claim IDs rather than generic "find more evidence" prompts.
+- **Dependencies for Phase 3**:
+  - Odin private memory isolation (`recall`/`remember`), append-only SQLite/JSONL audit logbook integration, and case-wide token/tool-call budget enforcement.
+
 

@@ -148,6 +148,12 @@ class Ruling(BaseModel):
     inadmissible_citations: List[Citation] = Field(default_factory=list)
 
 
+class SufficiencyStatus(str, Enum):
+    SUFFICIENT = "sufficient"
+    INSUFFICIENT = "insufficient"
+    LIMITS_EXHAUSTED = "limits_exhausted"
+
+
 class SendBack(BaseModel):
     missing: List[str] = Field(default_factory=list)
     gap_types: List[str] = Field(default_factory=list)
@@ -162,6 +168,21 @@ class ExposureRange(BaseModel):
     odin_range: Optional[Tuple[float, float]] = None
     status: str = "resolved"  # "resolved" or "unresolved"
     rationale: str = ""
+    established_claim_ids: List[str] = Field(default_factory=list)
+    contested_claim_ids: List[str] = Field(default_factory=list)
+    conceded_claim_ids: List[str] = Field(default_factory=list)
+    rejected_claim_ids: List[str] = Field(default_factory=list)
+    trade_row_refs: List[str] = Field(default_factory=list)
+    assumptions: List[str] = Field(default_factory=list)
+
+
+class SufficiencyResult(BaseModel):
+    status: SufficiencyStatus
+    is_sufficient: bool
+    reasons: List[str] = Field(default_factory=list)
+    send_back: Optional[SendBack] = None
+    unresolved_gaps: List[str] = Field(default_factory=list)
+    disclosed_uncertainties: List[str] = Field(default_factory=list)
 
 
 class Briefing(BaseModel):
