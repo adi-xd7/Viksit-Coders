@@ -28,6 +28,17 @@ def claim_ids(text: str, prefix: str) -> list[str]:
     return list(dict.fromkeys(re.findall(rf"\[({prefix}\d+-\d+)\]", text)))
 
 
+def missing_items(text: str) -> list[tuple[int, str]]:
+    block = text.split("<sendback>")[1].split("</sendback>")[0]
+    return [(int(m.group(1)), m.group(2)) for m in re.finditer(r"^(\d+)\. (.+?) \(why needed", block, re.M)]
+
+
+def memory_ids(text: str) -> list[str]:
+    if "<your_memory>" not in text:
+        return []
+    return re.findall(r"\[(M-[a-z]+-[0-9a-f]+)\]", text.split("<your_memory>")[1].split("</your_memory>")[0])
+
+
 def C(doc, ref, quote, row=""):
     return S.CitationDraft(doc_id=doc, paragraph_ref=ref or "", row_id=row, quote=quote)
 
@@ -55,6 +66,9 @@ def default_handlers() -> dict[tuple[str, str], Handler]:
                 "odin": [S.ToolRequest(tool="validate_citation", purpose="check", doc_id="SYN-0001", paragraph_ref="P2",
                                        quote=Q_SPARE)],
             }[agent]
+            if "<new_evidence>" in user and agent in ("thor", "loki"):  # run 2: a new query of the advocate's own
+                reqs = [r.model_copy(update={"query": r.query + " after the new evidence"}) if r.tool == "search" else r
+                        for r in reqs]
             if "cross-exam" in user.lower() or "respond to every attack" in user.lower():
                 reqs = [S.ToolRequest(tool="read_doc", purpose="counter", doc_id="SYN-0003")] if agent != "odin" else []
                 if agent == "thor":
@@ -132,7 +146,23 @@ def default_handlers() -> dict[tuple[str, str], Handler]:
                               outlook_text="Exposure persists next quarter if the lock stays shut.",
                               outlook_assumptions=["the lock reopens no earlier than the second quarter"])
 
+    def sendback_plan(user: str, n: int):
+        items = missing_items(user)
+        return S.SendBackPlan(searches=[S.TargetedSearch(missing_item=i, purpose="gap", query=f"targeted evidence for gap {i}: {d[:60]}")
+                                        for i, d in items])
+
+    def findings(user: str, n: int):
+        return S.ResearchFindings(findings=[S.FindingDraft(missing_item=i, status="not_found", summary="nothing new found")
+                                            for i, _ in missing_items(user)])
+
+    def revision(user: str, n: int):
+        return S.AdvocateRevision(claims=[])
+
     h: dict[tuple[str, str], Handler] = {}
+    h[("heimdall", "SendBackPlan")] = sendback_plan
+    h[("heimdall", "ResearchFindings")] = findings
+    h[("thor", "AdvocateRevision")] = revision
+    h[("loki", "AdvocateRevision")] = revision
     for a in ("heimdall", "thor", "loki", "odin"):
         h[(a, "ResearchTurn")] = research(a)
     h[("heimdall", "HeimdallReport")] = heimdall
@@ -160,6 +190,11 @@ class ScriptedBackend:
             j = self.handlers[("odin", "OdinJudgment")](user, n)
             out = (S.OdinRulings(rulings=j.rulings, injection_reports=j.injection_reports) if schema is S.OdinRulings
                    else S.OdinAssessment(**j.model_dump(exclude={"rulings", "injection_reports"})))
+        elif key not in self.handlers and schema in (S.MemoryResearchTurn, S.SendBackPlanM):
+            # memory-aware variants: same plan as without memory unless a test scripts otherwise
+            base = S.ResearchTurn if schema is S.MemoryResearchTurn else S.SendBackPlan
+            out = self.handlers[(agent.value, base.__name__)](user, n)
+            out = schema(**out.model_dump(), memory_used=[], memory_effect="")
         else:
             out = self.handlers[key](user, n)
         if isinstance(out, BackendResult):

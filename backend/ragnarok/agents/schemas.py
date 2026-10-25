@@ -128,6 +128,39 @@ class ResearchTurn(_LLM):
         return cls(done=done, **lists)
 
 
+class MemoryResearchTurn(ResearchTurn):
+    """ResearchTurn used when the agent was shown its own lessons: it says which it applied."""
+
+    memory_used: list[str] = Field(default_factory=list, description="IDs of your lessons (M-...) that shaped these requests; empty if none")
+    memory_effect: str = Field("", description="how those lessons changed your requests; empty if none")
+
+
+class TargetedSearch(_LLM):
+    missing_item: int = Field(description="number of the missing-evidence item this search targets (1-based)")
+    purpose: str
+    query: str = Field(description="a NEW query: must differ from every earlier query in this case")
+    countries: list[str] = Field(default_factory=list)
+    sectors: list[str] = Field(default_factory=list)
+    event_ids: list[str] = Field(default_factory=list, description='"none" selects background documents')
+    source_types: list[str] = Field(default_factory=list)
+    max_reliability: int = Field(0, description="worst tier allowed 1-4; 0 = any")
+
+    def to_request(self) -> ToolRequest:
+        return ToolRequest(tool="search", **self.model_dump(exclude={"missing_item"}))
+
+
+class SendBackPlan(_LLM):
+    searches: list[TargetedSearch]
+    note: str = ""
+
+
+class SendBackPlanM(SendBackPlan):
+    """SendBackPlan when Heimdall was shown its own lessons."""
+
+    memory_used: list[str] = Field(default_factory=list, description="IDs of your lessons (M-...) that shaped this plan")
+    memory_effect: str = Field("", description="how those lessons changed the plan; empty if none")
+
+
 class CitationDraft(_LLM):
     doc_id: str
     paragraph_ref: str = Field("", description='e.g. "P3" (empty when citing a trade row)')
@@ -172,6 +205,38 @@ class ClaimDraft(_LLM):
 
 class AdvocateBrief(_LLM):
     claims: list[ClaimDraft]
+    injection_reports: list[InjectionReport] = Field(default_factory=list)
+
+
+class RevisedClaimDraft(ClaimDraft):
+    revises_claim_id: str = Field("", description="ID of your earlier claim this replaces; empty for a new claim")
+
+
+class WithdrawDraft(_LLM):
+    claim_id: str
+    reason: str
+
+
+class AdvocateRevision(_LLM):
+    """Run n >= 2: revised and new claims, and withdrawals. Earlier claims neither
+    revised nor withdrawn stand unchanged and are re-ruled by Odin."""
+
+    claims: list[RevisedClaimDraft]
+    withdrawn: list[WithdrawDraft] = Field(default_factory=list)
+    injection_reports: list[InjectionReport] = Field(default_factory=list)
+
+
+class FindingDraft(_LLM):
+    missing_item: int = Field(description="number of the missing-evidence item (1-based)")
+    status: Literal["found", "partial", "not_found"]
+    summary: str = Field(description="what the evidence shows about the gap, or why nothing was found")
+    citations: list[CitationDraft] = Field(default_factory=list, description="the evidence found for this item")
+    trade_table_ids: list[str] = Field(default_factory=list)
+
+
+class ResearchFindings(_LLM):
+    findings: list[FindingDraft]
+    still_missing: list[str] = Field(default_factory=list, description="data still missing after this research")
     injection_reports: list[InjectionReport] = Field(default_factory=list)
 
 

@@ -1,5 +1,6 @@
 # Python 3.12 (tested with 3.12.4). Install: python -m pip install -r requirements.txt
 anthropic==2.3.0
+google-genai==2.33.0
 fastapi==0.162.0
 uvicorn[standard]==0.54.0
 pydantic==2.14.1

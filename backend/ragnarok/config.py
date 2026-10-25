@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -23,10 +24,27 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
+    # LLM provider: "gemini" (Google AI Studio) or "anthropic". Only the backend changes;
+    # prompts, schemas, validation, budgets and the trial flow are identical for both.
+    llm_provider: Literal["gemini", "anthropic"] = "gemini"
+
     # Secrets: never logged; SecretStr keeps the value out of repr().
+    gemini_api_key: SecretStr = SecretStr("")
     anthropic_api_key: SecretStr = SecretStr("")
 
-    # Models (verified against the key's model list in Phase 0).
+    # Gemini models (verified with the AI Studio key on 2026-10-25: structured output works on
+    # gemini-3.5-flash for every trial schema; pro models had no quota on that key).
+    gemini_model_fast: str = "gemini-3.5-flash-lite"
+    gemini_model_advocate: str = "gemini-3.5-flash"
+    gemini_model_judge: str = "gemini-3.5-flash"
+    # Pacing for rate-limited keys: minimum seconds between request starts (all agents together),
+    # and how many times a 429 / 503 is retried after waiting (bounded).
+    llm_min_interval_s: float = Field(0.0, ge=0, le=120)
+    llm_rate_limit_retries: int = Field(6, ge=0, le=12)
+    llm_rate_limit_max_wait_s: float = Field(90.0, ge=1, le=600)
+    gemini_request_timeout_s: float = Field(120.0, gt=0, le=900)  # per Gemini request; a hung call fails fast and is retried
+
+    # Anthropic models (verified against that key's model list in Phase 0).
     model_fast: str = "claude-haiku-5-5"
     model_advocate: str = "claude-sonnet-5-5"
     model_judge: str = "claude-opus-5-5"
@@ -41,20 +59,20 @@ class Settings(BaseSettings):
     db_path: Path = Path("logs/ragnarok.db")
 
     # Limits: hard caps enforced in code.
-    max_runs: int = Field(3, ge=1, le=5)
-    max_cross_exam_rounds: int = Field(1, ge=1, le=3)
-    # Sized from the first real trial: ~25 tool calls and ~130k tokens per advocate for
-    # research (3 rounds x 5) + attack and defense research.
-    max_tool_calls_per_agent: int = Field(30, ge=1, le=100)
-    max_tool_calls_per_case: int = Field(120, ge=1, le=500)
-    max_tokens_per_agent: int = Field(300_000, ge=1_000)
-    max_tokens_per_case: int = Field(1_200_000, ge=1_000)
+    max_runs: int = Field(2, ge=1, le=3)  # investigation runs per case (run 1 + send-backs); never unbounded
+    max_cross_exam_rounds: int = Field(1, ge=1, le=3)  # per run; round 2+ re-attacks claims defended in the round before
+    # Sized from the first real trial (run 1: ~18 tool calls and ~165k tokens per advocate);
+    # a second run adds roughly the same again.
+    max_tool_calls_per_agent: int = Field(45, ge=1, le=100)
+    max_tool_calls_per_case: int = Field(180, ge=1, le=500)
+    max_tokens_per_agent: int = Field(450_000, ge=1_000)
+    max_tokens_per_case: int = Field(1_500_000, ge=1_000)
     llm_max_output_tokens: int = Field(16_000, ge=256, le=64_000)  # thinking is always on: leave room
     request_timeout_s: float = Field(300.0, gt=0, le=900)
     max_retries: int = Field(2, ge=0, le=5)
     max_upload_bytes: int = Field(20 * 1024 * 1024, ge=1024)
     max_evidence_per_query: int = Field(12, ge=1, le=100)
-    max_evidence_per_case: int = Field(200, ge=1)
+    max_evidence_per_case: int = Field(400, ge=1)  # distinct paragraphs/rows retrieved per case (all agents)
 
     # Retrieval: Reciprocal Rank Fusion constant (score = sum 1 / (k + rank)).
     rrf_k: int = Field(60, ge=1, le=1000)
@@ -66,6 +84,11 @@ class Settings(BaseSettings):
     max_attacks_per_advocate: int = Field(3, ge=1, le=6)
     effort_advocate: str = Field("medium", pattern="^(low|medium|high|xhigh|max)$")
     effort_judge: str = Field("high", pattern="^(low|medium|high|xhigh|max)$")
+    max_sendback_queries_per_item: int = Field(2, ge=1, le=4)
+    # Private agent memory
+    memory_enabled: bool = True
+    memory_recall_limit: int = Field(5, ge=0, le=20)
+    memory_baseline: bool = True  # plan once without memory, so a memory-driven change is observable
     cases_dir: Path = Path("logs/cases")
 
     @model_validator(mode="after")
@@ -81,18 +104,34 @@ class Settings(BaseSettings):
         return self
 
     @property
+    def api_key_name(self) -> str:
+        return "GEMINI_API_KEY" if self.llm_provider == "gemini" else "ANTHROPIC_API_KEY"
+
+    def _key(self) -> str:
+        k = self.gemini_api_key if self.llm_provider == "gemini" else self.anthropic_api_key
+        return k.get_secret_value().strip()
+
+    @property
     def has_api_key(self) -> bool:
-        return bool(self.anthropic_api_key.get_secret_value().strip())
+        """True when the key for the selected provider is set."""
+        return bool(self._key())
 
     def require_api_key(self) -> str:
-        key = self.anthropic_api_key.get_secret_value().strip()
+        key = self._key()
         if not key:
-            raise RuntimeError("ANTHROPIC_API_KEY is not set in .env")
+            raise RuntimeError(f"{self.api_key_name} is not set in .env (LLM_PROVIDER={self.llm_provider})")
         return key
+
+    def model_for(self, role: str) -> str:
+        """Model ID for a role ("fast", "advocate", "judge") under the selected provider."""
+        if role not in ("fast", "advocate", "judge"):
+            raise ValueError(f"unknown model role {role!r}")
+        prefix = "gemini_model_" if self.llm_provider == "gemini" else "model_"
+        return getattr(self, prefix + role)
 
     def public_summary(self) -> dict[str, object]:
         """Config snapshot safe to log or persist with a run (no secrets)."""
-        data = self.model_dump(exclude={"anthropic_api_key"}, mode="json")
+        data = self.model_dump(exclude={"anthropic_api_key", "gemini_api_key"}, mode="json")
         data["has_api_key"] = self.has_api_key
         return data
 

@@ -1,7 +1,7 @@
 """SQLite evidence store and append-only audit log.
 
 Tables: packs, documents, paragraphs, doc_flags, doc_relations, trade_tables,
-trade_rows, audit_log. Filterable metadata is stored in columns; the full
+trade_rows, audit_log, agent_memory (read only through ragnarok.memory). Filterable metadata is stored in columns; the full
 Pydantic record is stored as JSON so every document and row can be reproduced
 exactly. The audit log refuses UPDATE and DELETE (triggers).
 """
@@ -140,6 +140,16 @@ CREATE TABLE IF NOT EXISTS calculations (
     record_json TEXT NOT NULL,
     created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS agent_memory (
+    memory_id TEXT PRIMARY KEY,
+    agent TEXT NOT NULL,
+    lesson_key TEXT NOT NULL,
+    lesson TEXT NOT NULL,
+    entry_json TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    UNIQUE (agent, lesson_key)
+);
+CREATE INDEX IF NOT EXISTS ix_agent_memory_agent ON agent_memory(agent);
 CREATE TRIGGER IF NOT EXISTS audit_log_no_update BEFORE UPDATE ON audit_log
 BEGIN SELECT RAISE(ABORT, 'audit_log is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS audit_log_no_delete BEFORE DELETE ON audit_log

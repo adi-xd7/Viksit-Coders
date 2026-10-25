@@ -19,6 +19,7 @@ from ragnarok.agents.common import AgentEnv, load_prompt, research, wrap_documen
 from ragnarok.agents.estimates import bound_problems, calc_row_refs, load_calcs, norm_unit
 from ragnarok.agents.heimdall import render_case_file
 from ragnarok.agents.schemas import OdinAssessment, OdinJudgment, OdinRange, OdinRulings
+from ragnarok.memory.store import render_lessons
 from ragnarok.models import (
     DAMAGE_KINDS,
     AgentName,
@@ -180,7 +181,8 @@ def _cross_exam_text(cx: CrossExam) -> str:
     return "\n".join(lines) or "(no cross-examination took place)"
 
 
-def run_odin(env: AgentEnv, cf: CaseFile, claims: list[Claim], cx: CrossExam, notes: list[str]) -> OdinResult:
+def run_odin(env: AgentEnv, cf: CaseFile, claims: list[Claim], cx: CrossExam, notes: list[str],
+             run_history: str = "") -> OdinResult:
     ctx = env.ctx
     store = env.service.store
     calc = env.service.calculator(ctx.as_of)
@@ -204,12 +206,18 @@ def run_odin(env: AgentEnv, cf: CaseFile, claims: list[Claim], cx: CrossExam, no
         f"<advocate_estimates>\n{advocates_est}\n</advocate_estimates>\n\n"
         f"<calculations>\n{_calcs_text(store, calc, claims)}\n</calculations>\n\n"
         f"<trial_notes>\n{chr(10).join(notes) or 'none'}\n</trial_notes>"
+        + (f"\n\n<run_history>\n{run_history}\n</run_history>" if run_history else "")
     )
+    lessons = env.recall(["ruling"], f"ruling in run {ctx.run_number}")
+    if lessons:
+        context += "\n\n" + render_lessons(lessons)
     task = ("Rule on every claim (IDs: " + ", ".join(claim_ids) + "). Give your own exposure range for each of these "
             "country/sector pairs: " + "; ".join(f"{a}/{b}" for a, b in pairs) + " (or mark insufficient). Assess "
             "sufficiency. Request read_doc / trade_calc / validate_citation if you need to check passages or compute "
             "your range bounds.")
-    research(env, system, task, context, 1, effort=ctx.settings.effort_judge, label="odin research")
+    # Odin's prompt is large, so no baseline plan: memory influence is recorded as agent-stated.
+    research(env, system, task, context, 1, effort=ctx.settings.effort_judge, label="odin research", lessons=lessons,
+             memory_baseline=False)
 
     def range_probs(r: OdinRange) -> list[str]:
         if r.insufficient_evidence:

@@ -134,8 +134,11 @@ class LogEventType(StrEnum):
     BRIEFING = "BRIEFING"
     CASE_FILE = "CASE_FILE"  # Heimdall's case file / verification
     STAGE = "STAGE"  # state-machine transition
-    SUFFICIENCY = "SUFFICIENCY"
-    PRECHECK = "PRECHECK"  # code pre-checks on a claim before Odin rules  # Odin's sufficiency assessment (send-back decision in Phase 4)
+    SUFFICIENCY = "SUFFICIENCY"  # Odin's sufficiency assessment (code turns it into a send-back or a briefing)
+    PRECHECK = "PRECHECK"  # code pre-checks on a claim before Odin rules
+    RESEARCH_PLAN = "RESEARCH_PLAN"  # Heimdall's targeted queries for a send-back
+    NEW_EVIDENCE = "NEW_EVIDENCE"  # evidence first found in run n (and, after Odin, its effect)
+    MEMORY_APPLIED = "MEMORY_APPLIED"  # a recalled lesson changed what an agent did (original vs changed action)
 
 
 class _Model(BaseModel):
@@ -570,6 +573,7 @@ class Claim(_Model):
     exposure: ExposureEstimate | None = None
     limitations: list[str] = Field(default_factory=list)
     calculation_ids: list[str] = Field(default_factory=list)
+    revises_claim_id: str | None = None  # run n >= 2: the earlier claim this one replaces
 
     @model_validator(mode="after")
     def _agent_owns_estimate(self) -> "Claim":
@@ -699,6 +703,19 @@ class SourceRef(_Model):
     reliability_tier: int | None = None
 
 
+class RunSummary(_Model):
+    """One investigation run, so the briefing can show run 1 vs run 2."""
+
+    run_number: int = Field(ge=1)
+    claims: list[str] = Field(default_factory=list)  # claim IDs ruled in this run
+    verdicts: dict[str, str] = Field(default_factory=dict)  # claim ID -> verdict
+    sufficient: bool | None = None
+    sufficiency_reason: str = ""
+    sendback_missing: list[str] = Field(default_factory=list)  # what Odin named as missing at the end of the run
+    new_evidence: list[str] = Field(default_factory=list)  # refs first found in this run (run >= 2)
+    note: str = ""
+
+
 class Briefing(_Model):
     case_id: str
     as_of: date
@@ -717,6 +734,8 @@ class Briefing(_Model):
     missing_data_notes: list[str] = Field(default_factory=list)
     evidence_quality_notes: list[str] = Field(default_factory=list)
     traps_and_failures: list[str] = Field(default_factory=list)
+    runs: list[RunSummary] = Field(default_factory=list)
+    superseded: list[str] = Field(default_factory=list)  # earlier claims replaced or withdrawn in a later run
     generated_at: datetime = Field(default_factory=_utcnow)
 
     @model_validator(mode="after")
@@ -747,11 +766,17 @@ class Briefing(_Model):
 class MemoryEntry(_Model):
     memory_id: str
     agent: AgentName
-    lesson: str = Field(min_length=10)
-    context: str = ""  # evidence/event context the lesson came from
+    lesson: str = Field(min_length=10)  # general: names, IDs, dates and numbers are masked
+    context: str = ""  # evidence/event context the lesson came from (never shown as a lesson)
     case_scope: str | None = None  # None => general lesson
     confidence: float = Field(0.5, ge=0.0, le=1.0)
     created_at: datetime = Field(default_factory=_utcnow)
+    kind: str = "lesson"  # e.g. rejected_claim, sendback_gap, useful_query
+    stages: list[str] = Field(default_factory=list)  # where it is recalled: research, sendback, brief, cross_exam, ruling
+    times_seen: int = Field(1, ge=1)
+    source_case: str | None = None
+    source_run: int | None = None
+    updated_at: datetime = Field(default_factory=_utcnow)
 
     @field_validator("agent")
     @classmethod

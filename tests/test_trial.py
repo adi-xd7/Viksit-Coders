@@ -28,7 +28,7 @@ QUESTION = "How exposed is Beta to the Alpha lock closure for grain imports?"
 
 @pytest.fixture()
 def settings(tmp_path):
-    return Settings(_env_file=None, cases_dir=tmp_path / "cases", anthropic_api_key="test-key")
+    return Settings(_env_file=None, cases_dir=tmp_path / "cases", gemini_api_key="test-key")
 
 
 @pytest.fixture()

@@ -1,11 +1,12 @@
 """Run a trial from the command line.
 
-    python -m backend.trial "<question>" --as-of YYYY-MM-DD [--db PATH] [--stop-after HEIMDALL|THOR_LOKI]
+    python -m backend.trial "<question>" --as-of YYYY-MM-DD [--db PATH] [--stop-after HEIMDALL|THOR_LOKI] [--save-demo]
 """
 
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
 from collections import Counter
 from datetime import date
@@ -23,12 +24,13 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--db", type=Path)
     ap.add_argument("--case-id")
     ap.add_argument("--stop-after", choices=[Stage.HEIMDALL.value, Stage.ADVOCATES.value, Stage.CROSS_EXAM.value])
+    ap.add_argument("--save-demo", action="store_true", help="also copy the case folder to logs/demo/<case_id>")
     args = ap.parse_args(argv)
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     settings = get_settings()
     if not settings.has_api_key:
-        print("error: ANTHROPIC_API_KEY is not set in .env", file=sys.stderr)
+        print(f"error: {settings.api_key_name} is not set in .env (LLM_PROVIDER={settings.llm_provider})", file=sys.stderr)
         return 2
     with Store(args.db or settings.db_path) as store:
         trial = Trial(args.question, args.as_of, store, settings, case_id=args.case_id)
@@ -54,8 +56,28 @@ def main(argv: list[str] | None = None) -> int:
         for i in r.odin.insufficient:
             print(f"  Odin {i['country']}/{i['sector']}: insufficient — {'; '.join(i['missing_data'])[:150]}")
         print(f"sufficiency: {'sufficient' if r.odin.sufficient else 'INSUFFICIENT'} — {r.odin.sufficiency_reason[:200]}")
+    for run in r.runs:
+        new = [e["ref"] for e in run.research.new_evidence] if run.research else []
+        print(f"run {run.run_number}: {len(run.ruled_claims)} claim(s) ruled"
+              + (f"; new evidence {new}" if run.research else "")
+              + (f"; sent back for {len(run.sendback.missing)} missing item(s)" if run.sendback else ""))
+    if r.superseded:
+        print(f"superseded: {r.superseded}")
+    with Store(args.db or settings.db_path) as store:
+        evs = store.events(r.case_id)
+    kinds = Counter(e.type.value for e in evs)
+    print(f"memory: {kinds.get('MEMORY_READ', 0)} read(s), {kinds.get('MEMORY_WRITE', 0)} write(s), "
+          f"{kinds.get('MEMORY_APPLIED', 0)} logged behaviour change(s)")
+    for e in evs:
+        if e.type.value == "MEMORY_APPLIED":
+            print(f"  {e.summary[:240]}")
+    print(f"briefing: {r.briefing_status or 'none'}")
     for n in r.notes:
         print(f"note: {n}")
     print(f"usage: {r.usage}")
     print(f"files: {r.case_dir}")
+    if args.save_demo:
+        dest = settings.log_dir / "demo" / r.case_id
+        shutil.copytree(r.case_dir, dest, dirs_exist_ok=True)
+        print(f"saved demo copy: {dest}")
     return 0 if r.stage in (Stage.DONE, Stage.STOPPED) or (args.stop_after and r.stage != Stage.FAILED) else 1

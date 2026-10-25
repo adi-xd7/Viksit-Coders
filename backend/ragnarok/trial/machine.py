@@ -1,13 +1,18 @@
 """The trial state machine (explicit; no planner node).
 
     HEIMDALL -> THOR || LOKI -> CROSS_EXAMINATION -> ODIN -> BRIEFING -> DONE
+    ODIN -> HEIMDALL_RESEARCH -> THOR || LOKI -> ...   (send-back: run n+1, bounded by MAX_RUNS)
+    HEIMDALL_RESEARCH -> BRIEFING  (no genuinely new evidence: incomplete briefing from the last rulings)
     HEIMDALL -> STOPPED            (event disproved: the trial stops, the user is told why)
-    THOR || LOKI -> ODIN           (only when one advocate failed: its opponent goes unchallenged)
+    THOR || LOKI -> ODIN           (one advocate failed, or nothing new to cross-examine)
+    THOR || LOKI -> BRIEFING       (run n >= 2 only: both advocates failed; last rulings stand)
     any -> FAILED                  (unrecoverable error; completed work is kept and reported)
 
-Transitions are checked against ALLOWED in code. Agent output never selects the
-next stage; only Heimdall's verification status (disproved) and agent failures
-change the path, and both are evaluated by this module.
+Transitions are checked against ALLOWED in code, and BRIEFING additionally needs a
+completed Odin ruling (no briefing is ever produced from unruled claims). Agent
+output never selects the next stage: the send-back is decided here from Odin's
+structured sufficiency verdict, the run limit and the novelty check on Heimdall's
+new evidence.
 """
 
 from __future__ import annotations
@@ -21,14 +26,38 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
-from ragnarok.agents.advocates import CrossExam, Submission, run_attacks, run_brief, run_responses
+from ragnarok.agents.advocates import CrossExam, Submission, run_attacks, run_brief, run_responses, run_revision
 from ragnarok.agents.common import AgentEnv, CaseContext
-from ragnarok.agents.heimdall import HeimdallOutcome, render_case_file, run_heimdall
+from ragnarok.agents.heimdall import (
+    HeimdallOutcome,
+    SendBackOutcome,
+    render_case_file,
+    render_new_evidence,
+    run_heimdall,
+    run_sendback_research,
+)
 from ragnarok.agents.odin import OdinResult, run_odin
 from ragnarok.briefing.build import build_briefing
 from ragnarok.config import Settings, get_settings
 from ragnarok.llm.client import Backend, LimitHit, LLMClient, LLMError, TokenLedger
-from ragnarok.models import AgentName, EventStatus, LogEvent, LogEventType
+from ragnarok.memory.lessons import (
+    Masker,
+    advocate_lessons,
+    heimdall_case_lessons,
+    heimdall_research_lessons,
+    heimdall_sendback_lessons,
+    odin_lessons,
+)
+from ragnarok.models import (
+    AgentName,
+    CaseFile,
+    Claim,
+    EventStatus,
+    LogEvent,
+    LogEventType,
+    RunSummary,
+    SendBack,
+)
 from ragnarok.retrieval.service import RetrievalService
 from ragnarok.store.db import Store
 
@@ -39,6 +68,7 @@ class Stage(StrEnum):
     ADVOCATES = "THOR_LOKI"
     CROSS_EXAM = "CROSS_EXAMINATION"
     ODIN = "ODIN"
+    RESEARCH = "HEIMDALL_RESEARCH"
     BRIEFING = "BRIEFING"
     DONE = "DONE"
     STOPPED = "STOPPED"
@@ -48,15 +78,32 @@ class Stage(StrEnum):
 ALLOWED: dict[Stage, set[Stage]] = {
     Stage.START: {Stage.HEIMDALL},
     Stage.HEIMDALL: {Stage.ADVOCATES, Stage.STOPPED, Stage.FAILED},
-    Stage.ADVOCATES: {Stage.CROSS_EXAM, Stage.ODIN, Stage.FAILED},
+    Stage.ADVOCATES: {Stage.CROSS_EXAM, Stage.ODIN, Stage.BRIEFING, Stage.FAILED},
     Stage.CROSS_EXAM: {Stage.ODIN, Stage.FAILED},
-    Stage.ODIN: {Stage.BRIEFING, Stage.FAILED},
+    Stage.ODIN: {Stage.BRIEFING, Stage.RESEARCH, Stage.FAILED},
+    Stage.RESEARCH: {Stage.ADVOCATES, Stage.BRIEFING, Stage.FAILED},
     Stage.BRIEFING: {Stage.DONE},
 }
+THOR, LOKI = AgentName.THOR, AgentName.LOKI
+OPP = {THOR: LOKI, LOKI: THOR}
 
 
 class IllegalTransition(RuntimeError):
     pass
+
+
+@dataclass
+class RunRecord:
+    run_number: int
+    case_file: CaseFile
+    submissions: dict[str, Submission] = field(default_factory=dict)
+    cross_exam: CrossExam = field(default_factory=CrossExam)
+    odin: OdinResult | None = None
+    ruled_claims: list[Claim] = field(default_factory=list)
+    research: SendBackOutcome | None = None  # Heimdall's send-back research that opened this run
+    sendback: SendBack | None = None  # the send-back issued at the end of this run
+    effect: dict | None = None  # effect of this run's new evidence (run >= 2)
+    notes: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -66,19 +113,47 @@ class TrialResult:
     history: list[str]
     case_dir: Path
     heimdall: HeimdallOutcome | None = None
-    submissions: dict[str, Submission] = field(default_factory=dict)
-    cross_exam: CrossExam | None = None
-    odin: OdinResult | None = None
+    submissions: dict[str, Submission] = field(default_factory=dict)  # latest run
+    cross_exam: CrossExam | None = None  # all runs
+    odin: OdinResult | None = None  # the rulings the briefing is built from
     briefing_md: str | None = None
     notes: list[str] = field(default_factory=list)  # failures and unchallenged sides, reported honestly
     usage: dict[str, Any] = field(default_factory=dict)
     stop_reason: str | None = None
+    runs: list[RunRecord] = field(default_factory=list)
+    superseded: dict[str, str] = field(default_factory=dict)  # earlier claim -> why it is no longer active
+    briefing_status: str | None = None
+
+    @property
+    def runs_completed(self) -> int:
+        return sum(1 for r in self.runs if r.odin is not None)
 
 
 def new_case_id(question: str, as_of: date) -> str:
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     h = hashlib.sha256(f"{question}|{as_of}|{ts}".encode()).hexdigest()[:6]
     return f"case-{ts}-{h}"
+
+
+def merge_cx(into: CrossExam, cx: CrossExam) -> None:
+    into.attacks += cx.attacks
+    into.defenses += cx.defenses
+    into.concessions += cx.concessions
+    into.invalid_defenses += cx.invalid_defenses
+    into.unanswered += cx.unanswered
+    into.failures += cx.failures
+    into.rejected_attacks += cx.rejected_attacks
+
+
+def cx_view(cx: CrossExam, ids: set[str], failures: list[str]) -> CrossExam:
+    """The cross-examination record relevant to the claims being ruled."""
+    att = [a for a in cx.attacks if a.target_claim_id in ids]
+    aid = {a.attack_id for a in att}
+    return CrossExam(attacks=att, defenses=[d for d in cx.defenses if d.claim_id in ids],
+                     concessions=[k for k in cx.concessions if k.claim_id in ids],
+                     invalid_defenses=[i for i in cx.invalid_defenses if i.claim_id in ids],
+                     unanswered=[u for u in cx.unanswered if u in aid], failures=list(failures),
+                     rejected_attacks=list(cx.rejected_attacks))
 
 
 class Trial:
@@ -95,6 +170,10 @@ class Trial:
         self.case_dir = self.settings.cases_dir / self.case_id
         self.result = TrialResult(case_id=self.case_id, stage=self.stage, history=[], case_dir=self.case_dir)
         self.envs: dict[AgentName, AgentEnv] = {}
+        self.cx_all = CrossExam()
+        self.active: list[Claim] = []  # claims Odin rules on in the current run
+        self.final: RunRecord | None = None  # the last run whose rulings completed
+        self.pending_sendback: SendBack | None = None
 
     # ------------------------------------------------------------ helpers ---
 
@@ -108,11 +187,22 @@ class Trial:
         self.store.append_event(LogEvent(case_id=self.case_id, run_number=self.ctx.run_number, agent=agent, type=type_,
                                          summary=summary[:500], payload=payload or {}, refs=refs or []))
 
+    def note(self, msg: str, run: RunRecord | None = None) -> None:
+        self.result.notes.append(msg[:300])
+        if run is not None:
+            run.notes.append(msg[:300])
+
     def go(self, nxt: Stage, why: str = "") -> None:
         if nxt not in ALLOWED.get(self.stage, set()):
             raise IllegalTransition(f"{self.stage} -> {nxt} is not an allowed transition")
+        if nxt == Stage.BRIEFING and self.final is None:
+            raise IllegalTransition("no briefing without a completed set of Odin rulings")
+        if nxt == Stage.RESEARCH and (self.pending_sendback is None or self.ctx.run_number > self.settings.max_runs):
+            raise IllegalTransition("a second run needs Odin's send-back and must stay within MAX_RUNS")
+        if nxt == Stage.ADVOCATES and self.stage == Stage.RESEARCH and not self.result.runs[-1].research:
+            raise IllegalTransition("run n >= 2 needs Heimdall's research first")
         self.log(LogEventType.STAGE, f"{self.stage.value} -> {nxt.value}{': ' + why if why else ''}",
-                 {"from": self.stage.value, "to": nxt.value})
+                 {"from": self.stage.value, "to": nxt.value, "run": self.ctx.run_number})
         self.stage = nxt
         self.result.stage = nxt
         self.result.history.append(nxt.value)
@@ -126,10 +216,18 @@ class Trial:
 
     def _fail(self, agent: AgentName, exc: Exception, what: str) -> str:
         kind = LogEventType.LIMIT_HIT if isinstance(exc, LimitHit) else LogEventType.ERROR
-        msg = f"{agent.value} failed during {what}: {exc}"
+        msg = f"{agent.value} failed during {what} (run {self.ctx.run_number}): {exc}"
         self.log(kind, msg[:500], {"exception": type(exc).__name__}, agent=agent)
-        self.result.notes.append(msg[:300])
+        self.note(msg)
         return msg
+
+    def _remember(self, agent: AgentName, drafts) -> None:
+        if not self.settings.memory_enabled or not drafts:
+            return
+        try:
+            self.env(agent).remember(drafts)
+        except Exception as exc:  # noqa: BLE001 - memory must never break a trial; record it
+            self.log(LogEventType.ERROR, f"memory write for {agent.value} failed: {exc}"[:500], agent=agent)
 
     # ---------------------------------------------------------------- run ---
 
@@ -143,23 +241,26 @@ class Trial:
         except IllegalTransition:
             raise
         except Exception as exc:  # noqa: BLE001 - never fabricate success; record and stop
-            self.result.notes.append(f"trial failed: {type(exc).__name__}: {exc}"[:300])
+            self.note(f"trial failed: {type(exc).__name__}: {exc}")
             self.log(LogEventType.ERROR, f"trial failed: {type(exc).__name__}: {exc}"[:500])
             if self.stage not in (Stage.FAILED, Stage.DONE, Stage.STOPPED):
                 self.stage = Stage.FAILED
                 self.result.stage = Stage.FAILED
                 self.result.history.append(Stage.FAILED.value)
         finally:
-            self.result.usage = {"tokens": self.ledger.snapshot(), "tool_calls": dict(self.ctx.tool_calls)}
-            self.log(LogEventType.RUN_END, f"trial ended at {self.stage.value}", {"usage": self.result.usage})
+            self.result.usage = {"tokens": self.ledger.snapshot(), "tool_calls": dict(self.ctx.tool_calls),
+                                 "evidence_refs": len(self.ctx.evidence), "runs": self.result.runs_completed}
+            if self.stage == Stage.FAILED:
+                self._limitation_report()
+            self.log(LogEventType.RUN_END, f"trial ended at {self.stage.value} after {self.result.runs_completed} "
+                     f"completed run(s)", {"usage": self.result.usage})
             self.save(final=True)
-            for a, e in self.envs.items():
+            for e in self.envs.values():
                 if e.service is not self.service:
                     e.service.store.close()
         return self.result
 
     def _run(self, stop_after: Stage | None) -> None:
-        # HEIMDALL
         self.go(Stage.HEIMDALL)
         try:
             h = run_heimdall(self.env(AgentName.HEIMDALL))
@@ -168,6 +269,8 @@ class Trial:
             self.go(Stage.FAILED, "Heimdall could not build the Case File")
             return
         self.result.heimdall = h
+        self.masker = Masker.for_case(self.store, h.case_file)
+        self._remember(AgentName.HEIMDALL, heimdall_case_lessons(self.case_id, h.case_file))
         if h.case_file.event_status == EventStatus.DISPROVED:
             self.result.stop_reason = (f"Heimdall found the event disproved as of {self.ctx.as_of}: "
                                        f"{h.case_file.event_verification_notes}")
@@ -175,78 +278,338 @@ class Trial:
             return
         if stop_after == Stage.HEIMDALL:
             return
+        run = RunRecord(run_number=1, case_file=h.case_file)
+        self.result.runs.append(run)
+        while True:
+            outcome = self._trial_run(run, stop_after)
+            if outcome != "ruled":
+                return  # failed, stopped early, or finished with the last rulings (briefing written)
+            nxt = self._after_odin(run)
+            if nxt is None:
+                break
+            run = nxt
+            if run.research is None or not run.research.has_new_evidence:
+                break  # research failed or found nothing genuinely new: briefing from the last rulings
+        self._briefing(advance=self.stage != Stage.BRIEFING)
 
-        # THOR || LOKI
-        self.go(Stage.ADVOCATES)
-        case_text = render_case_file(h.case_file)
-        subs = self._parallel({a: (lambda a=a: run_brief(self.env(a), case_text)) for a in (AgentName.THOR, AgentName.LOKI)},
-                              "brief", default=lambda a, msg: Submission(failed=msg))
-        self.result.submissions = {a.value: s for a, s in subs.items()}
-        ok = {a for a, s in subs.items() if s.claims}
-        if not ok:
-            self.result.notes.append("both advocates failed: no claims to try")
-            self.go(Stage.FAILED, "both advocates failed")
-            return
-        if stop_after == Stage.ADVOCATES:
-            return
+    # ------------------------------------------------------ one trial run ---
 
-        cx = CrossExam()
-        self.result.cross_exam = cx
-        thor, loki = AgentName.THOR, AgentName.LOKI
-        if ok == {thor, loki}:
-            self.go(Stage.CROSS_EXAM)
-            claims = {a: subs[a].claims for a in (thor, loki)}
-            opp = {thor: loki, loki: thor}
-            attacks = self._parallel(
-                {a: (lambda a=a: run_attacks(self.env(a), case_text, claims[a], claims[opp[a]])) for a in (thor, loki)},
-                "cross-examination attacks", default=lambda a, msg: ([], [{"reason": msg}]))
-            for a, (atts, rej) in attacks.items():
-                cx.attacks += atts
-                cx.rejected_attacks += rej
-                if not atts:
-                    note = f"{a.value} made no valid cross-examination attack; {opp[a].value}'s claims went unchallenged"
-                    cx.failures.append(note)
-                    self.result.notes.append(note)
-                    self.log(LogEventType.ERROR, note, agent=a)
-            on = {a: [x for x in cx.attacks if x.target_agent == a] for a in (thor, loki)}
-            self._parallel({a: (lambda a=a: run_responses(self.env(a), case_text, claims[a], on[a], cx)) for a in (thor, loki)},
-                           "cross-examination responses", default=lambda a, msg: cx.failures.append(msg))
+    def _trial_run(self, run: RunRecord, stop_after: Stage | None) -> str:
+        n = run.run_number
+        self.go(Stage.ADVOCATES, f"run {n}")
+        case_text = render_case_file(run.case_file)
+        if n == 1:
+            jobs = {a: (lambda a=a: run_brief(self.env(a), case_text)) for a in (THOR, LOKI)}
         else:
-            failed = ({thor, loki} - ok).pop()
-            note = f"{failed.value} failed ({subs[failed].failed}); {ok.copy().pop().value}'s claims went unchallenged"
-            self.result.notes.append(note)
-            cx.failures.append(note)
-            self.go(Stage.ODIN, note)
-        if stop_after == Stage.CROSS_EXAM:
-            return
+            verdicts = {r.claim_id: r.verdict.value for r in self.final.odin.rulings}
+            new_text = render_new_evidence(run.research)
+            refs = [e["ref"] for e in run.research.new_evidence]
+            jobs = {a: (lambda a=a: run_revision(self.env(a), case_text, [c for c in self.active if c.agent == a],
+                                                 verdicts, new_text, refs)) for a in (THOR, LOKI)}
+        subs = self._parallel(jobs, "brief" if n == 1 else f"run {n} reconsideration",
+                              default=lambda a, msg: Submission(failed=msg))
+        run.submissions = {a.value: s for a, s in subs.items()}
+        self.result.submissions = run.submissions
+        failed = {a for a, s in subs.items() if s.failed}
 
-        # ODIN
+        if n == 1:
+            ok = {a for a in (THOR, LOKI) if subs[a].claims}
+            if not ok:
+                self.note("both advocates failed: no claims to try", run)
+                self.go(Stage.FAILED, "both advocates failed")
+                return "failed"
+            self.active = [c for a in (THOR, LOKI) for c in subs[a].claims]
+        else:
+            for a in (THOR, LOKI):
+                if subs[a].failed:
+                    self.note(f"{a.value} could not reconsider in run {n} ({subs[a].failed}); its earlier claims stand "
+                              "unchanged", run)
+            if failed == {THOR, LOKI}:
+                self.note(f"both advocates failed in run {n}; the briefing uses the run {self.final.run_number} rulings", run)
+                self.go(Stage.BRIEFING, f"both advocates failed in run {n}")
+                self._briefing(advance=False)
+                return "finished"
+            for a in (THOR, LOKI):
+                s = subs[a]
+                for k in s.withdrawn:
+                    self.result.superseded[k.claim_id] = f"withdrawn by {a.value} in run {n}: {k.reason}"
+                for new, old in s.revises.items():
+                    self.result.superseded[old] = f"revised in run {n} by {new}"
+                self.cx_all.concessions += s.withdrawn
+            self.active = [c for c in self.active if c.claim_id not in self.result.superseded] + [
+                c for a in (THOR, LOKI) for c in subs[a].claims]
+        if stop_after == Stage.ADVOCATES:
+            return "stopped"
+
+        new_claims = {a: subs[a].claims for a in (THOR, LOKI)}
+        cx = run.cross_exam
+        if n == 1 and failed:
+            f = failed.copy().pop()
+            msg = f"{f.value} failed ({subs[f].failed}); {OPP[f].value}'s claims went unchallenged"
+            self.note(msg, run)
+            cx.failures.append(msg)
+            merge_cx(self.cx_all, cx)
+            self.go(Stage.ODIN, msg)
+        elif not [a for a in (THOR, LOKI) if a not in failed and new_claims[OPP[a]]]:
+            for a in failed:
+                if new_claims[OPP[a]]:
+                    self.note(f"{a.value} failed in run {n}; {OPP[a].value}'s run-{n} claims went unchallenged", run)
+            msg = f"run {n}: no new or revised claims that can be cross-examined"
+            cx.failures.append(msg)
+            self.go(Stage.ODIN, msg)
+        else:
+            for a in failed:
+                if new_claims[OPP[a]]:
+                    self.note(f"{a.value} failed in run {n}; {OPP[a].value}'s run-{n} claims went unchallenged", run)
+            self.go(Stage.CROSS_EXAM, f"run {n}")
+            self._cross_exam(run, case_text, new_claims, failed)
+            merge_cx(self.cx_all, cx)
+        if stop_after == Stage.CROSS_EXAM:
+            return "stopped"
+
         if self.stage != Stage.ODIN:
-            self.go(Stage.ODIN)
-        all_claims = [c for a in (thor, loki) for c in subs[a].claims]
+            self.go(Stage.ODIN, f"run {n}")
+        ids = {c.claim_id for c in self.active}
+        view = cx_view(self.cx_all, ids, cx.failures + [m for m in run.notes if m not in cx.failures])
         try:
-            odin = run_odin(self.env(AgentName.ODIN), h.case_file, all_claims, cx, self.result.notes)
+            odin = run_odin(self.env(AgentName.ODIN), run.case_file, self.active, view, run.notes, self._run_history(run))
         except (LLMError, LimitHit) as exc:
             self._fail(AgentName.ODIN, exc, "judgment")
-            self.go(Stage.FAILED, "Odin could not rule; no briefing is produced from unruled claims")
-            return
+            if self.final is None:
+                self.go(Stage.FAILED, "Odin could not rule; no briefing is produced from unruled claims")
+                return "failed"
+            self.note(f"Odin could not reassess in run {n}; the briefing uses the run {self.final.run_number} rulings", run)
+            self.go(Stage.BRIEFING, f"Odin failed in run {n}")
+            self._briefing(advance=False)
+            return "finished"
+        run.odin = odin
+        run.ruled_claims = list(self.active)
+        self.final = run
         self.result.odin = odin
+        self.result.cross_exam = self.cx_all
+        self._write_lessons(run, view)
+        if n >= 2:
+            self._log_effect(run)
+        self.save()
+        return "ruled"
 
-        # BRIEFING
-        self.go(Stage.BRIEFING)
-        traps = [f"{e.summary}" for e in self.store.events(self.case_id) if e.type == LogEventType.TRAP_INJECTION]
-        briefing, md = build_briefing(self.store, h.case_file, all_claims, odin, {c.claim_id: c for c in cx.concessions},
-                                      self.result.notes, sorted(set(traps)))
+    def _cross_exam(self, run: RunRecord, case_text: str, new_claims: dict[AgentName, list[Claim]],
+                    failed: set[AgentName]) -> None:
+        n = run.run_number
+        cx = run.cross_exam
+        own = {a: [c for c in self.active if c.agent == a] for a in (THOR, LOKI)}
+        targets = dict(new_claims)
+        counts = {THOR: 0, LOKI: 0}
+        for rnd in range(1, self.settings.max_cross_exam_rounds + 1):
+            attackers = [a for a in (THOR, LOKI) if a not in failed and targets[OPP[a]]]
+            if not attackers:
+                break
+            res = self._parallel(
+                {a: (lambda a=a: run_attacks(self.env(a), case_text, own[a], targets[OPP[a]], rnd, counts[a]))
+                 for a in attackers}, f"cross-examination attacks (round {rnd})",
+                default=lambda a, msg: ([], [{"reason": msg}]))
+            round_attacks = []
+            for a, (atts, rej) in res.items():
+                cx.attacks += atts
+                cx.rejected_attacks += rej
+                counts[a] += len(atts)
+                round_attacks += atts
+                if not atts and rnd == 1:
+                    msg = (f"{a.value} made no valid cross-examination attack; {OPP[a].value}'s claims went unchallenged"
+                           + (f" in run {n}" if n > 1 else ""))
+                    cx.failures.append(msg)
+                    self.note(msg, run)
+                    self.log(LogEventType.ERROR, msg, agent=a)
+            on = {a: [x for x in round_attacks if x.target_agent == a] for a in (THOR, LOKI)}
+            self._parallel({a: (lambda a=a: run_responses(self.env(a), case_text, own[a], on[a], cx))
+                            for a in (THOR, LOKI) if on[a]},
+                           f"cross-examination responses (round {rnd})", default=lambda a, msg: cx.failures.append(msg))
+            ids = {x.attack_id for x in round_attacks}
+            defended = {d.claim_id for d in cx.defenses if d.attack_id in ids}
+            targets = {a: [c for c in own[a] if c.claim_id in defended] for a in (THOR, LOKI)}
+            if not defended:
+                break
+            if rnd == self.settings.max_cross_exam_rounds:
+                self.log(LogEventType.LIMIT_HIT, f"cross-examination round limit reached ({rnd}/"
+                         f"{self.settings.max_cross_exam_rounds} per run); {len(defended)} claim(s) defended in the last "
+                         "round were not re-attacked", {"what": "cross-exam rounds", "used": rnd,
+                                                        "limit": self.settings.max_cross_exam_rounds}, sorted(defended))
+
+    # ------------------------------------------------- send-back decision ---
+
+    def _after_odin(self, run: RunRecord) -> RunRecord | None:
+        """Decide (in code) between the briefing and a send-back; run the send-back research.
+        Returns the next run, or None to write the briefing now."""
+        o = run.odin
+        n = run.run_number
+        if o.sufficient:
+            return None
+        if not o.missing:
+            self.note(f"Odin judged the evidence insufficient after run {n} but named no specific missing evidence; "
+                      "no send-back is possible, so the briefing is labelled incomplete", run)
+            return None
+        if n >= self.settings.max_runs:
+            msg = (f"run limit reached ({n}/{self.settings.max_runs}): Odin still judges the evidence insufficient; "
+                   "the briefing is labelled incomplete")
+            self.log(LogEventType.LIMIT_HIT, msg, {"what": "runs", "used": n, "limit": self.settings.max_runs},
+                     agent=AgentName.ODIN)
+            self.note(msg, run)
+            return None
+        sb = SendBack(sendback_id=f"SB-{n}", run_number=n, reason=o.sufficiency_reason or "evidence insufficient",
+                      missing=o.missing)
+        run.sendback = sb
+        self.pending_sendback = sb
+        self.log(LogEventType.SENDBACK, f"Odin sends the case back after run {n}: {len(sb.missing)} missing item(s): "
+                 + " | ".join(m.description[:80] for m in sb.missing), {"sendback": sb.model_dump(mode="json")},
+                 agent=AgentName.ODIN)
+        self._remember(AgentName.HEIMDALL, heimdall_sendback_lessons(self.masker, self.case_id, n, sb.missing))
+
+        seen = set().union(*(e.retrieved for e in self.envs.values()))
+        seen = {r for r in seen if not r.startswith("CALC-")}
+        earlier = {e.payload["query_norm"] for e in self.store.events(self.case_id)
+                   if e.type == LogEventType.QUERY and e.payload.get("query_norm")}
+        self.ctx.run_number = n + 1
+        nxt = RunRecord(run_number=n + 1, case_file=run.case_file)
+        self.result.runs.append(nxt)
+        self.go(Stage.RESEARCH, f"send-back {sb.sendback_id}: run {n + 1}")
+        self.pending_sendback = None
+        try:
+            out = run_sendback_research(self.env(AgentName.HEIMDALL), run.case_file, sb, earlier, seen)
+        except (LLMError, LimitHit) as exc:
+            self._fail(AgentName.HEIMDALL, exc, "send-back research")
+            self.note(f"Heimdall's run {n + 1} research failed; the briefing uses the run {n} rulings and is incomplete", nxt)
+            self.go(Stage.BRIEFING, f"Heimdall failed in run {n + 1}")
+            return None
+        nxt.research = out
+        nxt.case_file = out.case_file
+        self._remember(AgentName.HEIMDALL, heimdall_research_lessons(
+            self.masker, self.store, self.case_id, n + 1,
+            [{"description": it.description, "queries": it.queries, "new_refs": it.new_refs,
+              "new_doc_ids": it.new_doc_ids} for it in out.items]))
+        if not out.has_new_evidence:
+            msg = (f"run {n + 1}: Heimdall's targeted searches found no genuinely new relevant evidence (code check: no "
+                   f"cited ref outside run 1-{n} evidence and its duplicates); advocates and Odin were not re-run and the "
+                   f"briefing (from the run {n} rulings) is labelled incomplete")
+            self.note(msg, nxt)
+            self.log(LogEventType.ERROR, msg, {"items": [it.__dict__ for it in out.items]}, agent=AgentName.HEIMDALL)
+            self._remember(AgentName.ODIN, odin_lessons(self.case_id, n + 1, [], {"new_evidence": 0}))
+            self.go(Stage.BRIEFING, "no genuinely new evidence")
+        return nxt
+
+    def _run_history(self, run: RunRecord) -> str:
+        if run.run_number == 1:
+            return ""
+        lines = []
+        for r in self.result.runs:
+            if r.odin is not None:
+                lines.append(f"Run {r.run_number} rulings: " + "; ".join(f"{x.claim_id} {x.verdict.value}" for x in r.odin.rulings))
+                lines += [f"  run {r.run_number} range {e.country}/{e.sector}: {e.low}..{e.high} {e.unit}" for e in r.odin.ranges]
+                lines += [f"  run {r.run_number} range {i['country']}/{i['sector']}: insufficient" for i in r.odin.insufficient]
+            if r.sendback:
+                lines.append(f"Send-back after run {r.run_number}: " + " | ".join(m.description for m in r.sendback.missing))
+            if r.research:
+                lines.append(f"Run {r.run_number} new evidence: "
+                             + (", ".join(e["ref"] for e in r.research.new_evidence) or "none"))
+        lines += [f"Superseded: {k} ({v})" for k, v in self.result.superseded.items()]
+        return "\n".join(lines)
+
+    def _log_effect(self, run: RunRecord) -> None:
+        prev = next(r for r in reversed(self.result.runs) if r.odin is not None and r.run_number < run.run_number)
+        new_refs = {e["ref"] for e in run.research.new_evidence}
+        pv = {x.claim_id: x.verdict.value for x in prev.odin.rulings}
+        cur = {x.claim_id: x.verdict.value for x in run.odin.rulings}
+        claims = {c.claim_id: c for c in run.ruled_claims}
+        citing = [cid for cid, c in claims.items()
+                  if any((x.row_id or f"{x.doc_id}#{x.paragraph_ref}") in new_refs for x in c.citations)]
+        changed_verdicts = {cid: f"{pv[cid]} -> {v}" for cid, v in cur.items() if cid in pv and pv[cid] != v}
+        revised = {old: f"{pv.get(old, '?')} -> {new}: {cur.get(new, 'unruled')}" for new, old in
+                   ((c.claim_id, c.revises_claim_id) for c in run.ruled_claims if c.revises_claim_id)}
+
+        def ranges(o: OdinResult) -> dict:
+            d = {f"{e.country}/{e.sector}".lower(): f"{e.low}..{e.high} {e.unit}" for e in o.ranges}
+            d.update({f"{i['country']}/{i['sector']}".lower(): "insufficient" for i in o.insufficient})
+            return d
+        pr, cr = ranges(prev.odin), ranges(run.odin)
+        changed_ranges = {k: f"{pr.get(k, 'none')} -> {v}" for k, v in cr.items() if pr.get(k) != v}
+        eff = {"new_evidence": len(new_refs), "claims_citing_new_evidence": {c: cur.get(c) for c in citing},
+               "verdict_changes": changed_verdicts, "revised": revised, "range_changes": changed_ranges,
+               "sufficiency": {"before": prev.odin.sufficient, "after": run.odin.sufficient},
+               "changed": len(changed_verdicts) + len(revised) + len(changed_ranges) + len(citing)}
+        run.effect = eff
+        self.log(LogEventType.NEW_EVIDENCE, f"effect of run {run.run_number} new evidence: {len(citing)} claim(s) cite it, "
+                 f"{len(changed_verdicts)} verdict change(s), {len(revised)} revised claim(s), {len(changed_ranges)} "
+                 f"range change(s); sufficiency {prev.odin.sufficient} -> {run.odin.sufficient}",
+                 {"phase": "effect", **eff}, sorted(new_refs) + citing, agent=AgentName.ODIN)
+        self._remember(AgentName.ODIN, odin_lessons(self.case_id, run.run_number, [], eff))
+
+    def _write_lessons(self, run: RunRecord, view: CrossExam) -> None:
+        o = run.odin
+        for a in (THOR, LOKI):
+            self._remember(a, advocate_lessons(self.store, self.masker, a, self.case_id, run.run_number, run.ruled_claims,
+                                               o.rulings, o.prechecks, view))
+        self._remember(AgentName.ODIN, odin_lessons(self.case_id, run.run_number, o.guards, None))
+
+    # ----------------------------------------------------------- briefing ---
+
+    def _briefing(self, advance: bool = True) -> None:
+        if advance:
+            self.go(Stage.BRIEFING)
+        fin = self.final
+        odin = fin.odin
+        claims = fin.ruled_claims
+        ids = {c.claim_id for c in claims}
+        concessions = {c.claim_id: c for c in self.cx_all.concessions if c.claim_id in ids}
+        traps = [e.summary for e in self.store.events(self.case_id) if e.type == LogEventType.TRAP_INJECTION]
+        runs = []
+        for r in self.result.runs:
+            runs.append(RunSummary(
+                run_number=r.run_number, claims=[c.claim_id for c in r.ruled_claims],
+                verdicts={x.claim_id: x.verdict.value for x in r.odin.rulings} if r.odin else {},
+                sufficient=r.odin.sufficient if r.odin else None,
+                sufficiency_reason=r.odin.sufficiency_reason if r.odin else "",
+                sendback_missing=[m.description for m in r.sendback.missing] if r.sendback else [],
+                new_evidence=[e["ref"] for e in r.research.new_evidence] if r.research else [],
+                note=" | ".join(r.notes)[:1000]))
+        superseded = [f"{k}: {v}" for k, v in self.result.superseded.items() if k not in ids]
+        briefing, md = build_briefing(self.store, fin.case_file, claims, odin, concessions, self.result.notes,
+                                      sorted(set(traps)), runs_completed=self.result.runs_completed, runs=runs,
+                                      superseded=superseded, final_run=fin.run_number)
+        self.result.odin = odin
         self.result.briefing_md = md
+        self.result.briefing_status = briefing.status
         (self.case_dir / "briefing.md").write_text(md, encoding="utf-8")
         (self.case_dir / "briefing.json").write_text(briefing.model_dump_json(indent=2), encoding="utf-8")
-        self.log(LogEventType.BRIEFING, f"briefing written ({briefing.status}): {len(briefing.established)} established, "
-                 f"{len(briefing.contested)} contested, {len(briefing.conceded)} conceded, {len(briefing.rejected)} rejected",
-                 {"status": briefing.status}, agent=AgentName.ODIN)
+        self.log(LogEventType.BRIEFING, f"briefing written ({briefing.status}, {self.result.runs_completed} run(s), rulings "
+                 f"of run {fin.run_number}): {len(briefing.established)} established, {len(briefing.contested)} contested, "
+                 f"{len(briefing.conceded)} conceded, {len(briefing.rejected)} rejected",
+                 {"status": briefing.status, "final_run": fin.run_number}, agent=AgentName.ODIN)
         self.go(Stage.DONE)
+
+    def _limitation_report(self) -> None:
+        """When no briefing can be produced: say exactly what was and was not done."""
+        r = self.result
+        L = [f"# Limitation report - case {self.case_id}", "", f"**Question:** {self.ctx.question}  ",
+             f"**As of:** {self.ctx.as_of}  ", f"**Outcome:** FAILED at stage path {' -> '.join(r.history)}", "",
+             "No briefing was produced. No verdicts, ranges or findings were invented.", "", "## What completed", ""]
+        if r.heimdall:
+            cf = r.heimdall.case_file
+            L.append(f"- Heimdall built the Case File: event {cf.event_status.value}; {len(cf.trade_table_ids)} trade table(s).")
+        for run in r.runs:
+            for a, s in run.submissions.items():
+                L.append(f"- Run {run.run_number}: {a} submitted {len(s.claims)} claim(s)"
+                         + (f" (failed: {s.failed})" if s.failed else ""))
+            if run.odin:
+                L.append(f"- Run {run.run_number}: Odin ruled on {len(run.odin.rulings)} claim(s).")
+        if not r.heimdall:
+            L.append("- Nothing: the investigation failed before the Case File was built.")
+        L += ["", "## What failed", ""] + [f"- {n}" for n in r.notes or ["(no failure message recorded)"]]
+        L += ["", "All recorded events are in events.jsonl."]
+        (self.case_dir / "limitations.md").write_text("\n".join(L) + "\n", encoding="utf-8")
 
     def _parallel(self, jobs: dict[AgentName, Any], what: str, default) -> dict[AgentName, Any]:
         out: dict[AgentName, Any] = {}
+        if not jobs:
+            return out
         with ThreadPoolExecutor(max_workers=len(jobs)) as pool:
             futs = {a: pool.submit(fn) for a, fn in jobs.items()}
             for a, f in futs.items():
@@ -258,42 +621,70 @@ class Trial:
 
     # ------------------------------------------------------------ persist ---
 
+    @staticmethod
+    def _cx_json(cx: CrossExam) -> dict:
+        return {"attacks": [a.model_dump(mode="json") for a in cx.attacks],
+                "defenses": [x.model_dump(mode="json") for x in cx.defenses],
+                "concessions": [x.model_dump(mode="json") for x in cx.concessions],
+                "invalid_defenses": [x.__dict__ | {"agent": x.agent.value} for x in cx.invalid_defenses],
+                "unanswered": cx.unanswered, "failures": cx.failures, "rejected_attacks": cx.rejected_attacks}
+
+    @staticmethod
+    def _odin_json(o: OdinResult) -> dict:
+        return {"rulings": [x.model_dump(mode="json") for x in o.rulings],
+                "odin_ranges": [x.model_dump(mode="json") for x in o.ranges],
+                "insufficient": o.insufficient, "sufficient": o.sufficient, "sufficiency_reason": o.sufficiency_reason,
+                "missing": [m.model_dump(mode="json") for m in o.missing],
+                "prechecks": {k: v.__dict__ for k, v in o.prechecks.items()}, "guards": o.guards, "unruled": o.unruled}
+
     def save(self, final: bool = False) -> None:
         d = self.case_dir
         d.mkdir(parents=True, exist_ok=True)
         r = self.result
 
-        def dump(name: str, obj: Any) -> None:
-            (d / name).write_text(json.dumps(obj, indent=2, default=str), encoding="utf-8")
+        def dump(path: Path, obj: Any) -> None:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(obj, indent=2, default=str), encoding="utf-8")
 
-        dump("state.json", {"case_id": r.case_id, "question": self.ctx.question, "as_of": self.ctx.as_of,
-                            "stage": r.stage.value, "history": r.history, "notes": r.notes, "stop_reason": r.stop_reason,
-                            "usage": r.usage})
+        dump(d / "state.json", {"case_id": r.case_id, "question": self.ctx.question, "as_of": self.ctx.as_of,
+                                "stage": r.stage.value, "history": r.history, "run_number": self.ctx.run_number,
+                                "runs_completed": r.runs_completed, "max_runs": self.settings.max_runs,
+                                "briefing_status": r.briefing_status, "notes": r.notes, "stop_reason": r.stop_reason,
+                                "superseded": r.superseded, "usage": r.usage})
         if r.heimdall:
-            dump("case_file.json", r.heimdall.case_file.model_dump(mode="json"))
-            dump("heimdall_report.json", {"report": r.heimdall.report.model_dump(mode="json"), "dropped": r.heimdall.dropped})
-        if r.submissions:
-            dump("claims.json", {a: {"claims": [c.model_dump(mode="json") for c in s.claims], "rejected_in_code": s.rejected,
-                                     "failed": s.failed} for a, s in r.submissions.items()})
-        if r.cross_exam:
-            cx = r.cross_exam
-            dump("cross_exam.json", {"attacks": [a.model_dump(mode="json") for a in cx.attacks],
-                                     "defenses": [x.model_dump(mode="json") for x in cx.defenses],
-                                     "concessions": [x.model_dump(mode="json") for x in cx.concessions],
-                                     "invalid_defenses": [x.__dict__ | {"agent": x.agent.value} for x in cx.invalid_defenses],
-                                     "unanswered": cx.unanswered, "failures": cx.failures,
-                                     "rejected_attacks": cx.rejected_attacks})
-        if r.odin:
-            o = r.odin
-            dump("rulings.json", {"rulings": [x.model_dump(mode="json") for x in o.rulings],
-                                  "odin_ranges": [x.model_dump(mode="json") for x in o.ranges],
-                                  "insufficient": o.insufficient, "sufficient": o.sufficient,
-                                  "sufficiency_reason": o.sufficiency_reason,
-                                  "missing": [m.model_dump(mode="json") for m in o.missing],
-                                  "prechecks": {k: v.__dict__ for k, v in o.prechecks.items()},
-                                  "guards": o.guards, "unruled": o.unruled})
-        evidence = {a.value: sorted(e.retrieved) for a, e in self.envs.items()}
-        dump("evidence_refs.json", evidence)
+            dump(d / "case_file.json", (self.final.case_file if self.final else r.heimdall.case_file).model_dump(mode="json"))
+            dump(d / "heimdall_report.json", {"report": r.heimdall.report.model_dump(mode="json"), "dropped": r.heimdall.dropped})
+        for run in r.runs:
+            rd = d / f"run-{run.run_number}"
+            dump(rd / "case_file.json", run.case_file.model_dump(mode="json"))
+            if run.submissions:
+                dump(rd / "claims.json", {a: {"claims": [c.model_dump(mode="json") for c in s.claims],
+                                              "withdrawn": [k.model_dump(mode="json") for k in s.withdrawn],
+                                              "revises": s.revises, "rejected_in_code": s.rejected, "failed": s.failed}
+                                          for a, s in run.submissions.items()})
+            dump(rd / "cross_exam.json", self._cx_json(run.cross_exam))
+            if run.odin:
+                dump(rd / "rulings.json", self._odin_json(run.odin) | {"ruled_claims": [c.claim_id for c in run.ruled_claims]})
+            if run.sendback:
+                dump(rd / "sendback.json", run.sendback.model_dump(mode="json"))
+            if run.research:
+                dump(rd / "research.json", {"items": [it.__dict__ for it in run.research.items],
+                                            "new_evidence": run.research.new_evidence,
+                                            "refused_queries": run.research.refused_queries,
+                                            "still_missing": run.research.still_missing})
+            if run.effect:
+                dump(rd / "new_evidence_effect.json", run.effect)
+        if r.runs and r.runs[0].submissions:
+            claims = {c.claim_id: c for run in r.runs for s in run.submissions.values() for c in s.claims}
+            dump(d / "claims.json", {"active": [c.claim_id for c in (self.final.ruled_claims if self.final else self.active)],
+                                     "superseded": r.superseded,
+                                     "claims": [c.model_dump(mode="json") for c in claims.values()]})
+            dump(d / "cross_exam.json", self._cx_json(self.cx_all))
+        if self.final:
+            dump(d / "rulings.json", self._odin_json(self.final.odin) | {"run_number": self.final.run_number})
+        dump(d / "evidence_refs.json", {a.value: sorted(e.retrieved) for a, e in self.envs.items()})
         if final:
-            dump("config.json", self.settings.public_summary())
+            dump(d / "config.json", self.settings.public_summary())
+            dump(d / "memory.json", {a.value: [json.loads(m.model_dump_json()) for m in e.memory.all()]
+                                     for a, e in self.envs.items()})
             self.store.export_jsonl(d / "events.jsonl", self.case_id)

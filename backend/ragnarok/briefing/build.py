@@ -18,6 +18,7 @@ from ragnarok.models import (
     ExposureEstimate,
     ExposureRow,
     Outlook,
+    RunSummary,
     SourceRef,
     Verdict,
 )
@@ -36,7 +37,8 @@ def _rng(e: ExposureEstimate | None) -> str:
 
 
 def build_briefing(store: Store, cf: CaseFile, claims: list[Claim], odin: OdinResult, concessions: dict,
-                   notes: list[str], traps: list[str], runs_completed: int = 1) -> tuple[Briefing, str]:
+                   notes: list[str], traps: list[str], runs_completed: int = 1, runs: list[RunSummary] | None = None,
+                   superseded: list[str] | None = None, final_run: int | None = None) -> tuple[Briefing, str]:
     by_claim = {c.claim_id: c for c in claims}
     sections: dict[Verdict, list[BriefingFinding]] = {v: [] for v in Verdict}
     for r in odin.rulings:
@@ -58,6 +60,7 @@ def build_briefing(store: Store, cf: CaseFile, claims: list[Claim], odin: OdinRe
         def pick(agent):
             hits = [(c, c.exposure) for c in claims if c.agent == agent and c.exposure
                     and c.exposure.country.lower() == country and c.exposure.sector.lower() == sector]
+            hits.sort(key=lambda h: -h[0].run_number)  # the latest run's estimate
             return hits[0] if hits else (None, None)
         tc, te = pick(AgentName.THOR)
         lc, le = pick(AgentName.LOKI)
@@ -87,8 +90,15 @@ def build_briefing(store: Store, cf: CaseFile, claims: list[Claim], odin: OdinRe
     if not odin.sufficient:
         missing.insert(0, f"Odin judged the evidence insufficient: {odin.sufficiency_reason}")
     failures = list(notes) + [f"code guard: {g}" for g in odin.guards] + [f"unruled claim: {u}" for u in odin.unruled]
-    complete = odin.sufficient and not odin.unruled and not notes
-    status = "complete" if complete else "partial"
+    # incomplete: Odin still judged the evidence insufficient when the trial ended (run limit
+    # reached, no genuinely new evidence, or nothing specific to send back); partial: sufficient
+    # but with failures, unchallenged sides or unruled claims.
+    if not odin.sufficient:
+        status = "incomplete"
+    elif odin.unruled or notes:
+        status = "partial"
+    else:
+        status = "complete"
     if status == "complete" and missing and cf.event_status.value == "uncertain":
         status = "partial"
     summary = odin.executive_summary if len(odin.executive_summary) >= 20 else odin.executive_summary + " (summary not provided)"
@@ -99,16 +109,19 @@ def build_briefing(store: Store, cf: CaseFile, claims: list[Claim], odin: OdinRe
         exposure_table=rows, outlook=Outlook(text=odin.outlook_text if len(odin.outlook_text) >= 10 else odin.outlook_text + " (no outlook)",
                                              assumptions=odin.outlook_assumptions or ["no assumptions stated by Odin"]),
         sources=sources, missing_data_notes=missing, evidence_quality_notes=odin.evidence_quality_notes,
-        traps_and_failures=traps + failures,
+        traps_and_failures=traps + failures, runs=runs or [], superseded=superseded or [],
     )
-    return b, to_markdown(b, cf, odin)
+    return b, to_markdown(b, cf, odin, final_run)
 
 
-def to_markdown(b: Briefing, cf: CaseFile, odin: OdinResult) -> str:
+def to_markdown(b: Briefing, cf: CaseFile, odin: OdinResult, final_run: int | None = None) -> str:
     L = [f"# Intelligence briefing — case {b.case_id}", "",
          f"**Question:** {cf.question}  ", f"**As of:** {b.as_of}  ", f"**Status:** {b.status.upper()} "
-         f"(runs completed: {b.runs_completed})", ""]
-    if b.status != "complete":
+         f"(runs completed: {b.runs_completed}{f'; findings from the run {final_run} rulings' if final_run else ''})", ""]
+    if b.status == "incomplete":
+        L += [f"> This briefing is **INCOMPLETE**: Odin judged the evidence insufficient after {b.runs_completed} run(s). "
+              "See *Investigation runs* and *Missing data*.", ""]
+    elif b.status != "complete":
         L += ["> This briefing is **not complete**: see *Missing data* and *Traps, corrections and failures*.", ""]
     L += ["## Executive summary", "", b.executive_summary, ""]
     L += ["## Event verification", "", f"**Status: {b.event_status.value}** — {cf.event_verification_notes}", ""]
@@ -142,6 +155,21 @@ def to_markdown(b: Briefing, cf: CaseFile, odin: OdinResult) -> str:
                      f" (rows {', '.join(e.trade_row_refs[:8])}{'…' if len(e.trade_row_refs) > 8 else ''}). "
                      f"Assumptions: {'; '.join(e.assumptions) or 'none stated'}. Confidence: {e.confidence.value}."
                      + (f" Missing: {'; '.join(e.missing_data)}." if e.missing_data else ""))
+    if b.runs:
+        L += ["", "## Investigation runs", ""]
+        for r in b.runs:
+            counts = {}
+            for v in r.verdicts.values():
+                counts[v] = counts.get(v, 0) + 1
+            L.append(f"- **Run {r.run_number}:** " + (f"{len(r.verdicts)} claim(s) ruled "
+                     f"({', '.join(f'{k} {n}' for k, n in sorted(counts.items()))}); " if r.verdicts else "no rulings; ")
+                     + (f"Odin: {'sufficient' if r.sufficient else 'insufficient'}. " if r.sufficient is not None else "")
+                     + (f"New evidence: {', '.join(r.new_evidence)}. " if r.new_evidence else "")
+                     + (f"Sent back for: {'; '.join(r.sendback_missing)}. " if r.sendback_missing else "")
+                     + (f"Notes: {r.note}" if r.note else ""))
+        if b.superseded:
+            L += ["", "Superseded claims (replaced or withdrawn in a later run; not in the findings above):"]
+            L += [f"- {x}" for x in b.superseded]
     L += ["", "## Next-quarter outlook", "", b.outlook.text, "", "Assumptions:"] + [f"- {a}" for a in b.outlook.assumptions]
     L += ["", "## Missing data and evidence quality", ""] + [f"- {m}" for m in b.missing_data_notes or ["None noted."]]
     L += [f"- {n}" for n in b.evidence_quality_notes]

@@ -20,6 +20,7 @@ def health() -> dict[str, object]:
         "status": "ok",
         "version": __version__,
         "has_api_key": s.has_api_key,
-        "models": {"fast": s.model_fast, "advocate": s.model_advocate, "judge": s.model_judge},
+        "provider": s.llm_provider,
+        "models": {r: s.model_for(r) for r in ("fast", "advocate", "judge")},
         "packs_dir_exists": s.packs_dir.is_dir(),
     }

@@ -1,4 +1,4 @@
-"""Anthropic wrapper used by every agent.
+"""LLM wrapper used by every agent (provider: Gemini or Anthropic, see make_backend).
 
 - Structured output only: every call returns a validated Pydantic object.
   Schema validation plus an optional semantic validator; on failure ONE repair
@@ -110,6 +110,15 @@ class AnthropicBackend:
                              stop_reason=resp.stop_reason, model=resp.model)
 
 
+def make_backend(settings: Settings) -> Backend:
+    """The real backend for the configured provider (LLM_PROVIDER)."""
+    if settings.llm_provider == "gemini":
+        from ragnarok.llm.gemini import GeminiBackend
+
+        return GeminiBackend(settings)
+    return AnthropicBackend(settings)
+
+
 @dataclass
 class TokenLedger:
     per_agent_limit: int
@@ -146,11 +155,13 @@ class LLMClient:
                  on_event: Callable[[str, AgentName, str, dict], None] | None = None) -> None:
         self.settings = settings
         self.ledger = ledger
-        self.backend = backend or AnthropicBackend(settings)
+        self.backend = backend or make_backend(settings)
         self.on_event = on_event or (lambda *a: None)
+        if hasattr(self.backend, "on_retry"):  # make provider retries visible in the audit log
+            self.backend.on_retry = lambda summary, payload: self.on_event("retry", AgentName.SYSTEM, summary, payload)
 
     def model_for(self, agent: AgentName) -> str:
-        return self.settings.model_judge if agent == AgentName.ODIN else self.settings.model_advocate
+        return self.settings.model_for("judge" if agent == AgentName.ODIN else "advocate")
 
     def _once(self, agent: AgentName, system: str, user: str, schema: type[T], effort: str) -> BackendResult[T]:
         self.ledger.check(agent)
