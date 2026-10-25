@@ -6,6 +6,7 @@ from backend.app.schemas.debate import CrossExamination, Concession
 from backend.app.schemas.case_file import CaseFile
 from backend.app.schemas.loki_result import LokiResult
 from backend.app.schemas.thor_result import ThorResult
+from backend.app.schemas.debate_result import DebateResult
 
 __all__ = [
     "EvidenceReference",
@@ -17,4 +18,5 @@ __all__ = [
     "CaseFile",
     "LokiResult",
     "ThorResult",
+    "DebateResult",
 ]

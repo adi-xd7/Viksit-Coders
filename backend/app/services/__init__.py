@@ -9,6 +9,7 @@ from backend.app.services.retrieval import (
     MockRetrievalService,
     RunemarkCorpusRetrievalService,
 )
+from backend.app.services.debate_orchestrator import DebateOrchestrator
 
 __all__ = [
     "StructuredLogger",
@@ -18,4 +19,5 @@ __all__ = [
     "BaseRetrievalService",
     "MockRetrievalService",
     "RunemarkCorpusRetrievalService",
+    "DebateOrchestrator",
 ]
