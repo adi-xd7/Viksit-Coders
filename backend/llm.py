@@ -52,7 +52,7 @@ def wrap_document_text(doc_id: str, tier: int, date: str, content: str) -> str:
     return f'<document id="{doc_id}" tier="{tier}" date="{date}">\n{safe_content}\n</document>'
 
 
-def deterministic_offline_adjudication(system_prompt: str, user_prompt: str) -> str:
+def deterministic_offline_adjudication(system_prompt: str, user_prompt: str, *args, **kwargs) -> str:
     """Provides a deterministic, evidence-grounded judicial response when running offline without an API key."""
     claim_ids = re.findall(r"Claim ID:\s*([\w\-]+)", user_prompt)
     rulings = []

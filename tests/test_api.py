@@ -651,3 +651,36 @@ def test_scenario_22_json_serialization_of_dates_enums_and_nested_data(api_test_
     # Check ISO date format
     assert re.match(r"^\d{4}-\d{2}-\d{2}", data["as_of"])
     assert re.match(r"^\d{4}-\d{2}-\d{2}T", data["created_at"])
+
+
+# =====================================================================
+# Test 23: Complete Submission Deliverables Package Endpoint
+# =====================================================================
+def test_scenario_23_submission_deliverables_endpoint(api_test_env):
+    """Verifies that the /submission endpoint bundles all 7 evaluation questions."""
+    client = api_test_env["client"]
+    client.post("/api/cases", json={"query": "Submission bundle test", "as_of": "2027-01-25", "case_id": "CASE-SUB-01"})
+
+    t_resp = client.post("/api/cases/CASE-SUB-01/trials", json={"max_runs": 1, "background": False})
+    trial_id = t_resp.json()["trial_id"]
+    assert t_resp.json()["status"] == "completed"
+
+    sub_resp = client.get(f"/api/cases/CASE-SUB-01/trials/{trial_id}/submission")
+    assert sub_resp.status_code == 200
+    bundle = sub_resp.json()
+
+    assert "final_output" in bundle
+    assert "execution_trace" in bundle
+    assert "submission_metadata" in bundle
+
+    fo = bundle["final_output"]
+    assert "question_1_event_verification" in fo
+    assert "question_2_exposure_ranges" in fo
+    assert "question_3_odins_executive_briefing" in fo
+
+    trace = bundle["execution_trace"]
+    assert "question_4_agent_queries_and_retrieved_documents" in trace
+    assert "question_5_cross_examination_challenges_and_counter_arguments" in trace
+    assert "question_6_memory_updates_and_claim_concessions" in trace
+    assert "question_7_judicial_rulings_per_round" in trace
+

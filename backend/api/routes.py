@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime
 import logging
 import re
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from backend.api.schemas import (
@@ -387,3 +387,39 @@ def get_trial_briefing(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": e.error_code, "message": e.message},
         )
+
+
+@router.get(
+    "/api/cases/{case_id}/trials/{trial_id}/submission",
+    tags=["Submission"],
+    summary="Retrieve complete submission deliverables package",
+    description="Returns the official submission bundle (Final Output & Execution Trace) labeled per evaluation rubric.",
+)
+def get_submission_deliverables(
+    case_id: str,
+    trial_id: str,
+    service: TrialService = Depends(get_trial_service),
+) -> dict:
+    validate_id_str(case_id, "case_id")
+    validate_id_str(trial_id, "trial_id")
+
+    try:
+        deliverables = service.get_submission_deliverables(case_id=case_id, trial_id=trial_id)
+        return deliverables
+    except CaseNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "CASE_NOT_FOUND", "message": f"Case '{case_id}' not found."},
+        )
+    except TrialNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "TRIAL_NOT_FOUND", "message": f"Trial '{trial_id}' not found."},
+        )
+    except Exception as e:
+        logger.exception("Failed to assemble submission deliverables for %s / %s", case_id, trial_id)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "SUBMISSION_ASSEMBLY_FAILED", "message": str(e)},
+        )
+

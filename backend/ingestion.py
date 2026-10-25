@@ -228,9 +228,13 @@ class IngestionEngine:
 
     def __init__(self, dev_pack_dir: Optional[str] = None):
         if dev_pack_dir is None:
-            dev_pack_dir = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dev_pack_E5"
-            )
+            env_pack = os.getenv("DATA_PACK_DIR")
+            if env_pack and os.path.exists(env_pack):
+                dev_pack_dir = env_pack
+            else:
+                dev_pack_dir = os.path.join(
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dev_pack_E5"
+                )
         self.dev_pack_dir = dev_pack_dir
         self.docs_dir = os.path.join(dev_pack_dir, "docs")
         self.manifest_path = os.path.join(dev_pack_dir, "manifest.json")
