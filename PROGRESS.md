@@ -94,20 +94,20 @@ To maintain modularity and isolation:
   - [x] Define contracts for Models, Rulings, SendBack, Briefing, and Logging
   - [x] Create `PROGRESS.md` and report baseline findings to team
 
-- [ ] **Phase 1 — Odin System Prompt and Structured Judgment Engine**
-  - [ ] Create Odin prompt (`backend/agents/prompts/odin.md`) with role, rules, untrusted-evidence security, and ruling schema
-  - [ ] Implement deterministic eligibility checker in Python (`backend/agents/odin.py`):
-    - [ ] As-of date enforcement (clock check)
-    - [ ] Document and paragraph existence check
-    - [ ] Quote match verification
-    - [ ] Source reliability tier evaluation (Tier 1-3 allowed; Tier-4-only rejected)
-    - [ ] Retraction / correction checks
-    - [ ] Duplicate and damaged document checks
-    - [ ] Damaged trade row checks
-    - [ ] Prompt-injection detection and isolation
-  - [ ] Implement LLM semantic judgment engine with structured Pydantic output
-  - [ ] Implement complete claim coverage enforcement (every claim ruled exactly once; deterministic rejections cannot be overridden)
-  - [ ] Unit tests (`tests/test_odin.py`, `tests/test_odin_evidence.py`)
+- [x] **Phase 1 — Odin System Prompt and Structured Judgment Engine**
+  - [x] Create Odin prompt (`backend/agents/prompts/odin.md`) with role, rules, untrusted-evidence security, and ruling schema
+  - [x] Implement deterministic eligibility checker in Python (`backend/agents/odin.py`):
+    - [x] As-of date enforcement (clock check)
+    - [x] Document and paragraph existence check
+    - [x] Quote match verification
+    - [x] Source reliability tier evaluation (Tier 1-3 allowed; Tier-4-only rejected)
+    - [x] Retraction / correction checks
+    - [x] Duplicate and damaged document checks
+    - [x] Damaged trade row checks
+    - [x] Prompt-injection detection and isolation
+  - [x] Implement LLM semantic judgment engine with structured Pydantic output
+  - [x] Implement complete claim coverage enforcement (every claim ruled exactly once; deterministic rejections cannot be overridden)
+  - [x] Unit tests (`tests/test_odin.py`, `tests/test_odin_evidence.py` - 20/20 passing)
 
 - [ ] **Phase 2 — Odin's Exposure Ranges and Sufficiency Checker**
   - [ ] Country-sector unit of analysis mapping
@@ -151,3 +151,27 @@ To maintain modularity and isolation:
   - [ ] End-to-end trial rehearsal
   - [ ] Save demo case and logs to `logs/demo/`
   - [ ] Final verification and review
+
+---
+
+## Phase 1 Execution Notes
+
+- **Status**: Completed
+- **Files Created / Changed**:
+  - `backend/models.py`: Shared Pydantic v2 data models contract (`Claim`, `Ruling`, `CaseFile`, `Document`, `DocMeta`, `TradeRow`, `Attack`, `Defense`, `Concession`, `Briefing`, `LogEvent`, `Verdict`, `Basis`, etc.).
+  - `backend/llm.py`: Shared LLM wrapper using Anthropic SDK, token accounting (`MAX_TOKENS_PER_CASE`), retry repair, mock handler injection, and document tag sanitization.
+  - `backend/agents/prompts/odin.md`: Impartial Odin judicial prompt with strict evidence security, tier hierarchies, and verdict rules.
+  - `backend/agents/odin.py`: Deterministic citation validation (`validate_citation`), claim eligibility checks (`evaluate_claim_eligibility`), Tier 4 rejection enforcement, LLM semantic adjudication with retry repair, and complete claim coverage guarantee.
+  - `tests/test_odin_evidence.py`: 11 deterministic validation unit tests.
+  - `tests/test_odin.py`: 9 judicial engine unit tests including cross-examination, concessions, duplicate ruling deduplication, prompt injection isolation, and LLM repair.
+- **Tests Executed**:
+  - `python -m pytest tests -v`
+  - Result: 20 passed in 0.08s (100% pass rate).
+- **Decisions Made**:
+  - Code-level enforcement: Python deterministically rejects claims citing post-cutoff dates, missing documents/paragraphs, retracted sources, damaged sources, duplicate-only sources, or Tier-4-only evidence. LLM responses can never override deterministic rejections.
+  - Untrusted document wrapping: Document text is encapsulated within `<document id="..." tier="..." date="...">` tags with internal closing tag sanitization.
+  - Exact claim coverage guarantee: Every submitted claim receives a final ruling; if an LLM response omits a claim, Odin falls back to a `CONTESTED` ruling with rationale noting omission rather than failing silently.
+  - Duplicate LLM rulings for the same claim ID are ignored to preserve the primary ruling.
+- **Dependencies for Phase 2**:
+  - Implementation of country-sector unit of analysis, exposure range derivation from admissible trade data/rulings, and sufficiency evaluation (`assess_sufficiency`) with structured `SendBack`.
+
