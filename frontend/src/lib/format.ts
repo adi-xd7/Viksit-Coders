@@ -8,6 +8,15 @@ export function fmtDate(iso: string | null | undefined): string {
   return `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]} ${m[1]}`;
 }
 
+/** ISO timestamp -> "26 Oct 2026, 07:00 UTC" (always UTC, so the quota reset time is unambiguous). */
+export function fmtTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${hh}:${mm} UTC`;
+}
+
 export function monthLabel(year: number, month0: number, withYear: boolean): string {
   return withYear ? `${MONTHS[month0]} ${String(year).slice(2)}` : MONTHS[month0];
 }

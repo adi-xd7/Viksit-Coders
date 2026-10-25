@@ -3,7 +3,7 @@ import type { Briefing, LogEvent } from "../api";
 import { Empty, Filters, Section } from "../components/layout";
 import { agentName, Cite, OpenRef } from "../components/marks";
 import type { TrialState } from "../useCase";
-import { BriefingSection } from "./BriefingSection";
+import { BriefingLink } from "./BriefingView";
 
 // Model-request bookkeeping is not shown on the dashboard (no call or token meters).
 const HIDDEN = new Set(["LLM_USAGE", "LLM_CACHE_HIT"]);
@@ -15,6 +15,7 @@ const GROUPS: [string, string, (t: string) => boolean][] = [
   ["TRAP_INJECTION", "TRAP_INJECTION", (t) => t === "TRAP_INJECTION"],
   ["CLOCK_VIOLATION_BLOCKED", "CLOCK_VIOLATION_BLOCKED", (t) => t === "CLOCK_VIOLATION_BLOCKED"],
   ["LIMIT_HIT", "LIMIT_HIT", (t) => t === "LIMIT_HIT"],
+  ["MODEL_SWITCH", "MODEL_SWITCH", (t) => t === "MODEL_SWITCH"],
   ["ERROR", "ERROR", (t) => t === "ERROR"],
   ["trial", "Trial", (t) => ["CLAIM", "ATTACK", "DEFENSE", "CONCESSION", "RULING", "PRECHECK", "SUFFICIENCY", "SENDBACK", "NEW_EVIDENCE", "BRIEFING"].includes(t)],
   ["stages", "Stages", (t) => ["STAGE", "RUN_START", "RUN_END", "CASE_FILE", "RESEARCH_PLAN"].includes(t)],
@@ -168,6 +169,7 @@ function Events({ events }: { events: LogEvent[] }) {
         <ul className="m-0 list-none p-0">
           {shown.slice(0, limit).map((e) => {
             const tone = e.type.startsWith("MEMORY") ? "text-accent" : ["TRAP_INJECTION", "CLOCK_VIOLATION_BLOCKED", "ERROR", "LIMIT_HIT"].includes(e.type) ? "text-bad" : "";
+            // MODEL_SWITCH stays neutral: switching model is expected behaviour, not an error
             return (
               <Fragment key={e.seq}>
                 <li>
@@ -196,8 +198,8 @@ function Events({ events }: { events: LogEvent[] }) {
   );
 }
 
-export function TraceView({ t, events, briefing, md, open, status }: {
-  t: TrialState; events: LogEvent[]; briefing?: Briefing | null; md?: string | null; open: OpenRef; status?: string | null;
+export function TraceView({ t, events, briefing, open, status, onBriefing }: {
+  t: TrialState; events: LogEvent[]; briefing?: Briefing | null; open: OpenRef; status?: string | null; onBriefing: () => void;
 }) {
   return (
     <>
@@ -205,7 +207,7 @@ export function TraceView({ t, events, briefing, md, open, status }: {
       <Section title="Memory: before and after"><Memory t={t} /></Section>
       <Section title={t.runs.filter((r) => r > 0).length > 1 ? "Run 1 against run 2" : "Runs"}><RunTable t={t} briefing={briefing} open={open} status={status} /></Section>
       <Section title="Events" right="Recorded, not simulated"><Events events={events} /></Section>
-      <BriefingSection b={briefing} md={md} open={open} running={status === "running"} />
+      <BriefingLink onOpen={onBriefing} />
     </>
   );
 }

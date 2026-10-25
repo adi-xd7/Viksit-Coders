@@ -20,19 +20,28 @@ Fonts are self-hosted from `@fontsource` packages, so the dashboard works offlin
 
 ## Layout and routing
 
-Top bar (brand, case ID, as-of date, run status such as "Partial briefing · run 2 of 2", **New case**), a left rail
+Top bar (brand, case ID, as-of date, run status such as "Partial briefing · run 2 of 2", **Add documents**,
+**Ask a question**), a left rail
 (view navigation + the **Pipeline** list built from the case status and events), and the main column. Below 768 px the
 rail becomes a horizontal nav and the pipeline list is hidden.
 
-Views are addressed by the URL hash: `#case=<id>&view=trial|exposure|evidence|trace`; a bare `#exposure` also works
-(`src/lib/route.ts`). Without a case, the main column shows the start form (question + as-of date, or open a saved case).
+Views are addressed by the URL hash: `#case=<id>&view=trial|exposure|evidence|briefing|trace`; a bare `#exposure`
+also works (`src/lib/route.ts`). Without a case, the main column shows the start form (question + as-of date, or open a
+saved case) and the document upload.
+
+**Add documents** (`components/UploadDialog.tsx`, `POST /ingest`): a new event pack as a `.zip` with its
+`manifest.json`, or loose PDF / TXT / DOCX documents (their header supplies the metadata; they are flagged
+not_in_manifest). The summary shows documents, trade tables, damaged documents and flagged suspicious spans; the
+evidence feed re-reads the index afterwards. Questions asked afterwards can use the new documents.
 
 | View | Built from |
 |---|---|
 | **Trial** | `CLAIM`, `ATTACK`, `DEFENSE`, `CONCESSION`, `RULING` events of the latest attempt: rulings ledger, Thor / Loki claim columns, cross-examination as Attack · Response · Odin (defense with new evidence, concession, invalid defense, undefended) |
 | **Exposure** | the briefing's exposure table (or, while running, the advocates' submitted estimates): one shared scale per unit with nice ticks computed from the data; Thor / Loki / Odin lines; dashed "no estimate" with the recorded reason (missing is never drawn as zero); row details with metric definitions, unit / period / denominator, assumptions, missing data, trade-row refs and calculation records (from `RETRIEVED` trade_calc events) |
-| **Evidence** | `GET /feed?as_of=` + `RETRIEVED` / `NEW_EVIDENCE` / `CLOCK_VIOLATION_BLOCKED` events: publication timeline with the as-of line, filters, document list, inline viewer (`GET /docs/{id}?case_id=`, `GET /trade/{table}?case_id=`) with the cited paragraph or row highlighted and flagged spans marked "withheld as instruction"; blocked documents show no content |
-| **Run trace** | `SENDBACK`, `RESEARCH_PLAN`, `MEMORY_APPLIED`, `SUFFICIENCY`, `NEW_EVIDENCE` events and the run summaries: send-back, Heimdall's new queries, memory before / after, run comparison, the event list with type filters, then the full **Briefing** (findings with citations, Markdown view, .md / .json export) |
+| **Trial** (top) | the **Case file** (Heimdall's event check with its reasons and citations, countries, sectors, routes, trade tables, key documents, corrections, missing data) and the **trial notes** (failures, unchallenged sides) |
+| **Evidence** | `GET /feed?as_of=` + `RETRIEVED` / `NEW_EVIDENCE` / `CLOCK_VIOLATION_BLOCKED` events: publication timeline with the as-of line, the **live feed** (documents in the order the agents first retrieve them, live while a case runs), filters, document list, inline viewer (`GET /docs/{id}?case_id=`, `GET /trade/{table}?case_id=`) with the cited paragraph or row highlighted and flagged spans marked "withheld as instruction"; blocked documents show no content |
+| **Briefing** | the briefing from `GET /cases/{id}`: status, executive summary, event verification, the **exposure table** (Thor / Loki / Odin low-high per country and sector, metric, unit, period, trade rows), Established / Contested / Conceded / Rejected findings with inline citations `[DOC Pn, date time]`, next-quarter outlook with assumptions, assumptions and uncertainty, missing data, traps and failures, sources (labelled Runemark). **Save as PDF** (print layout: navigation hidden, case header added), **Export .md / .json**, Markdown view |
+| **Run trace** | `SENDBACK`, `RESEARCH_PLAN`, `MEMORY_APPLIED`, `SUFFICIENCY`, `NEW_EVIDENCE`, `MODEL_SWITCH` events and the run summaries: send-back, Heimdall's new queries, memory before / after, run comparison, the event list with type filters, a link to the Briefing |
 
 Every citation, anywhere, opens the Evidence view with that document and the cited paragraph (or trade row)
 highlighted. Model-request bookkeeping (`LLM_USAGE`, `LLM_CACHE_HIT`) is never shown: no call or token meters.
@@ -62,6 +71,7 @@ radius at most 6px.
 - `layout.tsx`: `<Section>`, `<ViewHead>`, `<Empty>`, `<Alert>`, `<Skeleton>`, `<Filters>` (aria-pressed toggles).
 - `Shell.tsx`: `<TopBar>`, `<Rail>`, `pipeline()` (stage states from status + events), `runStatusText()`.
 - `CaseForm.tsx`: start a case (`POST /cases`) or open a saved one.
+- `UploadDialog.tsx`: `<UploadForm>` for packs and loose documents (`POST /ingest`).
 - `ui/dialog.tsx`: the shadcn/ui Dialog pattern on `@radix-ui/react-dialog` (focus trap, Escape), restyled to the
   tokens (used for **New case**).
 

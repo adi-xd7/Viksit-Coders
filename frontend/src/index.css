@@ -190,6 +190,49 @@
   }
 }
 
+/* Save as PDF (browser print): only the main column, on plain white paper, no navigation or buttons */
+.print-only {
+  display: none;
+}
+@media print {
+  @page {
+    margin: 16mm 14mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    font-size: 11pt;
+  }
+  .no-print,
+  [role="dialog"] {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-plain {
+    display: block !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    min-height: 0 !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .cite {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .break-inside-avoid {
+    break-inside: avoid;
+  }
+  .view-in {
+    animation: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .view-in {
     animation: view-in 0.14s ease-out;

@@ -145,6 +145,7 @@ export interface TrialState {
   calcs: Map<string, CalcRecord>;
   attempt: number;
   ended: boolean; // RUN_END recorded in the latest attempt
+  liveFeed: { doc_id: string; seq: number; ts: string; agent: string; run: number; refs: string[] }[]; // first retrieval per document
 }
 
 /** Events of the latest attempt: a resumed case re-records its replayed steps after a new RUN_START. */
@@ -172,8 +173,9 @@ export function deriveTrial(all: LogEvent[]): TrialState {
     "retrievedDocs" | "runs"> = {
     caseFile: null, maxRuns: null, sendbacks: [], sufficiency: [], newEvidence: [], effect: null, researchPlans: [],
     memoryApplied: [], memoryReads: 0, blockedDocs: new Map(), refsByRun: new Map(), calcs: new Map(),
-    attempt: all.filter((e) => e.type === "RUN_START").length || 1, ended: false,
+    attempt: all.filter((e) => e.type === "RUN_START").length || 1, ended: false, liveFeed: [],
   };
+  const fed = new Map<string, TrialState["liveFeed"][number]>();
   for (const e of events) {
     if (e.run_number > 0) runs.add(e.run_number);
     const p = e.payload ?? {};
@@ -205,10 +207,14 @@ export function deriveTrial(all: LogEvent[]): TrialState {
         r.runs.add(e.run_number);
         r.agents.add(e.agent);
         retrievedDocs.set(doc, r);
+        const f = fed.get(doc);
+        if (!f) fed.set(doc, { doc_id: doc, seq: e.seq, ts: e.ts, agent: e.agent, run: e.run_number, refs: [ref] });
+        else if (!f.refs.includes(ref) && f.refs.length < 6) f.refs.push(ref);
       }
       st.refsByRun.set(e.run_number, set);
     }
   }
+  st.liveFeed = [...fed.values()].sort((a, b) => b.seq - a.seq);
   return { claims: [...claims.values()], attacks, defenses, concessions, rulings, invalidDefenses, retrievedDocs,
     runs: [...runs].sort((a, b) => a - b), ...st };
 }

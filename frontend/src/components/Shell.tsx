@@ -1,9 +1,11 @@
 import { useState } from "react";
 import type { CaseStatus } from "../api";
-import { fmtDate } from "../lib/format";
+import { fmtDate, fmtTime } from "../lib/format";
 import { VIEW_LABEL, VIEWS, type View } from "../lib/route";
 import type { TrialState } from "../useCase";
 import { CaseForm } from "./CaseForm";
+import { UploadForm } from "./UploadDialog";
+import type { IngestSummary } from "../api";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 
 const STAGE_LABEL: Record<string, string> = {
@@ -19,6 +21,9 @@ export function runStatusText(status: CaseStatus | null, t: TrialState): { text:
   const runs = run ? ` · run ${run}${t.maxRuns ? ` of ${t.maxRuns}` : ""}` : "";
   const b = status.results?.briefing?.status ?? status.briefing_status;
   if (status.status === "running") return { text: `Running · ${STAGE_LABEL[status.stage] ?? status.stage}${runs}`, bad: false };
+  if (status.status === "paused") {
+    return { text: `Paused · daily model quota${runs}${status.paused_until ? ` · resumes after ${fmtTime(status.paused_until)}` : ""}`, bad: false };
+  }
   if (status.status === "failed") {
     const at = (status.history ?? []).filter((h) => h !== "FAILED").pop() ?? status.stage;
     const interrupted = status.stage !== "FAILED";
@@ -29,21 +34,30 @@ export function runStatusText(status: CaseStatus | null, t: TrialState): { text:
   return { text: `Finished without a briefing${runs}`, bad: false };
 }
 
-export function TopBar({ status, caseId, trial, onCase }: {
+export function TopBar({ status, caseId, trial, onCase, onIngested }: {
   status: CaseStatus | null; caseId: string | null; trial: TrialState; onCase: (id: string) => void;
+  onIngested: (r: IngestSummary) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [upload, setUpload] = useState(false);
+  const btn = "no-print rounded-sm border border-rule-2 px-2.5 py-1 text-[13px] hover:bg-paper";
   const rs = runStatusText(status, trial);
   return (
-    <header className="flex min-h-12 flex-wrap items-center gap-x-5 gap-y-2 border-b border-rule px-4 py-2.5 md:px-5">
+    <header className="no-print flex min-h-12 flex-wrap items-center gap-x-5 gap-y-2 border-b border-rule px-4 py-2.5 md:px-5">
       <span className="font-semibold tracking-[-0.01em]">Ragnarok</span>
       {caseId && <span className="mono break-all text-ink-2">{caseId}</span>}
       {status?.as_of && <span className="text-ink-2">As of {fmtDate(status.as_of)}</span>}
       <span className="hidden flex-1 md:block" />
       {rs.text && <span className={rs.bad ? "font-medium text-bad" : "text-ink-2"} aria-live="polite">{rs.text}</span>}
+      <Dialog open={upload} onOpenChange={setUpload}>
+        <DialogTrigger className={btn}>Add documents</DialogTrigger>
+        <DialogContent title="Add documents" description="Ingest a new event pack or loose documents into the index.">
+          <UploadForm onDone={onIngested} />
+        </DialogContent>
+      </Dialog>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger className="rounded-sm border border-rule-2 px-2.5 py-1 text-[13px] hover:bg-paper">New case</DialogTrigger>
-        <DialogContent title="New case" description="Start an investigation or open a saved case.">
+        <DialogTrigger className={`${btn} border-ink bg-ink text-sheet hover:bg-ink/90`}>Ask a question</DialogTrigger>
+        <DialogContent title="Ask a question" description="Start an investigation, or open a saved case.">
           <CaseForm running={status?.status === "running"} onCase={(id) => { setOpen(false); onCase(id); }} />
         </DialogContent>
       </Dialog>
@@ -63,7 +77,8 @@ export function pipeline(status: CaseStatus | null, t: TrialState): PipeStage[] 
   const history = status?.history ?? [];
   const stage = status?.stage ?? "";
   const failedAt = status?.status === "failed" ? (history.filter((h) => h !== "FAILED").pop() ?? stage) : null;
-  const cur = stage === "HEIMDALL_RESEARCH" ? "HEIMDALL" : stage;
+  const pausedAt = status?.status === "paused" ? (history.filter((h) => h !== "PAUSED").pop() ?? "") : "";
+  const cur = (stage === "PAUSED" ? pausedAt : stage) === "HEIMDALL_RESEARCH" ? "HEIMDALL" : stage === "PAUSED" ? pausedAt : stage;
   const items: [string, string, string][] = [
     ["HEIMDALL", "Heimdall", cf ? `Case file, ${(cf.evidence_doc_ids ?? []).length} documents, ${(cf.trade_table_ids ?? []).length} trade tables`
       : "No case file yet"],
@@ -75,7 +90,7 @@ export function pipeline(status: CaseStatus | null, t: TrialState): PipeStage[] 
   return items.map(([key, title, detail]) => {
     let state: StageState = history.includes(key) ? "done" : "todo";
     if (key === "CROSS_EXAMINATION" && !history.includes(key) && history.includes("ODIN")) state = "todo";
-    if (status?.status === "running" && key === cur) state = "now";
+    if ((status?.status === "running" || status?.status === "paused") && key === cur) state = "now";
     if (failedAt && (key === failedAt || (failedAt === "HEIMDALL_RESEARCH" && key === "HEIMDALL"))) state = "failed";
     if (key === "BRIEFING" && b) state = b === "complete" ? "done" : "now";
     return { key, title, detail, state };
@@ -91,7 +106,7 @@ const TICK: Record<StageState, string> = {
 
 export function Rail({ view, onView, stages }: { view: View; onView: (v: View) => void; stages: PipeStage[] | null }) {
   return (
-    <aside className="flex flex-col gap-0 border-b border-rule px-3 py-2 md:gap-[22px] md:border-b-0 md:border-r md:px-3 md:py-4">
+    <aside className="no-print flex flex-col gap-0 border-b border-rule px-3 py-2 md:gap-[22px] md:border-b-0 md:border-r md:px-3 md:py-4">
       <nav aria-label="Views" className="flex flex-row gap-px overflow-x-auto md:flex-col">
         {VIEWS.map((v) => (
           <button key={v} type="button" aria-current={view === v ? "page" : undefined} onClick={() => onView(v)}

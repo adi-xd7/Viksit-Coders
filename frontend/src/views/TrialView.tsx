@@ -5,6 +5,44 @@ import { latestRuling, type TrialState } from "../useCase";
 
 const VERDICTS: V[] = ["established", "contested", "conceded", "rejected"];
 
+/** Heimdall's Case File: the event check (with its reasons and citations) and what the trial is about. */
+function CaseFileSection({ cf, open }: { cf: any; open: OpenRef }) {
+  const status: string = cf.event_status ?? "unknown";
+  const row = (label: string, value: React.ReactNode) => (
+    <div className="grid grid-cols-1 gap-x-4 border-b border-rule py-2 sm:grid-cols-[150px_minmax(0,1fr)]">
+      <span className="text-ink-3">{label}</span><span className="min-w-0">{value}</span>
+    </div>
+  );
+  const list = (xs?: string[]) => (xs && xs.length ? xs.join(", ") : <span className="text-ink-3">none listed</span>);
+  return (
+    <Section title="Case file" right={`Heimdall${cf.run_number > 1 ? ` · updated for run ${cf.run_number}` : ""}`} className="mt-0 mb-6">
+      {row("Event", (
+        <span>
+          <b className={`font-medium ${status === "disproved" ? "text-bad" : ""}`}>{status}</b>
+          {cf.event_verification_notes ? <span className="text-ink-2"> · {cf.event_verification_notes}</span> : null}
+          {(cf.event_citations ?? []).length > 0 && (
+            <span className="ml-1 inline-flex flex-wrap gap-x-2.5">{cf.event_citations.map((c: any, i: number) => <Cite key={i} c={c} open={open} />)}</span>
+          )}
+        </span>
+      ))}
+      {row("Countries · sectors", <span>{list(cf.countries)} · {list(cf.sectors)}</span>)}
+      {(cf.related_countries ?? []).length > 0 && row("Related countries", list(cf.related_countries))}
+      {(cf.routes ?? []).length > 0 && row("Routes", list(cf.routes))}
+      {row("Trade tables", (cf.trade_table_ids ?? []).length
+        ? <span className="mono break-words">{cf.trade_table_ids.join(", ")}</span> : <span className="text-ink-3">none found</span>)}
+      {row("Key documents", (cf.evidence_doc_ids ?? []).length
+        ? <span className="flex flex-wrap gap-x-2.5">{cf.evidence_doc_ids.map((d: string) => <Cite key={d} c={{ doc_id: d }} open={open} />)}</span>
+        : <span className="text-ink-3">none listed</span>)}
+      {(cf.corrections ?? []).length > 0 && row("Corrections, rumours", (
+        <ul className="m-0 list-disc pl-4 text-ink-2">{cf.corrections.map((c: string, i: number) => <li key={i}>{c}</li>)}</ul>
+      ))}
+      {row("Missing data", (cf.missing_data ?? []).length
+        ? <ul className="m-0 list-disc pl-4 text-ink-2">{cf.missing_data.map((m: string, i: number) => <li key={i}>{m}</li>)}</ul>
+        : <span className="text-ink-3">none listed</span>)}
+    </Section>
+  );
+}
+
 function ClaimRow({ c, t, open }: { c: Claim; t: TrialState; open: OpenRef }) {
   const rs = t.rulings[c.claim_id] ?? [];
   const latest = rs[rs.length - 1];
@@ -108,7 +146,9 @@ function XRow({ a, t, open, finished }: { a: Attack; t: TrialState; open: OpenRe
   );
 }
 
-export function TrialView({ t, open, question, finished }: { t: TrialState; open: OpenRef; question?: string; finished: boolean }) {
+export function TrialView({ t, open, question, finished, caseFile, notes }: {
+  t: TrialState; open: OpenRef; question?: string; finished: boolean; caseFile?: any; notes?: string[];
+}) {
   const counts = Object.fromEntries(VERDICTS.map((v) => [v, 0])) as Record<V, number>;
   for (const c of t.claims) {
     const r = latestRuling(t, c.claim_id);
@@ -120,6 +160,13 @@ export function TrialView({ t, open, question, finished }: { t: TrialState; open
   return (
     <>
       {question && <p className="m-0 mb-5 max-w-[68ch] text-ink-2">{question}</p>}
+      {(t.caseFile ?? caseFile) && <CaseFileSection cf={t.caseFile ?? caseFile} open={open} />}
+      {notes && notes.length > 0 && (
+        <div className="mb-6 border-l-2 border-rule-2 pl-3 text-[13px] text-ink-2" role="note" aria-label="Trial notes">
+          <div className="label mb-1">Trial notes</div>
+          {notes.map((n, i) => <p key={i} className="m-0">{n}</p>)}
+        </div>
+      )}
       <div className="mb-1 flex flex-wrap gap-x-[18px] gap-y-1 text-xs text-ink-2" aria-label="Rulings summary">
         {VERDICTS.map((v) => (
           <span key={v} className="inline-flex items-center gap-1.5"><span className={`glyph glyph-${v}`} aria-hidden="true" />

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, ApiError, FeedItem, splitRow } from "../api";
-import { Alert, Empty, Filters, Skeleton } from "../components/layout";
-import type { OpenRef } from "../components/marks";
+import { Alert, Empty, Filters, Section, Skeleton } from "../components/layout";
+import { AgentMark, type OpenRef } from "../components/marks";
 import { dayNum, fmtDate, monthLabel } from "../lib/format";
 import type { TrialState } from "../useCase";
 
@@ -190,8 +190,46 @@ function Viewer({ target, caseId, cited }: { target: DocTarget | null; caseId: s
   );
 }
 
-export function EvidenceView({ asOf, caseId, t, target, open }: {
-  asOf?: string; caseId: string; t: TrialState; target: DocTarget | null; open: OpenRef;
+/** Live feed: Runemark documents in the order the agents first retrieved them in this case (newest first).
+ * Built from the recorded RETRIEVED events, so it fills in live while a case runs. */
+function LiveFeed({ t, items, open, live }: { t: TrialState; items: FeedItem[]; open: OpenRef; live: boolean }) {
+  const [all, setAll] = useState(false);
+  const meta = new Map(items.map((i) => [i.doc_id, i]));
+  const feed = all ? t.liveFeed : t.liveFeed.slice(0, 8);
+  return (
+    <Section title="Live feed" right={live ? "Live: documents as the agents retrieve them" : "Documents in the order the agents first retrieved them"}
+      className="mt-6">
+      {!t.liveFeed.length ? <Empty>{live ? "Waiting for the first retrieval…" : "No documents were retrieved in this case."}</Empty> : (
+        <ol className="m-0 list-none p-0">
+          {feed.map((f) => {
+            const m = meta.get(f.doc_id);
+            return (
+              <li key={f.doc_id}>
+                <button type="button" onClick={() => open({ doc_id: f.doc_id, paragraph_ref: f.refs.find((r) => r.includes("#P"))?.split("#")[1] ?? null,
+                  row_id: f.refs.find((r) => r.includes("#R")) ?? null })}
+                  className="grid w-full grid-cols-[64px_minmax(0,1fr)] items-baseline gap-x-3 border-b border-rule px-2 py-2 text-left hover:bg-paper sm:grid-cols-[64px_76px_minmax(0,1fr)_auto]">
+                  <span className="num text-xs text-ink-3">{f.ts.slice(11, 19)}</span>
+                  <span className="mono hidden sm:inline">{f.doc_id}</span>
+                  <span className="min-w-0 truncate"><span className="mono sm:hidden">{f.doc_id} · </span>{m?.title ?? "(not in the window)"}</span>
+                  <span className="col-start-2 whitespace-nowrap text-xs text-ink-2 sm:col-start-auto">
+                    <AgentMark agent={f.agent} /> · run {f.run}{m ? ` · T${m.reliability_tier ?? "?"} · ${m.pub_date}` : ""}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      {t.liveFeed.length > 8 && (
+        <button type="button" className="mt-2 text-[13px] text-ink-2 underline underline-offset-4 hover:text-ink" aria-expanded={all}
+          onClick={() => setAll(!all)}>{all ? "Show the latest 8" : `Show all ${t.liveFeed.length}`}</button>
+      )}
+    </Section>
+  );
+}
+
+export function EvidenceView({ asOf, caseId, t, target, open, version = 0, live = false }: {
+  asOf?: string; caseId: string; t: TrialState; target: DocTarget | null; open: OpenRef; version?: number; live?: boolean;
 }) {
   const [items, setItems] = useState<FeedItem[] | null>(null);
   const [withheld, setWithheld] = useState(0);
@@ -203,7 +241,7 @@ export function EvidenceView({ asOf, caseId, t, target, open }: {
     if (!asOf) return;
     setItems(null); setErr(null);
     api.feed(asOf).then((f) => { setItems(f.items); setWithheld(f.withheld_after_as_of); }).catch((e) => setErr(e.message));
-  }, [asOf]);
+  }, [asOf, version]);
 
   // paragraphs/rows cited anywhere in the case, per document (for the viewer's highlight)
   const citedByDoc = useMemo(() => {
@@ -241,7 +279,8 @@ export function EvidenceView({ asOf, caseId, t, target, open }: {
         {retrieved.size} retrieved in this case · {items.length} published on or before the as-of date · {withheld} withheld after it
         {blocked.length ? ` · ${blocked.length} blocked request${blocked.length === 1 ? "" : "s"} logged` : ""}
       </p>
-      <div className="mt-5 grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,340px)]">
+      <LiveFeed t={t} items={items} open={open} live={live} />
+      <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,340px)]">
         <div className="min-w-0">
           <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
             <Filters label="Filter documents" value={filter} onChange={setFilter}

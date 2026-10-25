@@ -159,7 +159,7 @@ export interface Briefing {
 
 export interface CaseStatus {
   case_id: string;
-  status: "running" | "complete" | "partial" | "failed";
+  status: "running" | "complete" | "partial" | "failed" | "paused";
   stage: string;
   briefing_status?: string | null;
   question?: string;
@@ -167,6 +167,7 @@ export interface CaseStatus {
   history?: string[];
   runs_completed?: number;
   attempt?: number;
+  paused_until?: string | null;
   calls_used?: number | null;
   calls_limit?: number | null;
   notes?: string[];
@@ -205,6 +206,17 @@ export interface FeedItem {
   };
 }
 
+export interface IngestSummary {
+  pack_id: string;
+  documents: number;
+  tables: number;
+  damaged: number;
+  injection_flags: number;
+  problems: string[];
+  errors: string[];
+  skipped: string[];
+}
+
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
@@ -230,6 +242,14 @@ export const api = {
   createCase: (question: string, as_of: string) =>
     fetch("/cases", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, as_of }) })
       .then((r) => json<{ case_id: string }>(r)),
+  /** A pack .zip (with manifest.json) or loose PDF / TXT / DOCX documents, ingested into the live index. */
+  ingest: (files: File[]) => {
+    const fd = new FormData();
+    const zip = files.length === 1 && files[0].name.toLowerCase().endsWith(".zip");
+    if (zip) fd.append("file", files[0]);
+    else files.forEach((f) => fd.append("files", f));
+    return fetch("/ingest", { method: "POST", body: fd }).then((r) => json<IngestSummary>(r));
+  },
   getCase: (id: string) => fetch(`/cases/${encodeURIComponent(id)}`).then((r) => json<CaseStatus>(r)),
   feed: (as_of: string) => fetch(`/feed?as_of=${as_of}&limit=1000`).then((r) => json<{ items: FeedItem[]; withheld_after_as_of: number }>(r)),
   doc: (doc_id: string, case_id: string) => fetch(`/docs/${encodeURIComponent(doc_id)}?case_id=${case_id}`).then((r) => json<any>(r)),
@@ -262,7 +282,7 @@ export const EVENT_TYPES = [
   "QUERY", "RETRIEVED", "CLAIM", "ATTACK", "DEFENSE", "CONCESSION", "RULING", "SENDBACK", "MEMORY_READ", "MEMORY_WRITE",
   "MEMORY_APPLIED", "TRAP_INJECTION", "CLOCK_VIOLATION_BLOCKED", "LIMIT_HIT", "ERROR", "INGEST", "DAMAGED_INPUT",
   "RUN_START", "RUN_END", "BRIEFING", "CASE_FILE", "STAGE", "SUFFICIENCY", "PRECHECK", "RESEARCH_PLAN", "NEW_EVIDENCE",
-  "LLM_USAGE", "LLM_CACHE_HIT",
+  "LLM_USAGE", "LLM_CACHE_HIT", "MODEL_SWITCH",
 ];
 
 /** Row IDs are "<table_id>#R<n>"; returns [table_id, row_id]. */
