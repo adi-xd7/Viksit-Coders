@@ -24,14 +24,14 @@ export const AGENT_PROFILES: Record<AgentVoiceId, VoiceProfile> = {
     name: "Herald",
     role: "Court Officer",
     pitch: 1.0,
-    rate: 1.05,
-    voiceGenderPref: "any",
+    rate: 1.02,
+    voiceGenderPref: "male",
   },
   heimdall: {
     id: "heimdall",
     name: "Heimdall",
     role: "Intelligence Investigator",
-    pitch: 1.02,
+    pitch: 0.98, // Natural, objective, measured
     rate: 1.0,
     voiceGenderPref: "male",
   },
@@ -39,25 +39,25 @@ export const AGENT_PROFILES: Record<AgentVoiceId, VoiceProfile> = {
     id: "thor",
     name: "Thor",
     role: "High Exposure Advocate",
-    pitch: 0.82, // Deeper, powerful, emphatic
-    rate: 0.95,
-    voiceGenderPref: "deep",
+    pitch: 0.95, // Deep resonant natural male, NO robotic pitch-shift distortion
+    rate: 0.97, // Deliberate, firm, commanding
+    voiceGenderPref: "male",
   },
   loki: {
     id: "loki",
     name: "Loki",
     role: "Limited Exposure Advocate",
-    pitch: 1.25, // Sharp, swift, skeptical
-    rate: 1.12,
+    pitch: 1.01, // Natural human male tenor, NO chipmunk distortion
+    rate: 1.04, // Sharp, agile, articulate
     voiceGenderPref: "male",
   },
   odin: {
     id: "odin",
     name: "Odin",
     role: "Chief Justice / All-Father",
-    pitch: 0.72, // Sovereign, low resonance, solemn
-    rate: 0.88,
-    voiceGenderPref: "deep",
+    pitch: 0.92, // Sovereign, mature male gravitas
+    rate: 0.90, // Solemn and authoritative
+    voiceGenderPref: "male",
   },
 };
 
@@ -71,6 +71,9 @@ export interface DeliberationItem {
   displayText: string;
   targetClaimId?: string;
 }
+
+const FEMALE_NAMES = /zira|jenny|aria|susan|catherine|hazel|heera|female|woman|girl|eva|samantha|victoria|karen|moira|tessa|fiona|steffi|amanda|alice|libby|sonia|neerja|sarah|julie|olivia|clara|emma|anna|lucy/i;
+const MALE_NAMES = /david|mark|guy|richard|george|oliver|brian|ryan|christopher|eric|james|william|charles|john|peter|arthur|steven|michael|andrew|daniel|male|stefan|martin|thomas|alex|fred/i;
 
 class VoiceSynthesisManager {
   private synth: SpeechSynthesis | null = null;
@@ -105,6 +108,10 @@ class VoiceSynthesisManager {
     this.voices = this.synth.getVoices();
   }
 
+  /**
+   * Selects high-quality, human male voices.
+   * Ensures Thor and Loki receive distinct male voices so the adversarial debate sounds authentic.
+   */
   private getBestVoiceForAgent(agent: AgentVoiceId): SpeechSynthesisVoice | null {
     if (!this.voices.length) this.loadVoices();
     if (!this.voices.length) return null;
@@ -112,25 +119,49 @@ class VoiceSynthesisManager {
     const englishVoices = this.voices.filter((v) => v.lang.startsWith("en"));
     const pool = englishVoices.length ? englishVoices : this.voices;
 
-    const profile = AGENT_PROFILES[agent];
+    // Filter out all female voices strictly
+    const nonFemale = pool.filter((v) => !FEMALE_NAMES.test(v.name));
+    const confirmedMales = nonFemale.filter((v) => MALE_NAMES.test(v.name));
+    const malePool = confirmedMales.length ? confirmedMales : (nonFemale.length ? nonFemale : pool);
 
-    if (profile.voiceGenderPref === "deep" || agent === "odin" || agent === "thor") {
-      // Look for male, deep, or standard names
-      const match = pool.find((v) => 
-        /david|mark|guy|richard|george|male|en-us|en-gb/i.test(v.name) &&
-        !/zira|female|hazel|susan|catherine/i.test(v.name)
-      );
-      if (match) return match;
-    } else if (agent === "loki") {
-      // Loki: look for UK English, distinct accent or articulate voice
-      const ukMatch = pool.find((v) => /en-gb|uk|george|oliver/i.test(v.lang) || /en-gb|uk/i.test(v.name));
-      if (ukMatch) return ukMatch;
-    } else if (agent === "heimdall") {
-      const formalMatch = pool.find((v) => /natural|en-us|google/i.test(v.name));
-      if (formalMatch) return formalMatch;
+    // Primary Male Voice A (e.g., David, Guy, Mark, or primary male)
+    const primaryMale =
+      malePool.find((v) => /natural.*(guy|david|ryan|christopher|mark)|(david|guy|mark|richard)/i.test(v.name)) ??
+      malePool.find((v) => /en-us/i.test(v.lang) && !FEMALE_NAMES.test(v.name)) ??
+      malePool[0];
+
+    // Secondary Male Voice B (e.g., British male George/Oliver/Brian, or distinct from primaryMale)
+    const secondaryMale =
+      malePool.find((v) => v !== primaryMale && (/george|oliver|brian|natural.*brian/i.test(v.name) || /en-gb/i.test(v.lang))) ??
+      malePool.find((v) => v !== primaryMale) ??
+      primaryMale;
+
+    // Tertiary Male Voice C (e.g. for Odin: mature, deeper, distinct)
+    const deepMale =
+      malePool.find((v) => v !== secondaryMale && /david|mark|richard|ryan|guy/i.test(v.name)) ??
+      primaryMale;
+
+    switch (agent) {
+      case "thor":
+        // Thor: Baritone, powerful American/General male voice
+        return primaryMale ?? pool[0] ?? null;
+
+      case "loki":
+        // Loki: Distinct, articulate British or alternate male voice
+        return secondaryMale ?? primaryMale ?? pool[0] ?? null;
+
+      case "odin":
+        // Odin: Authoritative, resonant sovereign male voice
+        return deepMale ?? primaryMale ?? pool[0] ?? null;
+
+      case "heimdall":
+        // Heimdall: Objective, steady investigator male voice
+        return primaryMale ?? pool[0] ?? null;
+
+      case "court":
+      default:
+        return primaryMale ?? pool[0] ?? null;
     }
-
-    return pool[0] ?? null;
   }
 
   public subscribe(callback: (state: PlaybackState) => void): () => void {
@@ -335,14 +366,21 @@ export interface PlaybackState {
 export const voiceManager = new VoiceSynthesisManager();
 
 /**
- * Strips markdown symbols, brackets, and table notation for clean phonetic delivery.
+ * Strips markdown symbols, brackets, and table notation for clean, natural phonetic delivery.
  */
 function cleanTextForSpeech(text: string): string {
   return text
     .replace(/\[.*?\]/g, "") // remove bracketed citations like [ORV-0001 P2]
     .replace(/[#*_`~]/g, "") // remove markdown styling symbols
-    .replace(/\s+/g, " ")
+    .replace(/\bvs\./gi, "versus")
+    .replace(/\be\.g\.,?/gi, "for example,")
+    .replace(/\bi\.e\.,?/gi, "that is,")
+    .replace(/\bapprox\./gi, "approximately")
+    .replace(/\bas-of\b/gi, "as of")
+    .replace(/\bas_of\b/gi, "as of")
+    .replace(/\b([TL])(\d+)-(\d+)\b/g, "$1 $2 $3") // T1-1 -> T 1 1
     .replace(/\b([A-Z]{2,4})-(\d{4})\b/g, "$1 $2") // ORV-0005 -> ORV 0005
+    .replace(/\s+/g, " ")
     .trim();
 }
 
