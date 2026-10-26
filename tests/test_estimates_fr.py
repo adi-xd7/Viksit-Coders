@@ -92,3 +92,31 @@ def test_odin_negative_range_is_kept(world, settings):
     t, r, b = run(world, settings, {("odin", "OdinJudgment"): odin})
     assert r.odin.ranges and all(0 <= x.low <= x.high for x in r.odin.ranges)
     assert any("negative changes" in g for g in r.odin.guards)
+
+
+def _rec(cid, op, result):
+    from types import SimpleNamespace
+    return SimpleNamespace(calc_id=cid, operation=op, result=result)
+
+
+def test_range_must_measure_one_metric():
+    """Each bound equalling some calc result is not enough: low and high must be results of the same kind
+    of calculation, read the same way (seen on an unseen pack: a sum of trade values joined to a
+    year-on-year change, and a negative net offset taken as an exposure)."""
+    from ragnarok.agents.estimates import _metric_problems as mp
+    yoy_a, yoy_b = _rec("C1", "yoy_change", -156.5), _rec("C2", "yoy_change", -216.2)
+    assert mp(156.5, 216.2, [yoy_a], [yoy_b]) == []  # two falls of the same metric
+    assert mp(19.7, 47.1, [_rec("C3", "yoy_change", 19.7)], [_rec("C4", "yoy_change", 47.1)]) == []  # two rises
+    assert mp(-5.0, 20.0, [_rec("C5", "yoy_change", -5.0)], [_rec("C6", "yoy_change", 20.0)]) == []  # across zero, signed
+    # a sum joined to a change
+    assert "same kind of calculation" in mp(108.3, 133.7, [_rec("S", "sum", 108.3)], [_rec("Y", "yoy_change", -133.7)])[0]
+    # a negative net offset is not an exposure of that size
+    no = mp(34.4, 124.6, [_rec("N1", "net_offset", -34.4)], [_rec("N2", "net_offset", -124.6)])
+    assert len(no) == 2 and all("no net exposure remains" in p for p in no)
+    assert mp(10.0, 30.0, [_rec("N3", "net_offset", 10.0)], [_rec("N4", "net_offset", 30.0)]) == []
+    # a fall and a rise written as one magnitude range
+    assert "a fall and the other a rise" in mp(5.0, 20.0, [_rec("C7", "yoy_change", -5.0)], [_rec("C8", "yoy_change", 20.0)])[0]
+    # across zero, but the signs do not match the results
+    assert "crosses zero" in mp(-5.0, 20.0, [_rec("C9", "yoy_change", 5.0)], [_rec("C10", "yoy_change", 20.0)])[0]
+    # level results are never negative
+    assert "must be non-negative" in mp(-10.0, 30.0, [_rec("S1", "sum", 10.0)], [_rec("S2", "sum", 30.0)])[0]

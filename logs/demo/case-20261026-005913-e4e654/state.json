@@ -1,0 +1,49 @@
+{
+  "case_id": "case-20261026-005913-e4e654",
+  "question": "As of 25 January 2027, how exposed are Midgard and Tolan to the end of the Orvan corridor agreement? Give a low and high range for wheat and maize imports.",
+  "as_of": "2027-01-25",
+  "stage": "DONE",
+  "history": [
+    "HEIMDALL",
+    "THOR_LOKI",
+    "CROSS_EXAMINATION",
+    "ODIN",
+    "HEIMDALL_RESEARCH",
+    "THOR_LOKI",
+    "CROSS_EXAMINATION",
+    "ODIN",
+    "BRIEFING",
+    "DONE"
+  ],
+  "run_number": 2,
+  "runs_completed": 2,
+  "max_runs": 2,
+  "stop_after": null,
+  "briefing_status": "incomplete",
+  "notes": [
+    "run 2: Odin rules on the 2 new or revised claim(s); the earlier rulings of 5 unchanged claim(s) stand",
+    "run limit reached (2/2): Odin still judges the evidence insufficient; the briefing is labelled incomplete"
+  ],
+  "stop_reason": null,
+  "superseded": {
+    "L1-2": "withdrawn by loki in run 2: Withdrawing the maize resilience claim as new evidence and further review emphasize that delayed delivery terms only temporarily postponed the import decline rather than structurally neutralizing exposure.",
+    "L1-1": "revised in run 2 by L2-1"
+  },
+  "usage": {
+    "tokens": {},
+    "tool_calls": {
+      "heimdall": 17,
+      "thor": 20,
+      "loki": 27
+    },
+    "evidence_refs": 193,
+    "runs": 2,
+    "llm_calls": {
+      "used": 0,
+      "limit": 30,
+      "cached": 22
+    }
+  },
+  "attempt": 2,
+  "paused_until": null
+}

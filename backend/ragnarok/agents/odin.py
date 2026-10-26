@@ -386,11 +386,20 @@ def run_odin(env: AgentEnv, cf: CaseFile, claims: list[Claim], cx: CrossExam, no
                                  "missing_data": [str(exc)[:200]], "rationale": r.rationale, "code_issues": [str(exc)[:200]]})
     for g in guards:
         env.log(LogEventType.ERROR, f"Odin output corrected by code: {g}"[:500])
+    # a send-back names evidence Heimdall can retrieve; a source type the corpus does not have (for example
+    # calculation records) would only make his filtered searches come back empty
+    known_types = {t.lower() for (t,) in store.conn.execute(
+        "SELECT DISTINCT source_type FROM documents WHERE source_type IS NOT NULL")}
     missing = []
     for m in j.sufficiency.missing:
+        types = [t for t in m.source_types if t.lower() in known_types]
+        if len(types) < len(m.source_types):
+            dropped = sorted(set(m.source_types) - set(types))
+            env.log(LogEventType.ERROR, f"Odin output corrected by code: send-back source type(s) {dropped} "
+                    f"not in the corpus; dropped from the search filters"[:500])
         try:
             missing.append(MissingEvidence(description=m.description, why_needed=m.why_needed, countries=m.countries,
-                                           sectors=m.sectors, source_types=m.source_types))
+                                           sectors=m.sectors, source_types=types))
         except ValueError:
             continue
     env.log(LogEventType.SUFFICIENCY, f"Odin sufficiency: {'sufficient' if j.sufficiency.sufficient else 'INSUFFICIENT'} - "

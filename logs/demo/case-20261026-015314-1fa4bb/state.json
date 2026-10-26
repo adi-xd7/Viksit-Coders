@@ -1,0 +1,39 @@
+{
+  "case_id": "case-20261026-015314-1fa4bb",
+  "question": "Evaluate the breaking alert claiming that Orvan Grain Port infrastructure and grain terminal silos were physically destroyed in military strikes. Conduct event verification to rule whether this disruption is verified or rejected as a decoy, citing verified port authority and logistics records.",
+  "as_of": "2027-01-25",
+  "stage": "STOPPED",
+  "history": [
+    "HEIMDALL",
+    "STOPPED"
+  ],
+  "run_number": 1,
+  "runs_completed": 0,
+  "max_runs": 2,
+  "stop_after": null,
+  "briefing_status": null,
+  "notes": [],
+  "stop_reason": "Heimdall found the event disproved as of 2027-01-25: The breaking alert claiming that Orvan Grain Port infrastructure and grain terminal silos were physically destroyed in military strikes is disproved by official Tier 1 government notices and Tier 2 shipping updates showing that the disruption was actually a dock worker strike starting on 14 September 2026, with the port remaining operational at reduced speed and holding vessels outside the harbour rather than being destroyed.",
+  "superseded": {},
+  "usage": {
+    "tokens": {
+      "heimdall": {
+        "input": 11620,
+        "output": 1164,
+        "calls": 2
+      }
+    },
+    "tool_calls": {
+      "heimdall": 5
+    },
+    "evidence_refs": 16,
+    "runs": 0,
+    "llm_calls": {
+      "used": 4,
+      "limit": 30,
+      "cached": 0
+    }
+  },
+  "attempt": 1,
+  "paused_until": null
+}

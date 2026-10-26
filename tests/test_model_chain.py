@@ -143,6 +143,17 @@ def test_whole_chain_used_up_pauses_or_fails(settings):
         c2.structured(AgentName.THOR, "s", "u", Out)
 
 
+def test_pause_ends_when_the_first_model_is_free_again(settings):
+    """Two models out of daily quota for hours, one only cooling down after server errors: the case
+    resumes when the cooling-down model is free again, not at the daily reset."""
+    q = lambda m: QuotaExhausted(m, 6 * 3600, f"{m} used up")  # noqa: E731
+    s = settings.model_copy(update={"model_cooldown_s": 300})
+    c, _ = client(s, Seq([q("model-a"), q("model-b"), ModelUnavailable("model-c", "503 x2")]))
+    with pytest.raises(QuotaPause) as exc:
+        c.structured(AgentName.THOR, "s", "u", Out)
+    assert exc.value.resume_after < datetime.now(timezone.utc) + timedelta(seconds=310)
+
+
 def test_used_up_models_are_remembered_across_processes(settings, tmp_path):
     db = tmp_path / "pool.db"
     Store(db).close()

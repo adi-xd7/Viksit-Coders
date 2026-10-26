@@ -1,0 +1,410 @@
+{
+  "rulings": [
+    {
+      "ruling_id": "R-T1-1",
+      "run_number": 1,
+      "claim_id": "T1-1",
+      "verdict": "established",
+      "claim_type": "inference",
+      "rationale": "Official trade data confirms a significant year-over-year drop in Midgard's wheat imports from Orvan following the expiration of the agreement. The calculations show a value loss between USD 156.5M and 216.2M for the post-expiration period.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0009",
+          "paragraph_ref": null,
+          "row_id": "ORV-0009#R3",
+          "pub_date": "2027-01-19",
+          "quote": "In September 2026, the value was USD 38.2M and the volume was 93,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0009",
+          "paragraph_ref": null,
+          "row_id": "ORV-0009#R6",
+          "pub_date": "2027-01-19",
+          "quote": "In December 2026, the value was USD 34.1M and the volume was 83,000 tonnes."
+        }
+      ],
+      "contradicting_citations": [],
+      "concession_id": null
+    },
+    {
+      "ruling_id": "R-T1-2",
+      "run_number": 1,
+      "claim_id": "T1-2",
+      "verdict": "established",
+      "claim_type": "inference",
+      "rationale": "Year-over-year maize import values for Midgard dropped by over USD 100M in the final quarter of 2026. While delayed delivery terms buffered the October figures, the subsequent decline in November and December was severe.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "The October volume held up longer than the wheat routes because a share of the maize trade was on delayed delivery terms."
+        },
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R5",
+          "pub_date": "2027-01-21",
+          "quote": "In November 2026, the value was USD 31.9M and the volume was 75,000 tonnes."
+        }
+      ],
+      "contradicting_citations": [],
+      "concession_id": null
+    },
+    {
+      "ruling_id": "R-T1-3",
+      "run_number": 1,
+      "claim_id": "T1-3",
+      "verdict": "established",
+      "claim_type": "inference",
+      "rationale": "Tolan's wheat import value from the Orvan sea route fell by USD 69.6M to 96.0M year-over-year in Q4 2026. Evidence confirms that alternative supplies from Vanir were insufficient to close this gap.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": null,
+          "row_id": "ORV-0046#R3",
+          "pub_date": "2027-01-20",
+          "quote": "In September 2026, the value was USD 17.0M and the volume was 43,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": null,
+          "row_id": "ORV-0046#R6",
+          "pub_date": "2027-01-20",
+          "quote": "In December 2026, the value was USD 15.0M and the volume was 38,000 tonnes."
+        }
+      ],
+      "contradicting_citations": [],
+      "concession_id": null
+    },
+    {
+      "ruling_id": "R-T1-4",
+      "run_number": 1,
+      "claim_id": "T1-4",
+      "verdict": "established",
+      "claim_type": "fact",
+      "rationale": "The Harbour Review explicitly notes that the Corridor Agreement did not cover rail movements and monthly trade statistics for the Orvan to Tolan maize route are missing from the current records.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0024",
+          "paragraph_ref": "P3",
+          "row_id": null,
+          "pub_date": "2026-09-12",
+          "quote": "The deal covered wheat and maize leaving the port by sea; it did not cover rail movements"
+        }
+      ],
+      "contradicting_citations": [],
+      "concession_id": null
+    },
+    {
+      "ruling_id": "R-L1-1",
+      "run_number": 1,
+      "claim_id": "L1-1",
+      "verdict": "contested",
+      "claim_type": "inference",
+      "rationale": "While Vanir wheat shipments increased, they are mathematically insufficient to cover the deficit from the Orvan sea route, leaving Midgard with a structural supply deficit.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": null,
+          "row_id": "ORV-0027#R5",
+          "pub_date": "2027-01-22",
+          "quote": "In November 2026, the value was USD 38.5M and the volume was 96,000 tonnes."
+        }
+      ],
+      "contradicting_citations": [
+        {
+          "doc_id": "ORV-0024",
+          "paragraph_ref": "P6",
+          "row_id": null,
+          "pub_date": "2026-09-12",
+          "quote": "The amounts are small compared with Orvan's sea trade."
+        }
+      ],
+      "concession_id": null
+    },
+    {
+      "ruling_id": "R-L1-2",
+      "run_number": 1,
+      "claim_id": "L1-2",
+      "verdict": "conceded",
+      "claim_type": "fact",
+      "rationale": "The proponent conceded that 'resilient' was an inaccurate term for the maize trade, as it ultimately suffered heavy year-over-year losses despite the initial buffer of delayed delivery terms in October.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "The October volume held up longer than the wheat routes because a share of the maize trade was on delayed delivery terms."
+        }
+      ],
+      "contradicting_citations": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R5",
+          "pub_date": "2027-01-21",
+          "quote": "In November 2026, the value was USD 31.9M and the volume was 75,000 tonnes."
+        }
+      ],
+      "concession_id": "C-A1-T3"
+    },
+    {
+      "ruling_id": "R-L1-3",
+      "run_number": 1,
+      "claim_id": "L1-3",
+      "verdict": "contested",
+      "claim_type": "inference",
+      "rationale": "Vanir's wheat supply did provide a buffer, but official notes confirm the replacement was smaller than the gap created by the Orvan corridor closure.",
+      "citations_valid": true,
+      "citation_issues": [],
+      "supporting_citations": [
+        {
+          "doc_id": "ORV-0044",
+          "paragraph_ref": null,
+          "row_id": "ORV-0044#R5",
+          "pub_date": "2027-01-22",
+          "quote": "In November 2026, the value was USD 26.5M and the volume was 67,000 tonnes."
+        }
+      ],
+      "contradicting_citations": [
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-20",
+          "quote": "the replacement was smaller than the gap."
+        }
+      ],
+      "concession_id": null
+    }
+  ],
+  "odin_ranges": [
+    {
+      "estimate_id": "E-odin-Midgard-wheat",
+      "agent": "odin",
+      "country": "Midgard",
+      "sector": "wheat",
+      "metric": "Year-over-year import value loss",
+      "metric_definition": "Change in the value of wheat imports from Orvan via the sea corridor comparing Q4 2026 (post-expiration) to Q4 2025.",
+      "unit": "USD M",
+      "currency": "USD",
+      "period": "2026 Q4",
+      "denominator": "n/a",
+      "low": 156.5,
+      "high": 216.2,
+      "insufficient_evidence": false,
+      "evidence": [],
+      "trade_row_refs": [
+        "ORV-0009#R10",
+        "ORV-0009#R11",
+        "ORV-0009#R12",
+        "ORV-0009#R3",
+        "ORV-0009#R4",
+        "ORV-0009#R5",
+        "ORV-0009#R6",
+        "ORV-0009#R9"
+      ],
+      "calculation_ids": [
+        "CALC-cb98e8e7d6f3bbe6",
+        "CALC-2471c1be02c2601c"
+      ],
+      "assumptions": [
+        "Prior year import levels represent baseline demand."
+      ],
+      "missing_data": [],
+      "confidence": "high",
+      "uncertainty_note": "The ranges are derived from year-over-year comparisons of official trade notes for the period immediately following the agreement's expiration."
+    },
+    {
+      "estimate_id": "E-odin-Midgard-maize",
+      "agent": "odin",
+      "country": "Midgard",
+      "sector": "maize",
+      "metric": "Year-over-year import value loss",
+      "metric_definition": "Change in the value of maize imports from Orvan via the sea corridor following the agreement's expiration.",
+      "unit": "USD M",
+      "currency": "USD",
+      "period": "2026 Q4",
+      "denominator": "n/a",
+      "low": 105.7,
+      "high": 126.4,
+      "insufficient_evidence": false,
+      "evidence": [],
+      "trade_row_refs": [
+        "ORV-0030#R10",
+        "ORV-0030#R11",
+        "ORV-0030#R12",
+        "ORV-0030#R4",
+        "ORV-0030#R5",
+        "ORV-0030#R6"
+      ],
+      "calculation_ids": [
+        "CALC-c4d8aa36b4090272",
+        "CALC-8b68f9523d386676"
+      ],
+      "assumptions": [
+        "Demand remained stable year-over-year."
+      ],
+      "missing_data": [],
+      "confidence": "high",
+      "uncertainty_note": "High-confidence trade notes show a clear value decline despite a one-month buffer in October due to delayed delivery terms."
+    },
+    {
+      "estimate_id": "E-odin-Tolan-wheat",
+      "agent": "odin",
+      "country": "Tolan",
+      "sector": "wheat",
+      "metric": "Year-over-year import value loss",
+      "metric_definition": "Change in the value of wheat imports from Orvan via the sea corridor comparing Q4 2026 to Q4 2025.",
+      "unit": "USD M",
+      "currency": "USD",
+      "period": "2026 Q4",
+      "denominator": "n/a",
+      "low": 69.6,
+      "high": 96.0,
+      "insufficient_evidence": false,
+      "evidence": [],
+      "trade_row_refs": [
+        "ORV-0046#R10",
+        "ORV-0046#R11",
+        "ORV-0046#R12",
+        "ORV-0046#R3",
+        "ORV-0046#R4",
+        "ORV-0046#R5",
+        "ORV-0046#R6",
+        "ORV-0046#R9"
+      ],
+      "calculation_ids": [
+        "CALC-d0e20968679cf6e7",
+        "CALC-c1d6da086b7f9f04"
+      ],
+      "assumptions": [
+        "Prior year import levels represent baseline demand."
+      ],
+      "missing_data": [],
+      "confidence": "high",
+      "uncertainty_note": "The range reflects the substantial loss in sea-trade value, which alternative Vanir shipments failed to fully offset."
+    }
+  ],
+  "insufficient": [
+    {
+      "country": "Tolan",
+      "sector": "maize",
+      "metric": "Import value",
+      "missing_data": [
+        "Monthly trade volume and value for Orvan to Tolan maize imports."
+      ],
+      "rationale": "Quantitative exposure for Tolan's maize imports cannot be reliably estimated due to missing monthly trade statistics for the specific route.",
+      "code_issues": []
+    }
+  ],
+  "sufficient": false,
+  "sufficiency_reason": "While sea-trade data for wheat and Midgard's maize is robust, the total absence of maize trade statistics for Tolan and aggregate rail/overland figures for all routes prevents a comprehensive assessment of net exposure.",
+  "missing": [
+    {
+      "description": "Monthly maize trade statistics for the Orvan to Tolan route.",
+      "why_needed": "Required to calculate the year-over-year change in maize import value for Tolan.",
+      "countries": [
+        "Tolan"
+      ],
+      "sectors": [
+        "maize"
+      ],
+      "source_types": [
+        "trade_note"
+      ]
+    },
+    {
+      "description": "Aggregate quarterly volume/value for rail shipments through Ravik.",
+      "why_needed": "Necessary to determine if rail deliveries significantly mitigated the loss of sea-corridor capacity.",
+      "countries": [
+        "Midgard",
+        "Tolan"
+      ],
+      "sectors": [
+        "wheat",
+        "maize"
+      ],
+      "source_types": [
+        "trade_note"
+      ]
+    }
+  ],
+  "prechecks": {
+    "T1-1": {
+      "claim_id": "T1-1",
+      "valid_citations": 3,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "T1-2": {
+      "claim_id": "T1-2",
+      "valid_citations": 3,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "T1-3": {
+      "claim_id": "T1-3",
+      "valid_citations": 3,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "T1-4": {
+      "claim_id": "T1-4",
+      "valid_citations": 1,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "L1-1": {
+      "claim_id": "L1-1",
+      "valid_citations": 2,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "L1-2": {
+      "claim_id": "L1-2",
+      "valid_citations": 2,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    },
+    "L1-3": {
+      "claim_id": "L1-3",
+      "valid_citations": 2,
+      "issues": [],
+      "flags": [],
+      "hard_fail": []
+    }
+  },
+  "guards": [],
+  "unruled": [],
+  "ruled_claims": [
+    "T1-1",
+    "T1-2",
+    "T1-3",
+    "T1-4",
+    "L1-1",
+    "L1-2",
+    "L1-3"
+  ]
+}

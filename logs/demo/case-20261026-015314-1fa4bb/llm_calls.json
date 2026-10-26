@@ -1,0 +1,90 @@
+{
+  "summary": {
+    "calls_used": 4,
+    "calls_limit": 30,
+    "cached_replays": 0,
+    "repairs": 0,
+    "failed_requests": 2,
+    "by_model": {
+      "gemini-3-flash-preview": 1,
+      "gemini-3.5-flash": 1,
+      "gemini-3.5-flash-lite": 2
+    },
+    "input_tokens": 11620,
+    "output_tokens": 1164,
+    "by_agent": {
+      "heimdall": 4
+    },
+    "by_stage": {
+      "run 1 HEIMDALL": 4
+    },
+    "by_label": {
+      "heimdall report": 1,
+      "heimdall research round 1 with memory (+ no-memory plan)": 3
+    }
+  },
+  "calls": [
+    {
+      "n": 1,
+      "agent": "heimdall",
+      "label": "heimdall research round 1 with memory (+ no-memory plan)",
+      "schema": "DualResearchTurn",
+      "repair": false,
+      "stage": "HEIMDALL",
+      "run": 1,
+      "model": "gemini-3.5-flash",
+      "cached": false,
+      "failed": "quota",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "stop_reason": "error",
+      "ms": 718
+    },
+    {
+      "n": 2,
+      "agent": "heimdall",
+      "label": "heimdall research round 1 with memory (+ no-memory plan)",
+      "schema": "DualResearchTurn",
+      "repair": false,
+      "stage": "HEIMDALL",
+      "run": 1,
+      "model": "gemini-3-flash-preview",
+      "cached": false,
+      "failed": "quota",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "stop_reason": "error",
+      "ms": 12782
+    },
+    {
+      "n": 3,
+      "agent": "heimdall",
+      "label": "heimdall research round 1 with memory (+ no-memory plan)",
+      "schema": "DualResearchTurn",
+      "repair": false,
+      "stage": "HEIMDALL",
+      "run": 1,
+      "model": "gemini-3.5-flash-lite",
+      "cached": false,
+      "input_tokens": 5636,
+      "output_tokens": 463,
+      "stop_reason": "end_turn",
+      "ms": 15000
+    },
+    {
+      "n": 4,
+      "agent": "heimdall",
+      "label": "heimdall report",
+      "schema": "HeimdallReport",
+      "repair": false,
+      "stage": "HEIMDALL",
+      "run": 1,
+      "model": "gemini-3.5-flash-lite",
+      "cached": false,
+      "input_tokens": 5984,
+      "output_tokens": 701,
+      "stop_reason": "end_turn",
+      "ms": 13437
+    }
+  ]
+}

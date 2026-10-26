@@ -160,6 +160,9 @@ def test_sendback_second_run_with_new_evidence(world, settings):
     br = json.loads((r.case_dir / "briefing.json").read_text(encoding="utf-8"))
     assert br["runs_completed"] == 2 and [x["run_number"] for x in br["runs"]] == [1, 2]
     assert br["runs"][1]["new_evidence"] == ["XTR-0001#P1"] and any(s.startswith("T1-1") for s in br["superseded"])
+    # a claim its author withdrew is a concession: listed under the conceded findings, not as superseded
+    l12 = [f for f in br["conceded"] if f["claim_id"] == "L1-2"]
+    assert l12 and "withdrawn by loki in run 2" in l12[0]["text"] and not any(s.startswith("L1-2") for s in br["superseded"])
     md = (r.case_dir / "briefing.md").read_text(encoding="utf-8")
     assert "## Investigation runs" in md and "XTR-0001#P1" in md
     # the advocates saw the new evidence in run 2 (delivered through the as_of-gated path)

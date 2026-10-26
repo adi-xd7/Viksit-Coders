@@ -1,0 +1,17 @@
+{
+  "new_evidence": 13,
+  "claims_citing_new_evidence": {
+    "T2-1": "established",
+    "L2-1": "contested"
+  },
+  "verdict_changes": {},
+  "revised": {
+    "L1-1": "contested -> L2-1: contested"
+  },
+  "range_changes": {},
+  "sufficiency": {
+    "before": false,
+    "after": false
+  },
+  "changed": 3
+}

@@ -8,6 +8,7 @@ import { UploadForm } from "./components/UploadDialog";
 import { fmtTime } from "./lib/format";
 import { useRoute, VIEW_LABEL } from "./lib/route";
 import { useCase } from "./useCase";
+import { ArgumentMapView } from "./views/ArgumentMapView";
 import { BriefingView } from "./views/BriefingView";
 import { EvidenceView, type DocTarget } from "./views/EvidenceView";
 import { ExposureView } from "./views/ExposureView";
@@ -15,6 +16,7 @@ import { TraceView } from "./views/TraceView";
 import { TrialView } from "./views/TrialView";
 
 const INTRO: Record<string, string> = {
+  map: "Who argued what from which evidence, who attacked it, how each attack was answered and how Odin ruled. One lane per claim, read left to right.",
   exposure: "Low and high estimates per country and sector on one shared scale. Trade exposure is not a loss estimate.",
   evidence: "The live feed of documents the agents retrieve, and every document by publication date. Anything after the as-of date is blocked in code and logged.",
   briefing: "Odin's final briefing, written from his rulings only: findings, exposure table, outlook, citations and sources.",
@@ -98,6 +100,7 @@ export default function App() {
         )}
         {view === "trial" && <TrialView t={trial} open={open} question={status?.question} finished={finished}
           caseFile={status?.results?.case_file} notes={status?.notes} />}
+        {view === "map" && <ArgumentMapView t={trial} open={open} finished={finished} />}
         {view === "exposure" && <ExposureView table={briefing?.exposure_table} t={trial} open={open} finished={finished} />}
         {view === "evidence" && <EvidenceView asOf={status?.as_of} caseId={caseId} t={trial} target={target} open={open}
           version={feedVersion} live={status?.status === "running"} />}

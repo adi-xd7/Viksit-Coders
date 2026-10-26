@@ -287,8 +287,8 @@ workflow and real or properly generated test data.
 6 Functional dashboard · 7 Final validation and submission.
 
 ## 17. Acceptance checklist (tick only with evidence; note the evidence)
-- [ ] Heimdall ingests PDF/TXT/DOCX (incl. live-added packs) and reads trade data
-  (Phase 1: ingest pipeline + second-pack test done; open: Heimdall agent use, POST /packs)
+- [x] Heimdall ingests PDF/TXT/DOCX (incl. live-added packs) and reads trade data
+  (2026-10-26: random unseen packs seeds 11/2024/777 uploaded as .zip via POST /ingest, 26/26 checks each (scripts/check_unseen_pack.py); real trial on seed 11 case-20261026-011234-6779fc used its tables)
 - [x] Hybrid retrieval works with ≥2 metadata filters
   (Phase 2: tests/test_retrieval.py::test_two_filters_combine_as_intersection; CLI demo)
 - [x] as_of enforced on every retrieval path
@@ -307,12 +307,12 @@ workflow and real or properly generated test data.
   (Phase 5: fact/inference per finding, sections Assumptions and uncertainty / outlook assumptions; build-time citation + provenance checks; tests/test_api.py)
 - [x] Exposure estimates have metrics, units, periods, evidence refs
   (Phase 3: logs/demo/case-20261025-084715-fa6fe3 briefing.json: metric definition, unit, period, calc IDs, row refs; 9/9 calcs replay)
-- [ ] Second run with new relevant evidence
-  (Phase 4: implemented + scripted test test_sendback_second_run_with_new_evidence; REAL demo pending, API limit)
+- [x] Second run with new relevant evidence
+  (2026-10-26: logs/demo/case-20261026-005913-e4e654: send-back -> 13 new refs ORV-0005 -> T2-1 added, L1-1 revised, L1-2 withdrawn, Odin re-ruled)
 - [x] Each agent has private persistent memory
   (Phase 4: agent_memory table + AgentMemory owner-bound; tests test_memory_is_private_per_agent, test_agent_env_cannot_write_or_read_another_agents_memory, test_memory_persists_into_a_later_case)
-- [ ] Logs show memory changing an agent's action
-  (Phase 4: MEMORY_APPLIED with original vs changed action; scripted test test_memory_read_changes_a_query; REAL demo pending)
+- [x] Logs show memory changing an agent's action
+  (2026-10-26: demo case-20261026-005913-e4e654: 6 MEMORY_APPLIED with no-memory baseline vs memory plan)
 - [x] Dashboard click-through + only real events shown
   (Phase 6: frontend/ built from API data and recorded events only; Edge check on case-20261025-084715-fa6fe3: UI counts = API counts, citation -> paragraph highlighted; live SSE on real cases. Full real case through the UI still pending: Gemini free quota)
 - [x] Damaged files/rows handled without crash or silent corruption
@@ -323,8 +323,10 @@ workflow and real or properly generated test data.
   (Phase 4: tests test_run_limit_stops_the_loop, test_token_budget_hit_in_run2_finishes_gracefully, test_tool_and_evidence_budgets_finish_gracefully, test_cross_exam_rounds_are_bounded; Phase 3 test_token_budgets_enforced, test_tool_call_budget_hits_limit, test_one_repair_attempt_then_controlled_error; SDK max_retries/timeout from config)
 - [x] Failures and incomplete investigations reported honestly
   (Phase 3: case-20261025-085334 API limit -> FAILED, no briefing; demo briefing status 'partial'; test_agent_failure_reported_honestly)
-- [ ] README, .env.example, architecture diagram, reproducible demo logs
-- [ ] No dev-pack answers or trap IDs hard-coded
+- [x] README, .env.example, architecture diagram, reproducible demo logs
+  (2026-10-26: README rewritten for evaluators; assets/architecture.svg; logs/demo/case-20261026-005913-e4e654)
+- [x] No dev-pack answers or trap IDs hard-coded
+  (2026-10-26: grep of backend/ and frontend/src for ORV-/ATL-/WLD-/Orvan/Midgard/Tolan/Vanir/Asgard/as-of date: only a date in a code comment; random packs run through the same code)
 
 Official minimum acceptance criteria (PS §3.3), all mandatory:
 1. Heimdall ingests the feed (PDF/TXT/DOCX, incl. live-added docs), builds the

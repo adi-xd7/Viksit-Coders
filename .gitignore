@@ -41,3 +41,7 @@ logs/cases/
 .DS_Store
 Thumbs.db
 *.tsbuildinfo
+
+# generated unseen-pack test data (rebuild with scripts/build_random_pack.py --seed N)
+data/dryrun/random_s*/
+data/dryrun/random_s*.expected.json

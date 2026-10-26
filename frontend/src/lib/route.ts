@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 
-export const VIEWS = ["trial", "exposure", "evidence", "briefing", "trace"] as const;
+export const VIEWS = ["trial", "map", "exposure", "evidence", "briefing", "trace"] as const;
 export type View = (typeof VIEWS)[number];
 export const VIEW_LABEL: Record<View, string> = {
-  trial: "Trial", exposure: "Exposure", evidence: "Evidence", briefing: "Briefing", trace: "Run trace",
+  trial: "Trial", map: "Argument map", exposure: "Exposure", evidence: "Evidence", briefing: "Briefing", trace: "Run trace",
 };
 
 export interface Route {

@@ -27,6 +27,7 @@ from ragnarok.models import (
     ExposureEstimate,
     ExposureRow,
     Outlook,
+    Ruling,
     RunSummary,
     SourceRef,
     Verdict,
@@ -72,9 +73,11 @@ def estimate_problems(store: Store, calc, e: ExposureEstimate) -> list[str]:
 def build_briefing(store: Store, cf: CaseFile, claims: list[Claim], odin: OdinResult, concessions: dict,
                    notes: list[str], traps: list[str], runs_completed: int = 1, runs: list[RunSummary] | None = None,
                    superseded: list[str] | None = None, final_run: int | None = None,
-                   calc=None) -> tuple[Briefing, str, list[dict]]:
+                   calc=None, withdrawn: list[tuple[Claim, Ruling | None, str]] | None = None,
+                   ) -> tuple[Briefing, str, list[dict]]:
     """Returns (briefing, markdown, dropped); `dropped` lists every citation or estimate removed
-    by the build-time checks (the caller logs them)."""
+    by the build-time checks (the caller logs them). `withdrawn`: claims their author withdrew in a
+    later run (claim, its last ruling, reason); they are reported as conceded findings."""
     as_of = cf.as_of
     dropped: list[dict] = []
     by_claim = {c.claim_id: c for c in claims}
@@ -94,6 +97,17 @@ def build_briefing(store: Store, cf: CaseFile, claims: list[Claim], odin: OdinRe
             continue
         sections[r.verdict].append(BriefingFinding(claim_id=c.claim_id, ruling_id=r.ruling_id, verdict=r.verdict,
                                                    claim_type=r.claim_type, text=text, citations=cits))
+    for c, r, why in withdrawn or []:
+        by_claim[c.claim_id] = c
+        cits, bad = check_citations(store, c.citations, as_of, f"claim {c.claim_id}")
+        dropped += bad
+        if not cits:
+            unverifiable.append(f"{c.claim_id} (withdrawn): no citation passed the build-time check; not shown as a finding")
+            continue
+        earlier = f"; ruled {r.verdict.value} in run {r.run_number}" if r else ""
+        sections[Verdict.CONCEDED].append(BriefingFinding(
+            claim_id=c.claim_id, ruling_id=r.ruling_id if r else "", verdict=Verdict.CONCEDED,
+            claim_type=r.claim_type if r else c.claim_type, text=f"{c.text} — {why}{earlier}", citations=cits))
     event_cits, bad = check_citations(store, cf.event_citations, as_of, "event verification")
     dropped += bad
 

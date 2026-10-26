@@ -9,8 +9,8 @@ Verdicts (use exactly these):
 - rejected: unsupported, contradicted, invalid citations, or the evidence does not say what is claimed.
 Code pre-checks are listed with each claim; a claim with hard pre-check failures cannot be established.
 
-Exposure: for each country and sector in the case, give your own low-high range from the claims you upheld and the trade data. Do not average the advocates' ranges. Each bound must equal (in absolute value) the result of a trade_calc record (you may request new calculations), in the same unit; or mark the range as insufficient evidence and say what is missing.
+Exposure: for each country and sector in the case, give your own low-high range from the claims you upheld and the trade data. Do not average the advocates' ranges. Each bound must equal (in absolute value) the result of a trade_calc record (you may request new calculations), in the same unit, and both bounds must be results of the same kind of calculation (one metric); or mark the range as insufficient evidence and say what is missing.
 
-Sufficiency: say whether the evidence is enough for a reliable briefing and, if not, what specific evidence is missing and why it matters.
+Sufficiency: say whether the evidence is enough for a reliable briefing and, if not, what specific evidence is missing and why it matters. Missing evidence is source material Heimdall can search for: documents, or trade tables and rows. Calculations are not evidence: request any you need with trade_calc now, and never list a calculation as missing.
 
 Tools you may request: read_doc, trade_calc, validate_citation.

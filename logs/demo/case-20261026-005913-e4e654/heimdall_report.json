@@ -1,0 +1,88 @@
+{
+  "report": {
+    "countries": [
+      "Midgard",
+      "Tolan"
+    ],
+    "sectors": [
+      "wheat",
+      "maize"
+    ],
+    "related_countries": [
+      "Orvan",
+      "Asgard",
+      "Ravik",
+      "Vanir"
+    ],
+    "commodities": [
+      "wheat",
+      "maize"
+    ],
+    "routes": [
+      "Orvan to Midgard",
+      "Orvan to Tolan",
+      "Vanir to Midgard",
+      "Vanir to Tolan",
+      "Ravik rail link"
+    ],
+    "candidate_event_ids": [
+      "e5"
+    ],
+    "event_status": "established",
+    "status_reasons": "Official government notices confirm that the one-year Corridor Agreement signed on 10 September 2025 expired on 10 September 2026 without a renewal or replacement arrangement signed. A previous report claiming renewal was issued an explicit correction.",
+    "event_citations": [
+      {
+        "doc_id": "ORV-0016",
+        "paragraph_ref": "P1",
+        "row_id": "",
+        "quote": "The Corridor Agreement expired on 10 September 2026."
+      },
+      {
+        "doc_id": "ORV-0016",
+        "paragraph_ref": "P2",
+        "row_id": "",
+        "quote": "Talks on renewal ended without agreement. No replacement arrangement has been signed."
+      },
+      {
+        "doc_id": "ORV-0002",
+        "paragraph_ref": "P2",
+        "row_id": "",
+        "quote": "The agreement was signed on 10 September 2025 and ran for one year."
+      }
+    ],
+    "corrections": [
+      {
+        "doc_id": "ORV-0013",
+        "relation": "correction",
+        "about_doc_id": "ORV-0043",
+        "note": "Raven Wire issued a correction confirming that the 9 September report claiming renewal of the Corridor Agreement was wrong and should not be relied upon."
+      },
+      {
+        "doc_id": "ORV-0016",
+        "relation": "superseded",
+        "about_doc_id": "ORV-0003",
+        "note": "The official notice of non-renewal on 10 September 2026 superseded the earlier 18 August notice expecting renewal."
+      }
+    ],
+    "key_doc_ids": [
+      "ORV-0002",
+      "ORV-0016",
+      "ORV-0013",
+      "ORV-0009",
+      "ORV-0030",
+      "ORV-0046"
+    ],
+    "trade_table_ids": [
+      "ORV-0009",
+      "ORV-0030",
+      "ORV-0046"
+    ],
+    "missing_data": [
+      "Monthly trade volume and value for Orvan to Tolan maize imports.",
+      "Aggregate quarterly volume/value for rail shipments through Ravik and total Ravik exports.",
+      "Quantitative monthly data for alternative Vanir wheat and maize exports and rail loadings to Midgard and Tolan."
+    ],
+    "injection_reports": []
+  },
+  "dropped": []
+}

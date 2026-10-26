@@ -25,7 +25,7 @@ Top bar (brand, case ID, as-of date, run status such as "Partial briefing · run
 (view navigation + the **Pipeline** list built from the case status and events), and the main column. Below 768 px the
 rail becomes a horizontal nav and the pipeline list is hidden.
 
-Views are addressed by the URL hash: `#case=<id>&view=trial|exposure|evidence|briefing|trace`; a bare `#exposure`
+Views are addressed by the URL hash: `#case=<id>&view=trial|map|exposure|evidence|briefing|trace`; a bare `#exposure`
 also works (`src/lib/route.ts`). Without a case, the main column shows the start form (question + as-of date, or open a
 saved case) and the document upload.
 
@@ -37,6 +37,7 @@ evidence feed re-reads the index afterwards. Questions asked afterwards can use 
 | View | Built from |
 |---|---|
 | **Trial** | `CLAIM`, `ATTACK`, `DEFENSE`, `CONCESSION`, `RULING` events of the latest attempt: rulings ledger, Thor / Loki claim columns, cross-examination as Attack · Response · Odin (defense with new evidence, concession, invalid defense, undefended) |
+| **Argument map** | the same trial events, laid out by `src/lib/argmap.ts` (`buildMap`, pure, no layout library): one lane per claim, read left to right as cited documents → claim → attacks on it → each response (defense with new evidence, concession, withdrawal, undefended) → Odin's ruling; Thor's and Loki's lanes in two bands, a revision directly under the claim it revises; document nodes placed level with what cites them. Hover or select a node to light up its lane and the counter / new evidence links; the detail panel shows the whole exchange with clickable citations, or every use of a selected document. Filters: side, run |
 | **Exposure** | the briefing's exposure table (or, while running, the advocates' submitted estimates): one shared scale per unit with nice ticks computed from the data; Thor / Loki / Odin lines; dashed "no estimate" with the recorded reason (missing is never drawn as zero); row details with metric definitions, unit / period / denominator, assumptions, missing data, trade-row refs and calculation records (from `RETRIEVED` trade_calc events) |
 | **Trial** (top) | the **Case file** (Heimdall's event check with its reasons and citations, countries, sectors, routes, trade tables, key documents, corrections, missing data) and the **trial notes** (failures, unchallenged sides) |
 | **Evidence** | `GET /feed?as_of=` + `RETRIEVED` / `NEW_EVIDENCE` / `CLOCK_VIOLATION_BLOCKED` events: publication timeline with the as-of line, the **live feed** (documents in the order the agents first retrieve them, live while a case runs), filters, document list, inline viewer (`GET /docs/{id}?case_id=`, `GET /trade/{table}?case_id=`) with the cited paragraph or row highlighted and flagged spans marked "withheld as instruction"; blocked documents show no content |

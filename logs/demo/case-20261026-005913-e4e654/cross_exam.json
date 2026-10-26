@@ -1,0 +1,395 @@
+{
+  "attacks": [
+    {
+      "attack_id": "A1-T1",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "thor",
+      "target_claim_id": "L1-1",
+      "target_agent": "loki",
+      "objection": "The opponent overstates the mitigating impact of Vanir wheat shipments to Midgard, which are insufficient to offset the massive deficit created by the Orvan corridor's end.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0024",
+          "paragraph_ref": "P6",
+          "row_id": null,
+          "pub_date": "2026-09-12",
+          "quote": "The amounts are small compared with Orvan's sea trade."
+        },
+        {
+          "doc_id": "ORV-0007",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2026-10-22",
+          "quote": "Vanir wheat sales to Tolan and Midgard may rise by between a seventh and a fifth in volume, again from a small base."
+        }
+      ],
+      "evidence_gap": "The opponent fails to provide a net balance calculation that accounts for the fact that the total value loss from Orvan (USD 156.5M - 216.2M) vastly outweighs the relatively small increases from Vanir.",
+      "why_it_matters": "Understating exposure by focusing on a minor alternative supply source ignores the structural deficit and higher costs (confirmed in ORV-0022/P5) faced by Midgard's millers."
+    },
+    {
+      "attack_id": "A1-T2",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "thor",
+      "target_claim_id": "L1-3",
+      "target_agent": "loki",
+      "objection": "The opponent incorrectly characterizes Vanir's supply as a substantial buffer for Tolan, when official reporting confirms it cannot replace the lost Orvan sea volume.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0044",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-22",
+          "quote": "The Vanir gain is real but small, and it does not replace the Orvan sea volume."
+        },
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-20",
+          "quote": "Tolan buyers replaced part of the lost volume with wheat from Vanir, but the replacement was smaller than the gap."
+        }
+      ],
+      "evidence_gap": null,
+      "why_it_matters": "Claiming the exposure is 'lower' because of a buffer that explicitly fails to fill the gap misrepresents the severity of the supply disruption for Tolan."
+    },
+    {
+      "attack_id": "A1-T3",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "thor",
+      "target_claim_id": "L1-2",
+      "target_agent": "loki",
+      "objection": "The opponent uses the term 'resilient' to describe a temporary delay in trade collapse that still resulted in a massive year-over-year loss for Midgard's maize imports.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R11",
+          "pub_date": "2027-01-21",
+          "quote": "In November 2025, the value was USD 84.7M and the volume was 223,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R5",
+          "pub_date": "2027-01-21",
+          "quote": "In November 2026, the value was USD 31.9M and the volume was 75,000 tonnes."
+        }
+      ],
+      "evidence_gap": null,
+      "why_it_matters": "Describing the trade as resilient because of an October buffer (USD 62.1M vs USD 82.8M in 2025) ignores the subsequent 62% value crash in November, which signals high, not low, exposure."
+    },
+    {
+      "attack_id": "A1-L1",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "loki",
+      "target_claim_id": "T1-1",
+      "target_agent": "thor",
+      "objection": "The exposure estimate relies solely on the gross drop in Orvan sea trade and fails to account for documented substitution by other suppliers and alternative routes.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Orvan's share of Midgard's grain imports has fallen, while Vanir and rail deliveries have taken part of the gap."
+        },
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": null,
+          "row_id": "ORV-0027#R5",
+          "pub_date": "2027-01-22",
+          "quote": "In November 2026, the value was USD 38.5M and the volume was 96,000 tonnes."
+        }
+      ],
+      "evidence_gap": "Quantitative analysis of net exposure including the offset from Vanir wheat value increases.",
+      "why_it_matters": "Overestimating exposure by ignoring functional substitutes leads to an inaccurate risk assessment for Midgard's food security."
+    },
+    {
+      "attack_id": "A1-L2",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "loki",
+      "target_claim_id": "T1-2",
+      "target_agent": "thor",
+      "objection": "The claim characterizes Midgard's maize exposure as high and sharp immediately post-expiration, ignoring the explicit mitigation provided by delayed delivery terms in October.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "The October volume held up longer than the wheat routes because a share of the maize trade was on delayed delivery terms."
+        },
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": null,
+          "row_id": "ORV-0030#R4",
+          "pub_date": "2027-01-21",
+          "quote": "In October 2026, the value was USD 62.1M and the volume was 146,000 tonnes."
+        }
+      ],
+      "evidence_gap": "Evidence showing that October's trade volume constituted a 'sharp decline' rather than a managed transition.",
+      "why_it_matters": "Failing to account for commercial buffering mechanisms like delayed delivery terms misrepresents the speed and severity of supply chain shocks."
+    },
+    {
+      "attack_id": "A1-L3",
+      "run_number": 1,
+      "round_number": 1,
+      "attacker": "loki",
+      "target_claim_id": "T1-3",
+      "target_agent": "thor",
+      "objection": "The assertion that Vanir wheat supply is 'small' and fails to offset the deficit is contradicted by evidence of active replacement by Tolan buyers.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-20",
+          "quote": "Tolan buyers replaced part of the lost volume with wheat from Vanir"
+        },
+        {
+          "doc_id": "ORV-0042",
+          "paragraph_ref": "P1",
+          "row_id": null,
+          "pub_date": "2026-11-25",
+          "quote": "Tolan Harbour is handling more wheat cargoes from Vanir as Tolan buyers replace some Orvan supply."
+        }
+      ],
+      "evidence_gap": "Comparative data showing that the Vanir increase is mathematically insignificant relative to the Orvan sea trade loss.",
+      "why_it_matters": "Dismissing secondary suppliers without checking their growth capacity underestimates the resilience of the Tolan trade network."
+    },
+    {
+      "attack_id": "A2-T1",
+      "run_number": 2,
+      "round_number": 1,
+      "attacker": "thor",
+      "target_claim_id": "L2-1",
+      "target_agent": "loki",
+      "objection": "The claim overstates the degree of mitigation because alternative suppliers like Vanir have strictly limited spare capacity and rail routes are physically bottlenecked.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P6",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Vanir suppliers say they have little spare wheat to offer."
+        },
+        {
+          "doc_id": "ORV-0005",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "This route moves by rail over the Ravik Rail Link, and rail capacity is the limit on further growth."
+        }
+      ],
+      "evidence_gap": "Lack of quantitative proof that Vanir and rail increases represent net additions rather than diverted regional trade or that they can scale to replace the full maritime volume.",
+      "why_it_matters": "If substitute suppliers lack spare capacity and transport corridors face binding bottlenecks, treating alternative deliveries as full mitigation creates a false sense of security regarding import exposure."
+    },
+    {
+      "attack_id": "A2-L1",
+      "run_number": 2,
+      "round_number": 1,
+      "attacker": "loki",
+      "target_claim_id": "T2-1",
+      "target_agent": "thor",
+      "objection": "Thor overstates the bottleneck effect of rail capacity, ignoring that Ravik rail shipments remained high and nearly matched November levels in December, demonstrating ongoing operational adaptability.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0005",
+          "paragraph_ref": null,
+          "row_id": "ORV-0005#R6",
+          "pub_date": "2027-01-21",
+          "quote": "In December 2026, the value was USD 41.7M and the volume was 100,000 tonnes."
+        }
+      ],
+      "evidence_gap": "Absence of quantitative terminal capacity utilization data to prove a physical ceiling was permanently reached.",
+      "why_it_matters": "Exaggerating bottlenecks obscures the measurable capacity of alternative routes to absorb trade disruptions."
+    }
+  ],
+  "defenses": [
+    {
+      "defense_id": "D-A1-L1",
+      "run_number": 1,
+      "defender": "thor",
+      "attack_id": "A1-L1",
+      "claim_id": "T1-1",
+      "argument": "While Vanir wheat shipments to Midgard increased post-expiration, this replacement is mathematically insufficient to cover the Orvan sea trade deficit. The net wheat import value for Midgard (Orvan sea plus Vanir sea) still shows a massive year-over-year decline. Furthermore, Vanir suppliers have indicated they have 'little spare wheat to offer,' suggesting that the capacity for further substitution is severely constrained.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P6",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Vanir suppliers say they have little spare wheat to offer."
+        },
+        {
+          "doc_id": "ORV-0027",
+          "paragraph_ref": "P7",
+          "row_id": null,
+          "pub_date": "2027-01-22",
+          "quote": "In December 2026, the value was USD 36.9M and the volume was 92,000 tonnes."
+        }
+      ]
+    },
+    {
+      "defense_id": "D-A1-L2",
+      "run_number": 1,
+      "defender": "thor",
+      "attack_id": "A1-L2",
+      "claim_id": "T1-2",
+      "argument": "The buffering provided by delayed delivery terms in October 2026 was temporary and insufficient to prevent a high-exposure event. Despite these terms, October 2026 maize import value from Orvan still dropped by over USD 20M compared to October 2025. Once these commercial buffers were exhausted, the decline accelerated sharply in November and December, confirming that the expiration created a severe and sustained supply shock.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P5",
+          "row_id": "ORV-0030#R4",
+          "pub_date": "2027-01-21",
+          "quote": "In October 2026, the value was USD 62.1M and the volume was 146,000 tonnes."
+        },
+        {
+          "doc_id": "ORV-0030",
+          "paragraph_ref": "P11",
+          "row_id": "ORV-0030#R10",
+          "pub_date": "2027-01-21",
+          "quote": "In October 2025, the value was USD 82.8M and the volume was 218,000 tonnes."
+        }
+      ]
+    },
+    {
+      "defense_id": "D-A1-L3",
+      "run_number": 1,
+      "defender": "thor",
+      "attack_id": "A1-L3",
+      "claim_id": "T1-3",
+      "argument": "Evidence from shipping and trade notes explicitly confirms that the Vanir wheat replacement for Tolan is 'smaller than the gap' and 'does not replace the Orvan sea volume.' While Tolan buyers were active in the Vanir market, the absolute growth in Vanir shipments (rising only a few million USD by December) is dwarfed by the approximately USD 22-26M monthly value loss from the Orvan sea route.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0046",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-20",
+          "quote": "Tolan buyers replaced part of the lost volume with wheat from Vanir, but the replacement was smaller than the gap."
+        },
+        {
+          "doc_id": "ORV-0044",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-22",
+          "quote": "The Vanir gain is real but small, and it does not replace the Orvan sea volume."
+        }
+      ]
+    },
+    {
+      "defense_id": "D-A1-T1",
+      "run_number": 1,
+      "defender": "loki",
+      "attack_id": "A1-T1",
+      "claim_id": "L1-1",
+      "argument": "While the opponent correctly notes that Vanir shipments do not fully offset the Orvan sea deficit, the exposure of Midgard millers is qualitatively limited because the alternative supply is described as 'reliable enough for current demand.' The mitigation is not just about the absolute volume but the functional stability provided by these substitutes and the fact that the sea route is still operating, albeit at higher costs and longer wait times.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Millers say the substitute supply is reliable enough for current demand"
+        },
+        {
+          "doc_id": "ORV-0035",
+          "paragraph_ref": "P7",
+          "row_id": null,
+          "pub_date": "2027-01-14",
+          "quote": "Shipowners say the sea route is operating, but with longer waits and higher insurance costs."
+        }
+      ]
+    },
+    {
+      "defense_id": "D-A1-T2",
+      "run_number": 1,
+      "defender": "loki",
+      "attack_id": "A1-T2",
+      "claim_id": "L1-3",
+      "argument": "The characterization of Vanir's supply as a buffer for Tolan is supported by the fact that Tolan Harbour has specifically managed the transition to handling more Vanir cargoes and that these extra calls are filling berths previously used for Orvan trade. The manageable nature of the smaller Vanir parcels indicates a stable, even if reduced, supply chain structure.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0042",
+          "paragraph_ref": "P1",
+          "row_id": null,
+          "pub_date": "2026-11-25",
+          "quote": "Tolan Harbour is handling more wheat cargoes from Vanir as Tolan buyers replace some Orvan supply."
+        },
+        {
+          "doc_id": "ORV-0042",
+          "paragraph_ref": "P5",
+          "row_id": null,
+          "pub_date": "2026-11-25",
+          "quote": "Anchor Marine says the change is manageable because the Vanir parcels are smaller than the Orvan cargoes they replace."
+        }
+      ]
+    },
+    {
+      "defense_id": "D-A2-L1",
+      "run_number": 2,
+      "defender": "thor",
+      "attack_id": "A2-L1",
+      "claim_id": "T2-1",
+      "argument": "While December shipments remained high at 100,000 tonnes, the operational friction and logistical hurdles associated with shifting to rail parcels instead of bulk sea cargoes indicate that capacity constraints and planning difficulties continue to limit full substitution.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0006",
+          "paragraph_ref": "P6",
+          "row_id": null,
+          "pub_date": "2026-10-08",
+          "quote": "A rail parcel can arrive in days, while a sea cargo takes weeks to arrange. That makes planning harder and ties up more working capital."
+        }
+      ]
+    },
+    {
+      "defense_id": "D-A2-T1",
+      "run_number": 2,
+      "defender": "loki",
+      "attack_id": "A2-T1",
+      "claim_id": "L2-1",
+      "argument": "Although long-term capacity is ultimately constrained, actual trade statistics and operational reports confirm that Vanir shipments and Ravik rail deliveries successfully absorbed a substantial share of the import gap during the fourth quarter of 2026 as observed.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P3",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Midgard millers have increased purchases from Vanir and moved more grain by rail through Ravik."
+        }
+      ]
+    }
+  ],
+  "concessions": [
+    {
+      "concession_id": "C-A1-T3",
+      "run_number": 1,
+      "agent": "loki",
+      "claim_id": "L1-2",
+      "attack_id": "A1-T3",
+      "reason": "The term 'resilient' inaccurately describes the maize trade, which experienced a sharp decline in November and December despite the initial buffer provided by delayed delivery terms in October.",
+      "partial": true,
+      "revised_claim_text": "Midgard's maize imports from Orvan saw a delayed decline compared to wheat due to delivery terms, but ultimately suffered significant year-on-year losses in the final months of 2026."
+    },
+    {
+      "concession_id": "W2-L1-2",
+      "run_number": 2,
+      "agent": "loki",
+      "claim_id": "L1-2",
+      "attack_id": null,
+      "reason": "Withdrawing the maize resilience claim as new evidence and further review emphasize that delayed delivery terms only temporarily postponed the import decline rather than structurally neutralizing exposure.",
+      "partial": false,
+      "revised_claim_text": null
+    }
+  ],
+  "invalid_defenses": [],
+  "unanswered": [],
+  "failures": [],
+  "rejected_attacks": []
+}

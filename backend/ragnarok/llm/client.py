@@ -399,9 +399,11 @@ class LLMClient:
                     self.on_event("cache_error", agent, f"{base['label']}: response cache write failed: {exc}"[:500], {})
             return res
         # nothing left in the chain
-        quota_blocked = {m: t for m, (t, why) in self.pool.blocked().items() if m in chain and "quota" in why}
-        if quota_blocked and self.settings.quota_pause:
-            raise QuotaPause(min(quota_blocked.values()), chain)
+        # pause when a used-up quota is involved; resume as soon as the first model in the chain is free
+        # again, which may be a model that is only cooling down after server errors
+        blocked = {m: (t, why) for m, (t, why) in self.pool.blocked().items() if m in chain}
+        if any("quota" in why for _, why in blocked.values()) and self.settings.quota_pause:
+            raise QuotaPause(min(t for t, _ in blocked.values()), chain)
         raise LLMError(f"{agent.value}: no model available in the chain ({', '.join(chain)}): "
                        + "; ".join(f"{m} until {t.strftime('%H:%M')} UTC" for m, (t, _) in self.pool.blocked().items()
                                    if m in chain))

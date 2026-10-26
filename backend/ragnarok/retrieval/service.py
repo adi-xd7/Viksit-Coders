@@ -118,9 +118,9 @@ class RetrievalService:
         seq = self._log(case_id, run_number, agent, LogEventType.QUERY, f"{agent.value} query: {query}"[:500],
                         {"query": query, "query_norm": qn, "filters": shown_filters, "as_of": request["as_of"],
                          "limit": limit, "reused": False, "cache_key": key})
-        if f.exclude_chunks:  # set lookup, not a list scan per chunk
-            f = f.model_copy(update={"exclude_chunks": frozenset(f.exclude_chunks)})
-        cands = [i for i, c in enumerate(self.index.chunks) if passes(c, f, as_of)]
+        # set lookup, not a list scan per chunk (only for filtering; the result keeps the list)
+        fq = f.model_copy(update={"exclude_chunks": frozenset(f.exclude_chunks)}) if f.exclude_chunks else f
+        cands = [i for i, c in enumerate(self.index.chunks) if passes(c, fq, as_of)]
         ranked = self.index.rank(query, cands, limit)
         hits = [self._hit(i, s, f, as_of) for i, s in ranked]
         res = SearchResult(query=query, query_norm=qn, as_of=as_of, agent=agent, filters=f, limit=limit, hits=hits,

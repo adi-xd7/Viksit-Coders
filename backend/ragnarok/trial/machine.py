@@ -61,6 +61,7 @@ from ragnarok.models import (
     EventStatus,
     LogEvent,
     LogEventType,
+    Ruling,
     RunSummary,
     SendBack,
 )
@@ -651,11 +652,23 @@ class Trial:
                 sendback_missing=[m.description for m in r.sendback.missing] if r.sendback else [],
                 new_evidence=[e["ref"] for e in r.research.new_evidence] if r.research else [],
                 note=" | ".join(r.notes)[:1000]))
-        superseded = [f"{k}: {v}" for k, v in self.result.superseded.items() if k not in ids]
+        # a claim its own author withdrew in a later run is a concession: it is reported under the conceded
+        # findings with its last ruling and the reason; a claim replaced by a revision stays "superseded"
+        withdrawn: list[tuple[Claim, Ruling | None, str]] = []
+        for cid, why in self.result.superseded.items():
+            if cid in ids or not why.startswith("withdrawn"):
+                continue
+            for r in reversed(self.result.runs):
+                c = next((x for x in r.ruled_claims if x.claim_id == cid), None)
+                if c is not None:
+                    withdrawn.append((c, next((x for x in (r.odin.rulings if r.odin else []) if x.claim_id == cid), None), why))
+                    break
+        gone = {c.claim_id for c, _, _ in withdrawn}
+        superseded = [f"{k}: {v}" for k, v in self.result.superseded.items() if k not in ids and k not in gone]
         briefing, md, dropped = build_briefing(
             self.store, fin.case_file, claims, odin, concessions, self.result.notes, sorted(set(traps)),
             runs_completed=self.result.runs_completed, runs=runs, superseded=superseded, final_run=fin.run_number,
-            calc=self.service.calculator(self.ctx.as_of))
+            calc=self.service.calculator(self.ctx.as_of), withdrawn=withdrawn)
         for d in dropped:
             self.log(LogEventType.ERROR, f"briefing check dropped {d['where']}: {d['ref']} ({'; '.join(d['issues'])})"[:500],
                      {"briefing_check": d}, [d["ref"]], agent=AgentName.ODIN)

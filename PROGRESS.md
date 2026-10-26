@@ -367,3 +367,32 @@ Minimum implementation per PS §3.3 criterion: (1) ingest + CaseFile + trade par
 - Dashboard: `cd frontend && npm install && npm run dev` → http://localhost:5173 (open a case with #case=<id>). Details in frontend/README.md.
 - Before any real run, probe Gemini once: a 429 with QuotaFailure "...PerDay..." means the free daily quota is gone (retryDelay says when it resets).
 - Never hard-code dev-pack IDs/values; scratch analysis scripts lived outside the repo.
+
+## Bonus feature: Argument map (2026-10-26)
+- New dashboard view "Argument map" (`#view=map`): frontend/src/lib/argmap.ts (pure layout: lanes per claim,
+  evidence -> claim -> attacks -> responses -> Odin ruling; doc nodes placed by barycentre) and
+  frontend/src/views/ArgumentMapView.tsx (SVG edges + button nodes, hover/select focus, detail panel, side/run filters,
+  empty states). Built only from recorded trial events; no backend change, no AI requests.
+- Verified (headless Edge, real saved cases): 204050-ac35da 34 nodes (8 docs, 7 claims, 6 attacks, 4 defenses,
+  2 concessions, 7 rulings) = Trial view counts; 084715-fa6fe3 45 nodes; filters, Enter/Esc keyboard, citation
+  click-through to Evidence, no page side-scroll at 1280 / 390 px; tsc + vite build clean.
+- Not yet in assets/Ragnarok_Dashboard_Guide.pdf.
+
+## Final validation (2026-10-26, new Gemini key in a new Google project)
+- Key probe OK (gemini-3.5-flash, 2.3 s). Servers restarted with new key + latest code.
+- REAL two-run demo: logs/demo/case-20261026-005913-e4e654 (24 requests, 0 repairs). Send-back -> 13 new refs
+  (ORV-0005, Orvan->Ravik rail) -> T2-1 added (established), L1-1 revised -> L2-1, L1-2 withdrawn; 6 MEMORY_APPLIED.
+  Replayed from cache (0 requests) after the briefing fix -> 5 established / 2 contested / 1 conceded, incomplete
+  (Tolan maize data absent from pack). Dashboard checks 35/35 + 25/25 on it.
+- Unseen data: scripts/build_random_pack.py (random world per seed, all PS traps, 4 random table layouts) +
+  scripts/check_unseen_pack.py (zip upload via POST /ingest, checks via /feed /docs /trade). Seeds 11, 2024, 777:
+  26/26 each. Real trial seed 11: case-20261026-011234-6779fc complete briefing, 12 requests, injection withheld.
+- Bugs found and fixed:
+  1. Withdrawn claims were listed only as "superseded" -> now under conceded findings (machine._briefing, build_briefing).
+  2. Ranges mixing calc kinds (sum + yoy_change), negative net_offset read as exposure, fall+rise merged ->
+     estimates._metric_problems (one repair, else dropped); prompts state the rule. Test test_range_must_measure_one_metric.
+  3. Quota pause waited for the daily reset even when a chain model was only cooling down after 503s ->
+     pause until the earliest free model. Test test_pause_ends_when_the_first_model_is_free_again.
+  4. frozenset in SearchFilters serialisation warning (retrieval/service.py).
+- README rewritten for evaluators (criteria -> evidence table, demo walkthrough, unseen-data results).
+- Dashboard guide PDF updated with the Argument map page.

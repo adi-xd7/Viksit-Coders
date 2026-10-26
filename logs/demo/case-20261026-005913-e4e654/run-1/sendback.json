@@ -1,0 +1,35 @@
+{
+  "sendback_id": "SB-1",
+  "run_number": 1,
+  "reason": "While sea-trade data for wheat and Midgard's maize is robust, the total absence of maize trade statistics for Tolan and aggregate rail/overland figures for all routes prevents a comprehensive assessment of net exposure.",
+  "missing": [
+    {
+      "description": "Monthly maize trade statistics for the Orvan to Tolan route.",
+      "why_needed": "Required to calculate the year-over-year change in maize import value for Tolan.",
+      "countries": [
+        "Tolan"
+      ],
+      "sectors": [
+        "maize"
+      ],
+      "source_types": [
+        "trade_note"
+      ]
+    },
+    {
+      "description": "Aggregate quarterly volume/value for rail shipments through Ravik.",
+      "why_needed": "Necessary to determine if rail deliveries significantly mitigated the loss of sea-corridor capacity.",
+      "countries": [
+        "Midgard",
+        "Tolan"
+      ],
+      "sectors": [
+        "wheat",
+        "maize"
+      ],
+      "source_types": [
+        "trade_note"
+      ]
+    }
+  ]
+}

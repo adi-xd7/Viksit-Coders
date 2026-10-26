@@ -1,0 +1,92 @@
+{
+  "attacks": [
+    {
+      "attack_id": "A2-T1",
+      "run_number": 2,
+      "round_number": 1,
+      "attacker": "thor",
+      "target_claim_id": "L2-1",
+      "target_agent": "loki",
+      "objection": "The claim overstates the degree of mitigation because alternative suppliers like Vanir have strictly limited spare capacity and rail routes are physically bottlenecked.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P6",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Vanir suppliers say they have little spare wheat to offer."
+        },
+        {
+          "doc_id": "ORV-0005",
+          "paragraph_ref": "P14",
+          "row_id": null,
+          "pub_date": "2027-01-21",
+          "quote": "This route moves by rail over the Ravik Rail Link, and rail capacity is the limit on further growth."
+        }
+      ],
+      "evidence_gap": "Lack of quantitative proof that Vanir and rail increases represent net additions rather than diverted regional trade or that they can scale to replace the full maritime volume.",
+      "why_it_matters": "If substitute suppliers lack spare capacity and transport corridors face binding bottlenecks, treating alternative deliveries as full mitigation creates a false sense of security regarding import exposure."
+    },
+    {
+      "attack_id": "A2-L1",
+      "run_number": 2,
+      "round_number": 1,
+      "attacker": "loki",
+      "target_claim_id": "T2-1",
+      "target_agent": "thor",
+      "objection": "Thor overstates the bottleneck effect of rail capacity, ignoring that Ravik rail shipments remained high and nearly matched November levels in December, demonstrating ongoing operational adaptability.",
+      "counter_evidence": [
+        {
+          "doc_id": "ORV-0005",
+          "paragraph_ref": null,
+          "row_id": "ORV-0005#R6",
+          "pub_date": "2027-01-21",
+          "quote": "In December 2026, the value was USD 41.7M and the volume was 100,000 tonnes."
+        }
+      ],
+      "evidence_gap": "Absence of quantitative terminal capacity utilization data to prove a physical ceiling was permanently reached.",
+      "why_it_matters": "Exaggerating bottlenecks obscures the measurable capacity of alternative routes to absorb trade disruptions."
+    }
+  ],
+  "defenses": [
+    {
+      "defense_id": "D-A2-L1",
+      "run_number": 2,
+      "defender": "thor",
+      "attack_id": "A2-L1",
+      "claim_id": "T2-1",
+      "argument": "While December shipments remained high at 100,000 tonnes, the operational friction and logistical hurdles associated with shifting to rail parcels instead of bulk sea cargoes indicate that capacity constraints and planning difficulties continue to limit full substitution.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0006",
+          "paragraph_ref": "P6",
+          "row_id": null,
+          "pub_date": "2026-10-08",
+          "quote": "A rail parcel can arrive in days, while a sea cargo takes weeks to arrange. That makes planning harder and ties up more working capital."
+        }
+      ]
+    },
+    {
+      "defense_id": "D-A2-T1",
+      "run_number": 2,
+      "defender": "loki",
+      "attack_id": "A2-T1",
+      "claim_id": "L2-1",
+      "argument": "Although long-term capacity is ultimately constrained, actual trade statistics and operational reports confirm that Vanir shipments and Ravik rail deliveries successfully absorbed a substantial share of the import gap during the fourth quarter of 2026 as observed.",
+      "new_evidence": [
+        {
+          "doc_id": "ORV-0022",
+          "paragraph_ref": "P3",
+          "row_id": null,
+          "pub_date": "2027-01-12",
+          "quote": "Midgard millers have increased purchases from Vanir and moved more grain by rail through Ravik."
+        }
+      ]
+    }
+  ],
+  "concessions": [],
+  "invalid_defenses": [],
+  "unanswered": [],
+  "failures": [],
+  "rejected_attacks": []
+}

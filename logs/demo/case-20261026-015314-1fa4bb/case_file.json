@@ -1,0 +1,67 @@
+{
+  "case_id": "case-20261026-015314-1fa4bb",
+  "question": "Evaluate the breaking alert claiming that Orvan Grain Port infrastructure and grain terminal silos were physically destroyed in military strikes. Conduct event verification to rule whether this disruption is verified or rejected as a decoy, citing verified port authority and logistics records.",
+  "as_of": "2027-01-25",
+  "created_at": "2026-10-26T01:53:57.705298Z",
+  "countries": [
+    "Orvan"
+  ],
+  "sectors": [
+    "wheat",
+    "maize"
+  ],
+  "related_countries": [
+    "Vanir"
+  ],
+  "commodities": [
+    "wheat",
+    "maize",
+    "grain"
+  ],
+  "routes": [
+    "Orvan grain corridor"
+  ],
+  "candidate_event_ids": [
+    "e5"
+  ],
+  "event_status": "disproved",
+  "event_verification_notes": "The breaking alert claiming that Orvan Grain Port infrastructure and grain terminal silos were physically destroyed in military strikes is disproved by official Tier 1 government notices and Tier 2 shipping updates showing that the disruption was actually a dock worker strike starting on 14 September 2026, with the port remaining operational at reduced speed and holding vessels outside the harbour rather than being destroyed.",
+  "event_citations": [
+    {
+      "doc_id": "ORV-0032",
+      "paragraph_ref": "P1",
+      "row_id": null,
+      "pub_date": "2026-09-15",
+      "quote": "The Realm Trade Ministry reports that dock workers at Orvan Grain Port began a strike on 14 September 2026."
+    },
+    {
+      "doc_id": "ORV-0032",
+      "paragraph_ref": "P2",
+      "row_id": null,
+      "pub_date": "2026-09-15",
+      "quote": "Some grain berths are closed and the remaining berths are working at reduced speed."
+    },
+    {
+      "doc_id": "ORV-0008",
+      "paragraph_ref": "P1",
+      "row_id": null,
+      "pub_date": "2026-09-18",
+      "quote": "Orvan Grain Port is holding vessels outside the harbour as a dock strike that began on 14 September continues."
+    }
+  ],
+  "evidence_doc_ids": [
+    "ORV-0008",
+    "ORV-0024",
+    "ORV-0032",
+    "ORV-0035"
+  ],
+  "trade_table_ids": [],
+  "missing_data": [
+    "Detailed daily breakdown of vessel queues and exact tonnages delayed during the strike period."
+  ],
+  "corrections": [
+    "ORV-0010 contradiction of ORV-0032: Social media post claiming port destruction contradicts official trade ministry and shipping updates stating it is a dock strike.",
+    "ORV-0026 contradiction of ORV-0032: Blog post claiming ships sunk and port shut for good contradicts official reports of an ongoing dock strike with reduced-speed loadings."
+  ],
+  "run_number": 1
+}

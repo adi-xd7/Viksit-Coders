@@ -1,0 +1,7 @@
+{
+  "name": "ragnarok-pitch-deck",
+  "private": true,
+  "description": "Builds Ragnarok_Agentic_AI_Pitch.pptx from build_deck.js",
+  "scripts": { "build": "node build_deck.js" },
+  "dependencies": { "pptxgenjs": "3.12.0", "jszip": "3.10.1" }
+}

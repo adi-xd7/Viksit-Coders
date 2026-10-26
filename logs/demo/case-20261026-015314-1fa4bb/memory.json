@@ -1,0 +1,226 @@
+{
+  "heimdall": [
+    {
+      "memory_id": "M-heimdall-290d689b03",
+      "agent": "heimdall",
+      "lesson": "Corrections, retractions or contradicting reports changed the record of the event. Search for correction and retraction notices and official notices before setting the event status.",
+      "context": "case case-20261026-015314-1fa4bb: 2 correction note(s)",
+      "case_scope": null,
+      "confidence": 0.8,
+      "created_at": "2026-10-25T10:22:03.401088Z",
+      "kind": "corrections_matter",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 6,
+      "source_case": "case-20261026-015314-1fa4bb",
+      "source_run": 1,
+      "updated_at": "2026-10-26T01:53:57.708315Z"
+    },
+    {
+      "memory_id": "M-heimdall-5113365834",
+      "agent": "heimdall",
+      "lesson": "For a gap like \"Aggregate quarterly volume/value for rail shipments through <place>.\", the targeted search \"quarterly rail shipments <place> wheat maize volume value\" (filters: countries=<place>,<place>,<place>; event_ids=e<n>; sectors=wheat,maize; source_types=trade_note) found new evidence in trade_note.",
+      "context": "case case-20261026-005913-e4e654 run 2: Aggregate quarterly volume/value for rail shipments through Ravik. -> ['ORV-0005#P14', 'ORV-0005#R3', 'ORV-0005#R5', 'ORV-0005#R1', 'ORV-0005#R2', 'ORV-0005#R4']",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-26T01:04:17.665697Z",
+      "kind": "useful_query",
+      "stages": [
+        "research",
+        "sendback"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261026-005913-e4e654",
+      "source_run": 2,
+      "updated_at": "2026-10-26T01:04:17.665697Z"
+    },
+    {
+      "memory_id": "M-heimdall-3bf1d51d4e",
+      "agent": "heimdall",
+      "lesson": "Targeted searches for a gap like \"Monthly maize trade statistics for the <place> to <place> route.\" found nothing new before the as-of date. Report such a gap plainly instead of repeating similar searches.",
+      "context": "case case-20261026-005913-e4e654 run 2: Monthly maize trade statistics for the Orvan to Tolan route. queries ['maize trade stats Orvan Tolan monthly value volume 2026', 'Tolan annual maize import report Orvan corridor comparison']",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-26T01:04:17.661697Z",
+      "kind": "dead_end",
+      "stages": [
+        "sendback"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261026-005913-e4e654",
+      "source_run": 2,
+      "updated_at": "2026-10-26T01:04:17.661697Z"
+    },
+    {
+      "memory_id": "M-heimdall-6c5effc6e4",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Aggregate quarterly volume/value for rail shipments through <place>.\" (source types: trade_note). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261026-005913-e4e654 run 1: Aggregate quarterly volume/value for rail shipments through Ravik. | why: Necessary to determine if rail deliveries significantly mitigated the loss of sea-corridor capacity.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-26T01:03:59.789089Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261026-005913-e4e654",
+      "source_run": 1,
+      "updated_at": "2026-10-26T01:03:59.789089Z"
+    },
+    {
+      "memory_id": "M-heimdall-ec7f405786",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Monthly maize trade statistics for the <place> to <place> route.\" (source types: trade_note). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261026-005913-e4e654 run 1: Monthly maize trade statistics for the Orvan to Tolan route. | why: Required to calculate the year-over-year change in maize import value for Tolan.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-26T01:03:59.783963Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261026-005913-e4e654",
+      "source_run": 1,
+      "updated_at": "2026-10-26T01:03:59.783963Z"
+    },
+    {
+      "memory_id": "M-heimdall-40cbc913a9",
+      "agent": "heimdall",
+      "lesson": "Targeted searches for a gap like \"Aggregate quarterly volume/value for rail shipments through <place> and total <place> exports.\" found nothing new before the as-of date. Report such a gap plainly instead of repeating similar searches.",
+      "context": "case case-20261025-223333-e776a1 run 2: Aggregate quarterly volume/value for rail shipments through Ravik and total Vanir exports. queries ['aggregate quarterly volume value Ravik rail loadings Vanir grain exports Midgard Tolan', 'Ravik rail shipment data wheat maize Midgard Tolan 2026 quarterly']",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T22:36:51.753597Z",
+      "kind": "dead_end",
+      "stages": [
+        "sendback"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 2,
+      "updated_at": "2026-10-25T22:36:51.753597Z"
+    },
+    {
+      "memory_id": "M-heimdall-6eb3227d37",
+      "agent": "heimdall",
+      "lesson": "Targeted searches for a gap like \"Monthly trade volume and value for <place> to <place> maize imports.\" found nothing new before the as-of date. Report such a gap plainly instead of repeating similar searches.",
+      "context": "case case-20261025-223333-e776a1 run 2: Monthly trade volume and value for Orvan to Tolan maize imports. queries ['Tolan monthly maize import volume value Orvan source:trade_note 2025 2026', '\"Tolan maize\" Orvan trade-note monthly data 2026']",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T22:36:51.750066Z",
+      "kind": "dead_end",
+      "stages": [
+        "sendback"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 2,
+      "updated_at": "2026-10-25T22:36:51.750066Z"
+    },
+    {
+      "memory_id": "M-heimdall-15ea35880b",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Aggregate quarterly volume/value for rail shipments through <place> and total <place> exports.\" (source types: trade_note). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-223333-e776a1 run 1: Aggregate quarterly volume/value for rail shipments through Ravik and total Vanir exports. | why: To calculate a precise net exposure range that accounts for all alternative routes.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T22:36:34.072022Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.072022Z"
+    },
+    {
+      "memory_id": "M-heimdall-4466ff43b0",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Monthly trade volume and value for <place> to <place> maize imports.\" (source types: trade_note). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-223333-e776a1 run 1: Monthly trade volume and value for Orvan to Tolan maize imports. | why: To quantify the trade gap and economic exposure for the maize sector in Tolan.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T22:36:34.067478Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-223333-e776a1",
+      "source_run": 1,
+      "updated_at": "2026-10-25T22:36:34.067478Z"
+    },
+    {
+      "memory_id": "M-heimdall-1cf4ecbc8d",
+      "agent": "heimdall",
+      "lesson": "Targeted searches for a gap like \"Monthly trade volume and value for <place> maize imports from <place> (<n>-<n>).\" found nothing new before the as-of date. Report such a gap plainly instead of repeating similar searches.",
+      "context": "case case-20261025-204050-ac35da run 2: Monthly trade volume and value for Tolan maize imports from Orvan (2025-2026). queries ['Tolan official monthly customs data maize imports Orvan 2025 2026', 'Tolan maize import volume value monthly series Orvan 2026']",
+      "case_scope": null,
+      "confidence": 0.5,
+      "created_at": "2026-10-25T21:40:02.531739Z",
+      "kind": "dead_end",
+      "stages": [
+        "sendback"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 2,
+      "updated_at": "2026-10-25T21:40:02.531739Z"
+    },
+    {
+      "memory_id": "M-heimdall-f89dc09442",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Monthly trade volume and value for <place> maize imports from <place> (<n>-<n>).\" (source types: trade_note). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-204050-ac35da run 1: Monthly trade volume and value for Tolan maize imports from Orvan (2025-2026). | why: Necessary to calculate the year-over-year deficit for maize following the corridor expiration.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T21:39:45.442544Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T21:39:45.442544Z"
+    },
+    {
+      "memory_id": "M-heimdall-4acb6828ab",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Quantitative monthly data for alternative <place> exports and <place> rail loadings to <place> and <place>.\" (source types: official_trade_table, customs_data). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-204050-ac35da run 1: Quantitative monthly data for alternative Vanir exports and Ravik rail loadings to Midgard and Tolan. | why: Required to calculate net economic loss by accounting for substitution effects.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T20:46:23.612330Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T20:46:23.612330Z"
+    },
+    {
+      "memory_id": "M-heimdall-45565cfd51",
+      "agent": "heimdall",
+      "lesson": "Odin sent a case back because this was missing after the first investigation: \"Complete monthly trade volume and value series for <place> maize imports from <place>.\" (source types: official_trade_table, trade_note). Search for this kind of evidence in the first investigation and list it in the Case File.",
+      "context": "case case-20261025-204050-ac35da run 1: Complete monthly trade volume and value series for Tolan maize imports from Orvan. | why: Required to calculate trade exposure range for Tolan maize imports following corridor expiration.",
+      "case_scope": null,
+      "confidence": 0.6,
+      "created_at": "2026-10-25T20:46:23.608050Z",
+      "kind": "sendback_gap",
+      "stages": [
+        "research"
+      ],
+      "times_seen": 1,
+      "source_case": "case-20261025-204050-ac35da",
+      "source_run": 1,
+      "updated_at": "2026-10-25T20:46:23.608050Z"
+    }
+  ]
+}
